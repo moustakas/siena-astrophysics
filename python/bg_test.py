@@ -32,7 +32,8 @@ class ediscs:
         hist(self.kdat.UGRIZ_ABSMAG_00[:,1],bins=5)
         title ('UGRIZ ABSMAG IVAR ')
         
-        
+        ax=gca()
+        ax.set_yscale('log')
         ylabel('Number of Galaxies')
         xlabel('Absolute G-Band Magnitude')
 edi=ediscs()
