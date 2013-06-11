@@ -6,7 +6,7 @@ from astLib import astWCS
 from astLib import astImages
 import argparse
 
-def cutout():
+def cutout(clustername):
     
     parser = argparse.ArgumentParser(description='Retrieve cluster cutouts.')
     parser.add_argument('cluster', type=str, default=None, help='Cluster name')
