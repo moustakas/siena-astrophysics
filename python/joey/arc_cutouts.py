@@ -9,8 +9,8 @@ import argparse
 
 def get_cutout(clustername):
     
-    path = '/Users/ioannis/tmp/'
-    imfile = clustername+'_f160w.fits.gz'
+    path = '/home/obsastro1/siena-astrophysics/python/joey/'
+    imfile = clustername+'_f105w.fits.gz'
 
     im = pyfits.getdata(path+imfile)
     hdr = pyfits.getheader(path+imfile)
