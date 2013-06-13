@@ -1,0 +1,8 @@
+from pylab import *
+import atpy
+import numpy
+
+class trials:
+    def try(self):
+        numpy.random.seed(1)
+        Data = numpy.random.normal(0.0,1.0,10)
