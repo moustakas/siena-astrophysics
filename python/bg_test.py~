@@ -27,3 +27,28 @@ class ediscs:
         hist(self.kdat.UGRIZ_ABSMAG_00[:,1],bins=5)
         title ('UGRIZ ABSMAG IVAR 00')
 
+    def abs_gband_mag(self):
+        figure()
+        hist(self.kdat.UGRIZ_ABSMAG_00[:,1],bins=5)
+        title ('UGRIZ ABSMAG IVAR ')
+        
+        ax=gca()
+        ax.set_yscale('log')
+        ylabel('Number of Galaxies')
+        xlabel('Absolute G-Band Magnitude')
+
+    def gbandlum(self):
+        figure()
+        absmag=self.kdat.UGRIZ_ABSMAG_00[:,1]
+        #self.lumeq=(3.839*(10.**26))*(10.**((absmag-4.83)/-2.5))
+        luminosity = ((absmag-4.83)/-2.5)
+        print luminosity
+        hist(luminosity,bins=600, range=[7,15])
+        #ax=gca()
+        #ax.set_yscale('log')
+        xlim(7,15)
+        ylabel('N')
+        xlabel('log(g-band L/L$_\odot$)')
+        title ('EDisCS')
+    
+edi=ediscs()

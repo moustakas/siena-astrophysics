@@ -36,4 +36,18 @@ class ediscs:
         ax.set_yscale('log')
         ylabel('Number of Galaxies')
         xlabel('Absolute G-Band Magnitude')
+
+    def gbandlum(self):
+        figure()
+        absmag=self.kdat.UGRIZ_ABSMAG_00[:,1]
+        luminosity = ((absmag-4.83)/-2.5)
+        print luminosity
+        hist(luminosity,bins=600, range=[7,15])
+        #ax=gca()
+        #ax.set_yscale('log')
+        xlim(7,15)
+        ylabel('N')
+        xlabel('log(g-band L/L$_\odot$)')
+        title ('EDisCS')
+    
 edi=ediscs()
