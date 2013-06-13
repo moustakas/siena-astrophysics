@@ -40,6 +40,7 @@ class ediscs:
     def gbandlum(self):
         figure()
         absmag=self.kdat.UGRIZ_ABSMAG_00[:,1]
+        #self.lumeq=(3.839*(10.**26))*(10.**((absmag-4.83)/-2.5))
         luminosity = ((absmag-4.83)/-2.5)
         print luminosity
         hist(luminosity,bins=600, range=[7,15])
