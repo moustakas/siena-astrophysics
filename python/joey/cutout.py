@@ -1,13 +1,14 @@
 #! /usr/bin/env python
 
 import numpy as np
+import numdisplay
 import pyfits
 from astLib import astWCS
 from astLib import astImages
 import argparse
 
-def cutout(clustername):
-    
+def cutout():
+
     parser = argparse.ArgumentParser(description='Retrieve cluster cutouts.')
     parser.add_argument('cluster', type=str, default=None, help='Cluster name')
 
@@ -19,8 +20,10 @@ def cutout(clustername):
 
     cluster = args.cluster
     
-    path = '/Users/ioannis/'
+    path = '/home/obsastro1/'
     myfile = cluster+'_f105w.fits.gz'
+
+    
 
     im = pyfits.getdata(path+myfile)
     hdr = pyfits.getheader(path+myfile)
@@ -45,5 +48,7 @@ def cutout(clustername):
         astImages.saveBitmap(outfile,cutim['data'],[0.0,0.5],300,'gray')
 
            
+
 if __name__ == "__main__":
     cutout()
+    

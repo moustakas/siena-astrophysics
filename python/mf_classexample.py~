@@ -44,13 +44,6 @@ class nasasloan:
         legend(['WISE Data'], loc='upper left')
         xlabel(' log(g-band L/L$_\odot$)') 
         ylabel('N')
-    def schecter(self):
-        figure()
-        self.amag=self.ndat.ABSMAG[:,3]
-        self.luminosity=(self.amag-4.83)/-2.5
-        #self.schecter =(( 8.*10.**-3((self.amag)/(1.4*10.**10*3.839*(10.**26.))))**-0.7)**(-self.amag/(1.4*10.**10*3.839*(10.**26.))
-        self.schecterlum =(( 8.*10.**-3.((self.amag)/(1.4*10.**10*3.839*(10.**26.))))**-0.7)
-        plot(self.schecterlum, self.luminosity 'b')
 
 
 nsa=nasasloan()
