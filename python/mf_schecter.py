@@ -11,6 +11,8 @@ def schecter():
     ax.set_yscale('log')
     ax=gca()
     ax.set_xscale('log')
+    xlabel('L/L_*')
+    ylabel(u"L/L\u03A6")
     while f<3:
         schect = (8.*10**-3)*(lum**alpha[f])*exp(-lum)
         plot(lum, schect)

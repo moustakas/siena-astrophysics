@@ -44,6 +44,36 @@ class nasasloan:
         legend(['WISE Data'], loc='upper left')
         xlabel(' log(g-band L/L$_\odot$)') 
         ylabel('N')
+    def plotLF(self):
+        self.amag=self.ndat.ABSMAG[:,3]
+        self.luminosity=(self.amag-4.83)/-2.5
+        figure()
+        t=hist(self.luminosity, bins=50)
+        clf()
+        print t
+        #split t
+        #bins =xvalues
+        bins = t[1]
+        yvalue = t[0]
+
+        bincenters=[]
+        for x in range(len(yvalue)):
+            bincenters.append((bins[x]+bins[x+1])/2)
+            print bincenters
+        print len(bincenters)
+            
+        yerror = sqrt(t[0])
+        yplot = log10(yvalue)
+        plot(bincenters, yplot,'bo') 
+        ylabel('log(N)')
+        xlabel('log(L)')
+        yerrup=log10(yvalue+yerror)-log10(yvalue)
+        yerrdown=log10(yvalue)-log10(yvalue-yerror)
+        yerrboth=zip(yerrdown,yerrup)
+        yerrboth=transpose(yerrboth)
+        errorbar(bincenters, yplot, yerr=yerrboth)
+        legend(['All-Sky Survey'], loc='upper right')
+
 
 
 nsa=nasasloan()

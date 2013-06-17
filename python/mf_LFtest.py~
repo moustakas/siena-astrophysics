@@ -1,0 +1,10 @@
+from pylab import *
+import atpy
+
+class LF:
+    def __init__(self, LF):
+        infile = '/home/share/research/luminosityfucntion/test.LF.fits'
+        self.ldat=atpy.Table(infile)
+    def plotLF(self):
+        figure
+        hist(self.ldat.log10(L))
