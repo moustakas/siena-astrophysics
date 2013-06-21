@@ -26,12 +26,15 @@ def get_cutout(clustername):
 
     arcfile = datapath+clustername+'-arcs.txt'
     arcs = sex.se_catalog(arcfile)
+    
+    width = 30.0/3600.0 # degrees
+    
 # get the celestial coordinates at the center
 #   for i in range(10):
     for i in range(len(arcs.ra)):
 #       ww = float(width[i])
-        #width = arcs.width[i]/3600.0
-        cutim = astImages.clipImageSectionWCS(im,wcs,arcs.ra[i],arcs.dec[i],float(arcs.width[i]/3600.0),returnWCS=True)
+       
+        cutim = astImages.clipImageSectionWCS(im,wcs,arcs.ra[i],arcs.dec[i],width,returnWCS=True)
 
         gal = str(arcs.id[i]).split('.')
         outfile = outpath+clustername+'-arc'+gal[0]+'-im'+gal[1]+'.png'
