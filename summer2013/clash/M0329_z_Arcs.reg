@@ -1,0 +1,12 @@
+# Region file format: DS9 version 4.1
+# Filename: macs0329_RGB.fits.gz[1]
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+point(52.405219,-2.185347) # point=cross color=yellow width=2 font="helvetica 10 normal" text={1750 z=1.353 LIKELY}
+point(52.42397,-2.182411) # point=cross width=2 font="helvetica 10 normal" text={1604 z=3.11 SECURE AGN}
+point(52.423806,-2.177205) # point=cross width=2 font="helvetica 10 normal" text={1048 z=0.777 SECURE}
+point(52.42939,-2.194076) # point=cross width=2 font="helvetica 10 normal" text={2556 z=1.313 SECURE}
+point(52.421056,-2.191371) # point=cross color=yellow width=2 font="helvetica 10 normal" text={2490 z=2.14 LIKELY}
+point(52.42011,-2.221811) # point=cross width=2 font="helvetica 10 normal" text={5172 z=1.113 SECURE}
+point(52.439057,-2.1996919) # point=cross color=yellow width=2 font="helvetica 10 normal" text={3221 z=1.315 LIKELY}
+point(52.438683,-2.1993086) # point=cross width=2 font="helvetica 10 normal" text={3220 z=1.313 VERY LIKELY}
