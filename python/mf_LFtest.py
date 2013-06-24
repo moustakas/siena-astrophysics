@@ -7,7 +7,7 @@ class LF:
         self.ldat=atpy.Table(infile)
     def plotLF(self):
         figure()
-        t=hist(self.ldat.logL, bins=50)
+        t=hist(self.ldat.logL, bins=100)
         clf()
         print t
         #split t
@@ -31,5 +31,17 @@ class LF:
         yerrboth=zip(yerrdown,yerrup)
         yerrboth=transpose(yerrboth)
         errorbar(bincenters, yplot, yerr=yerrboth)
+        #ax=gca()
+        #ax.set_yscale('log')
+        #ax=gca()
+        #ax.set_xscale('log')
+        Lvalues = linspace(-2, 1, 100)
+        Llinear = 10**(Lvalues)
+        schect = 55*(Llinear**(-0.25))*exp(-Llinear)
+        plot(Lvalues, log10(schect))
+       
+        
+        
+        
 
 LF=LF()

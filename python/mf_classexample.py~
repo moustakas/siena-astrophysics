@@ -72,6 +72,7 @@ class nasasloan:
         yerrboth=zip(yerrdown,yerrup)
         yerrboth=transpose(yerrboth)
         errorbar(bincenters, yplot, yerr=yerrboth)
+        legend(['All-Sky Survey'], loc='upper right')
 
 
 

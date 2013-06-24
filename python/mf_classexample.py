@@ -74,6 +74,15 @@ class nasasloan:
         errorbar(bincenters, yplot, yerr=yerrboth)
         legend(['All-Sky Survey'], loc='upper right')
 
+        #ax=gca()
+        #ax.set_yscale('log')
+        #ax=gca()
+        #ax.set_xscale('log')
+        Lvalues = linspace(-2, 25, 100)
+        Llinear = 10**(Lvalues)
+        schect = 55*(Llinear**(-0.25))*exp(-Llinear)
+        plot(Lvalues, log10(schect))
+
 
 
 nsa=nasasloan()
