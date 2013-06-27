@@ -9,7 +9,7 @@ infile = '/home/share/research/luminosityfunction/testLF.fits'
 lf=atpy.Table(infile)
 
 figure()
-t=hist(lf.logL, bins=50)
+t=hist(lf.logL, bins=38)
 clf()
 print t
 #split t
@@ -108,13 +108,14 @@ for alpha in arange(-2,2,.1):
             c=alpha+1
             d=exp(-(10**array(bincenters))/(10.**loglstar))
             yfit=a*(b**c)*d
-            chisq = sum((array(yfit-yvalue)**(2))/array(yerror**2))
+            chisq = sum(log(array(yfit-yvalue)**2./array(yerror)**2.))
             if chisq < chisqmin:
                 alphabest = alpha
                 loglstarbest = loglstar
                 logphistarbest = logphistar
                 chisqmin=chisq
                 yfit2=a*(b**c)*d
+
 
 plot(bincenters, log10(yfit2))
 show()

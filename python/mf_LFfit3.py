@@ -108,7 +108,7 @@ for alpha in arange(-2,2,.1):
             c=alpha+1
             d=exp(-(10**array(bincenters))/(10.**loglstar))
             yfit=a*(b**c)*d
-            chisq = sum((array(yfit-yvalue)**(2))/array(yerror**2))
+            chisq = sum(log(array(yfit-yvalue)**2./array(yerror)**2.))
             if chisq < chisqmin:
                 alphabest = alpha
                 loglstarbest = loglstar

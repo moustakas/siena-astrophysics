@@ -21,11 +21,11 @@ bincenters=[]
 for x in range(len(yvalue)):
     bincenters.append((bins[x]+bins[x+1])/2)
 
-#print bincenters
+print bincenters
 #print len(bincenters)            
 yerror =(sqrt(t[0]))
 yplot = (log10(yvalue))
-plot(bincenters, yplot,'bo')
+plot(bincenters, yplot,'r*')
 ylabel('log(N)')
 xlabel('log(L)')
 
@@ -96,20 +96,31 @@ logphistarbest=0.
 loglstarbest=0.
 chisqmin=1.*10**7
 
-for i in range(len(yerror2)):
-    if yerror2[i]==0:
-        yerror2[i]=0.1
+for i in range(len(yerror)):
+    if yerror[i]==0:
+        yerror[i]=0.1
 
 for alpha in arange(-2,2,.1):
     for loglstar in arange(-1,1,.1):
         for logphistar in arange(-3,3,.1):
-            yfit = (log(10)*10**(logphistar))*((yvalue/10**loglstar)**alpha+1)*exp(yvalue/10**loglstar)
-            chisq = sum((yfit-yvalue)**(2))/(yerror**2)
+            a=log(10)*10.**logphistar
+            b=(10.**array(bincenters))/(10.**loglstar)
+            c=alpha+1
+            d=exp(-(10**array(bincenters))/(10.**loglstar))
+            yfit=a*(b**c)*d
+            chisq = sum(log(array(yfit-yvalue)**2./array(yerror)**2.))
             if chisq < chisqmin:
                 alphabest = alpha
                 loglstarbest = loglstar
                 logphistarbest = logphistar
-                print alpha
-                yfit2 = (log(10)*10**(logphistar))*((yvalue/10**loglstar)**alpha+1)*exp(yvalue/10**loglstar)
-plot(bincenters, yfit2)
+                chisqmin=chisq
+                yfit2=a*(b**c)*d
+
+
+plot(bincenters, log10(yfit2))
 show()
+
+print 'alpha = ' + str(alphabest)
+print 'loglstar = ' + str(loglstarbest)
+print 'logphistar = ' + str(logphistarbest)
+print 'chisqmin = ' + str(chisqmin)
