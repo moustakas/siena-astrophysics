@@ -1,0 +1,19 @@
+## CLASH cluster properties
+## See Postman+12 for details.
+# 1 cluster
+# 2 shortname
+# 3 dirname [directory name on the CLASH archive]
+# 4 ra
+# 5 dec
+# 6 ra_bcg
+# 7 dec_bcg
+# 8 z
+# 9 isxray [1=X-ray selected; 0=high-magnification selected]
+# 10 ebv
+# 11 starforming [1=has star-forming filaments]
+# 12 width
+# 13 stretch
+MACS0329.7-0211 macs0329   macs0329 03:29:41.68 -02:11:47.7  52.423197  -2.196222 0.4500000      1    0.060242  1	15. 1.2
+MACS1115.9+0129 macs1115   macs1115 11:15:52.05 +01:29:56.6 168.96626    1.498629 0.3520000      1    0.038823  1	18. .3
+RXJ1347.5-1145  rxj1347    rxj1347 13:47:30.59 -11:45:10.1 206.88259  -11.753160 0.4510000      1    0.061827	0	13. .8
+RXJ1532.9+3021  rxj1532    rxj1532 15:32:53.78 +30:20:58.7 233.22408   30.349862 0.3450000      1    0.029526  1	15. .5
