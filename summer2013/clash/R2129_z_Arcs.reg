@@ -1,0 +1,46 @@
+# Region file format: DS9 version 4.1
+# Filename: /data05s/bal/CLASH/RXJ2129/rxj2129_RGB.fits.gz[1]
+# "*_IR" ARE IDs from the IR only catalog (rxj2129_IR.cat)
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+circle(322.4115,0.0824251,1.2259325") # color=yellow text={4316 z=2.3025 LIKELY}
+circle(322.40863,0.085607499,1.2259325") # color=yellow text={1091_IR z=3.0366 LIKELY}
+circle(322.41764,0.0962467,0.88704916") # text={3263 z=0.5547 SECURE}
+circle(322.42039,0.0882907,1.2259325") # color=red text={751_IR z=2.1012 INSECURE}
+circle(322.41612,0.0915355,1.2259325") # color=yellow text={4204 z=2.2664 LIKELY}
+circle(322.41796,0.0932827,1.2259325") # color=red text={749_IR z=2.1999 INSECURE}
+circle(322.41771,0.0955603,0.8615295") # text={3299 z=3.3331 VERY LIKELY}
+circle(322.41764,0.0949675,0.9361235") # color=yellow text={4471 z=2.5320 LIKELY}
+circle(322.4174,0.0944371,0.8870485") # text={4674 z=0.2355 SECURE}
+circle(322.42005,0.0987739,0.8870485") # text={2910 z=0.1394 SECURE}
+circle(322.42844,0.1004275,1.2259325") # color=red text={2823 z=2.2581 INSECURE}
+circle(322.42242,0.1039219,0.8870485") # text={2478 z=0.6784 SECURE}
+circle(322.42878,0.1081027,0.8870485") # text={1813 z=0.2270 SECURE}
+circle(322.43128,0.1054195,0.8870485") # text={2370 z=2.7329 SECURE}
+circle(322.41727,0.1108483,0.8870485") # text={1803 z=2.5829 SECURE}
+circle(322.43037,0.080615498,1.2259325") # color=red text={4367 z=2.1605 INSECURE}
+circle(322.40663,0.077557899,1.2259325") # color=red text={4700 z=2.1563 INSECURE}
+circle(322.40676,0.076341099,1.2259325") # color=yellow text={4806 z=1.8114 LIKELY}
+circle(322.41368,0.0862003,0.8870485") # text={1093_IR z=0.2319 SECURE}
+circle(322.41368,0.0871051,0.8870485") # text={1057_IR z=0.2148 SECURE}
+circle(322.40367,0.087947498,0.8870485") # text={4008 z=0.4350 SECURE}
+circle(322.42928,0.073720299,0.8870485") # text={5056 z=0.0000 SECURE}
+circle(322.40594,0.076341099,1.2259325") # color=red text={4837 z=1.2929 INSECURE}
+circle(322.41181,0.0716923,1.2259325") # color=red text={5236 z=2.9472 INSECURE}
+circle(322.42326,0.0731899,0.8870485") # text={4955 z=1.1352 VERY LIKELY}
+circle(322.40841,0.079773099,0.9941685") # color=red text={4531 z=3.2828 INSECURE}
+circle(322.41572,0.091521778,1.236001") # color=red text={4204 z=1.5202 INSECURE}
+circle(322.40487,0.083803098,0.9941685") # color=red text={1161_IR z=3.7063 INSECURE}
+circle(322.42198,0.0889407,1.2259325") # color=red text={986_IR z=3.2704 INSECURE}
+circle(322.41588,0.0945047,1.2259325") # color=red text={3456 z=-999 NO REDSHIFT}
+circle(322.41857,0.0848847,1.2259325") # color=red text={1094_IR z=1.1056 INSECURE}
+circle(322.41039,0.097988699,1.2259325") # color=red text={3025 z=0.5073 INSECURE}
+circle(322.41023,0.097078699,1.2259325") # color=red text={3123 z=3.5584 INSECURE}
+circle(322.42834,0.1067403,0.8615295") # text={1826 z=1.1411 VERY LIKELY}
+circle(322.42035,0.1080975,1.2259325") # color=red text={2037 z=3.2303 INSECURE}
+circle(322.41815,0.1044939,0.8870485") # text={2441 z=1.3476 SECURE}
+circle(322.41054,0.1098239,0.8870485") # text={2188 z=1.5225 VERY LIKELY}
+circle(322.42665,0.1034175,1.2259325") # color=red text={2561 z=2.2555 INSECURE}
+circle(322.42118,0.10184667,0.9361235") # color=yellow text={2647 z=1.0293 LIKELY}
+circle(322.41714,0.079088867,1.2259325") # color=red text={4584 z=0.2256 INSECURE}
+circle(322.42367,0.1038959,0.8870485") # text={2513 z=0.9129 VERY LIKELY}

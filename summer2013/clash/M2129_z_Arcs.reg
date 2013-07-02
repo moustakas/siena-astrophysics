@@ -1,0 +1,22 @@
+# Region file format: DS9 version 4.1
+# Filename: macs2129_RGB.fits.gz[1]
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+point(322.3629,-7.682704) # point=cross color=yellow width=2 font="helvetica 10 normal" text={3277 z=2.31 LIKELY}
+point(322.34096,-7.684433) # point=cross width=2 font="helvetica 10 normal" text={3320 z=2.27 SECURE}
+point(322.3547,-7.700377) # point=cross color=yellow width=2 font="helvetica 10 normal" text={5881 z=2.41 LIKELY}
+point(322.36055,-7.70459) # point=cross color=yellow width=2 font="helvetica 10 normal" text={5696 z=1.99 LIKELY}
+point(322.35085,-7.681955) # point=cross width=2 font="helvetica 10 normal" text={3089/3090 z=1.36 SECURE}
+point(322.3648,-7.683744) # point=cross width=2 font="helvetica 10 normal" text={3337/3338 z=1.37 SECURE}
+point(322.358,-7.685915) # point=cross color=yellow width=2 font="helvetica 10 normal" text={3543 z=1.36 LIKELY}
+point(322.357,-7.6892415) # point=cross color=yellow width=2 font="helvetica 10 normal" text={200008 z=4.41 LIKELY}
+point(322.3486,-7.699227) # point=cross width=2 font="helvetica 10 normal" text={5090 z=0.95 SECURE}
+point(322.35439,-7.705536) # point=cross width=2 font="helvetica 10 normal" text={5860 z=1.18 SECURE}
+point(322.37081,-7.709222) # point=cross width=2 font="helvetica 10 normal" text={6264 z=1.05 SECURE}
+point(322.35097,-7.695714) # point=cross color=yellow width=2 font="helvetica 10 normal" text={4733 z=2.24 LIKELY}
+point(322.36302,-7.685172) # point=cross width=2 font="helvetica 10 normal" text={3484 z=1.45 VERY LIKELY}
+point(322.35715,-7.691137) # point=cross width=2 font="helvetica 10 normal" text={4051 z=1.36 SECURE}
+point(322.36166,-7.696394) # point=cross width=2 font="helvetica 10 normal" text={4799 z=0.95 SECURE}
+point(322.35558,-7.707074) # point=cross width=2 font="helvetica 10 normal" text={5988 z=1.05 SECURE}
+point(322.36824,-7.692504) # point=cross width=2 font="helvetica 10 normal" text={4176 z=1.55 SECURE}
+point(322.36032,-7.7134534) # point=cross color=yellow width=2 font="helvetica 10 normal" text={6983 z=1.05 LIKELY}
