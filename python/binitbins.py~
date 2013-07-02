@@ -3,7 +3,7 @@ import atpy
 import numpy as np
 
 def binitbins(x,w,nbin,xmin,xmax):#use equally spaced bins
-    
+    #if self.mdat.MATCHFLAG24 == True:
     dx=float((xmax-xmin)/(nbin))
     
     xbin=np.arange(xmin,(xmax),dx)+dx/2.
@@ -23,11 +23,11 @@ def binitbins(x,w,nbin,xmin,xmax):#use equally spaced bins
         xbindata=x[(abs(xbinnumb-float(i))<.5)]
         wbindata=w[(abs(xbinnumb-float(i))<.5)]
         xscaled=xbindata*wbindata
+             
+                   
+        #print abs(xbinnumb-float(i))
+        #print "ydata"
         try:
             ybin[i]=sum(xscaled)
-            ybinerr[i]=np.sqrt(xbindata[i])*wbindata[i]
-        except ZeroDivisionError:
-            ybin[i]=0
-            ybinerr[i]=0
-            
-        return xbin,ybin,ybinerr
+            ybinerr[i]=sqrt(xbindata)*wbindata
+    return xbin,ybin,ybinerr
