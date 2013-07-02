@@ -31,4 +31,7 @@ def binitbins(x,w,nbin,xmin,xmax):#use equally spaced bins
             ybin[i]=sum(xscaled)
             ybinerr[i]=sqrt(xbindata)*wbindata
     return xbin,ybin,ybinerr
+<<<<<<< HEAD
         
+=======
+>>>>>>> ac8aa156f00f83c60b298d488f2aff6313a9fac3
