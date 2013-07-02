@@ -1,3 +1,29 @@
 from pylab import *
-import atpy
+from scipy import *
+from scipy import optimize 
 
+
+
+
+def binitbins(xmin,xmax,nbin,x,y):#use equally spaced bins
+    dx=float((xmax-xmin)/(nbin))
+    xbin=N.arange(xmin,(xmax),dx)+dx/2.
+    ybin=N.zeros(len(xbin),'d')
+    ybinerr=N.zeros(len(xbin),'d')
+    xbinnumb=N.array(len(x),'d')
+    x1=N.compress((x >= xmin) & (x <= xmax),x)
+    y1=N.compress((x >= xmin) & (x <= xmax),y) 
+    x=x1
+    y=y1
+    xbinnumb=((x-xmin)*nbin/(xmax-xmin))#calculate x  bin number for each point 
+    j=-1
+    for i in range(len(xbin)):
+	ydata=N.compress(abs(xbinnumb-float(i))<.5,y)
+	try:
+	    #ybin[i]=N.average(ydata)
+	    ybin[i]=pylab.median(ydata)
+	    ybinerr[i]=pylab.std(ydata)/N.sqrt(float(len(ydata)))
+	except ZeroDivisionError:
+	    ybin[i]=0.
+	    ybinerr[i]=0.
+    return xbin,ybin,ybinerr

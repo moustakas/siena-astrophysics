@@ -1,8 +1,11 @@
 from pylab import *
-import atpy
-import numpy
+from scipy import *
+#if you experience problem "optimize not found", try to uncomment the following line. The problem is present at least at Ubuntu Lucid python scipy package
+# from scipy import optimize
+# Generate data points with noise
+num_points = 150
+Tx = linspace(5., 8., num_points)
+Ty = Tx
 
-class trials:
-    def try(self):
-        numpy.random.seed(1)
-        Data = numpy.random.normal(0.0,1.0,10)
+tX = 11.86*cos(2*pi/0.81*Tx-1.32) + 0.64*Tx+4*((0.5-rand(num_points))*exp(2*rand(num_points)**2))
+tY = -32.14*cos(2*pi/0.8*Ty-1.94) + 0.15*Ty+7*((0.5-rand(num_points))*exp(2*rand(num_points)**2))

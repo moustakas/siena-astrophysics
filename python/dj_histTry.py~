@@ -1,0 +1,46 @@
+from pylab import *
+import atpy
+from scipy import *
+from scipy import optimize 
+from LCScommon import *
+import numpy as N
+
+
+
+class cluster:
+    def __init__(self,clustername):
+        infile='/home/share/research/LocalClusters/NSAmastertables/CharyElbazTables/'+clustername+'_ce_lir.fits'
+        self.mdat=atpy.Table(infile)
+
+    def binitbins(xmin,xmax,nbin,LIR,y):#use equally spaced bins
+        dx=float((xmax-xmin)/(nbin))
+        xbin=N.arange(xmin,(xmax),dx)+dx/2.
+        ybin=N.zeros(len(xbin),'d')
+        ybinerr=N.zeros(len(xbin),'d')
+        xbinnumb=N.array(len(self.mdat.LIR),'d')
+        x1=N.compress((x >= xmin) & (x <= xmax),x)
+        y1=N.compress((x >= xmin) & (x <= xmax),y) 
+        x=x1
+        y=y1
+        xbinnumb=((x-xmin)*nbin/(xmax-xmin))#calculate x  bin number for each point
+        j=-1
+        for i in range(len(xbin)):
+            ydata=N.compress(abs(xbinnumb-float(i))<.5,y)
+            try:
+                ybin[i]=pylab.median(ydata)
+                ybinerr[i]=pylab.std(ydata)/N.sqrt(float(len(ydata)))
+            except ZeroDivisionError:
+                ybin[i]=0.
+                ybinerr[i]=0.
+                return xbin,ybin,ybinerr
+
+
+mkw11=cluster('MKW11')
+mkw8=cluster('MKW8')
+coma=cluster('Coma')
+herc=cluster('Hercules')
+ngc=cluster('NGC6107')
+awm4=cluster('AWM4')
+a1367=cluster('A1367')
+a2052=cluster('A2052')
+a2063=cluster('A2063')
