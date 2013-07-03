@@ -28,7 +28,8 @@ phothead = \
 '# 10 ABmag\n'+\
 '# 11 ABmagerr\n'
     
-topdir='/Volumes/Archive/CLASH/archive.stsci.edu/pub/clash/outgoing/'
+topdir='/moustakas-archive/clash-archive/'
+#topdir='/Volumes/Archive/CLASH/archive.stsci.edu/pub/clash/outgoing/'
 if not (os.path.isdir(topdir)):
     print "CLASH data archive may not be mounted"
     sys.exit()
