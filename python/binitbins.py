@@ -3,7 +3,9 @@ import atpy
 import numpy as np
 
 def binitbins(x,w,nbin,xmin,xmax):#use equally spaced bins
-    
+    if len(x) != len(w):
+        print 'array and weights must be same length'
+        return
     dx=float((xmax-xmin)/(nbin))
     
     xbin=np.arange(xmin,(xmax),dx)+dx/2.
@@ -25,9 +27,9 @@ def binitbins(x,w,nbin,xmin,xmax):#use equally spaced bins
         xscaled=xbindata*wbindata
         try:
             ybin[i]=sum(xscaled)
-            ybinerr[i]=np.sqrt(xbindata[i])*wbindata[i]
+            ybinerr[i]=np.sqrt(ybin[i])
         except ZeroDivisionError:
             ybin[i]=0
             ybinerr[i]=0
             
-        return xbin,ybin,ybinerr
+    return xbin,ybin,ybinerr
