@@ -75,12 +75,13 @@ filters=['wfc3uvis_f225w',\
 roiinfo   = asciidata.open(roidata)
 for index in range(roiinfo.nrows): 
     rootname  = str(roiinfo['rootname'][index])
+    dirname   = str(roiinfo['dirname'][index])
     cluster   = str(roiinfo['cluster'][index])
     datestamp = str(roiinfo['datestamp'][index])
     scaledir  = str(roiinfo['scaledir'][index])
     redshift  = roiinfo['redshift'][index]
 
-    dir=topdir+cluster+subdir+scaledir+'/'
+    dir=topdir+dirname+subdir+scaledir+'/'
 
     regionfile=rootname+'.reg'
     if not (os.path.isfile(regionfile)):
