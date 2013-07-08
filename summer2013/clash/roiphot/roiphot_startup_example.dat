@@ -1,0 +1,13 @@
+# 1 rootname
+# 2 skyname
+# 3 redshift
+# 4 cluster
+# 5 datestamp
+# 6 scaledir 
+snake_total      macs1206_snake_total_sky 1.036 macs1206 20110815 scale_65mas
+snake_knots      macs1206_snake_total_sky 1.036 macs1206 20110815 scale_65mas
+snake_interknots macs1206_snake_total_sky 1.036 macs1206 20110815 scale_65mas
+snake_redside    macs1206_snake_total_sky 1.036 macs1206 20110815 scale_65mas
+snake_redside    macs1206_snake_total_sky 1.036 macs1206 20110815 scale_30mas
+snake_blueside   macs1206_snake_total_sky 1.036 macs1206 20110815 scale_65mas
+snake_blueside   macs1206_snake_total_sky 1.036 macs1206 20110815 scale_30mas
