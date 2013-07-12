@@ -1,0 +1,18 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+polygon(42.009346,-3.5295877,42.009276,-3.529727,42.009364,-3.5300753,42.009433,-3.5301875,42.009442,-3.5303616,42.009494,-3.5305967,42.00986,-3.5312933,42.010602,-3.5320944,42.011527,-3.5328432,42.012791,-3.5336443,42.013053,-3.5336965,42.013123,-3.5335659,42.013044,-3.5334266,42.01273,-3.5333047,42.012696,-3.5331741,42.012521,-3.5330348,42.012259,-3.5330261,42.011753,-3.5326865,42.011396,-3.5324427,42.010855,-3.5320421,42.010244,-3.5314152,42.009913,-3.5309537,42.009834,-3.5306664,42.009555,-3.5302571)
+point(42.011719,-3.519751) # point=cross width=2 font="helvetica 10 normal" text={2271 z=4.36 VERY LIKELY}
+point(42.013638,-3.5263303) # point=cross width=2 font="helvetica 10 normal" text={100007 z=6.03 SECURE}
+point(42.019163,-3.5319698) # point=cross width=2 font="helvetica 10 normal" text={3895 z=0.373 SECURE}
+point(42.019193,-3.5329384) # point=cross width=2 font="helvetica 10 normal" text={100004 z=6.03 SECURE}
+point(42.0098,-3.5308134) # point=cross width=2 font="helvetica 10 normal" text={4327 z=1.01 SECURE}
+point(42.020434,-3.527088) # point=cross width=2 font="helvetica 10 normal" text={3124/3125 z=2.27 VERY LIKELY}
+point(42.017691,-3.531353) # point=cross width=2 font="helvetica 10 normal" text={400007 z=1.83 VERY LIKELY}
+point(42.011787,-3.5243384) # point=cross width=2 font="helvetica 10 normal" text={3566 z=0.656 SECURE}
+point(42.015039,-3.533325) # point=cross width=2 font="helvetica 10 normal" text={400008 z=2.0521 LIKELY}
+point(42.011741,-3.535322) # point=cross width=2 font="helvetica 10 normal" text={400009 z=2.58 SECURE}
+point(42.019502,-3.5244996) # point=cross color=yellow width=2 font="helvetica 10 normal" text={400004 z=2.16 LIKELY}
+point(42.008924,-3.5182472) # point=cross width=2 font="helvetica 10 normal" text={2099 z=2.186 SECURE}
+point(42.008774,-3.5150648) # point=cross color=yellow width=2 font="helvetica 10 normal" text={1964 z=1.71 LIKELY}
+point(42.010574,-3.5411979) # point=cross width=2 font="helvetica 10 normal" text={4633z=0.422 SECURE}
