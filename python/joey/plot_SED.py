@@ -13,7 +13,7 @@ if __name__ == '__main__':
     savepath = '/home/obsastro1/siena-astrophysics/python/joey/sed_plot.png'
 
     cat = se.se_catalog(datafile)
-    #convert flux to mag
+    
 ###########################################
 
     plt.figure()
@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     mag_err1 = (2.5/log(10))*((1/sqrt(cat.ivar1))/cat.flux1)
 
-    plt.plot(um1,mag1,'g-',label='Total')
+    #plt.plot(um1,mag1,'go',label='Total')
 
-    plt.errorbar(um1,mag1,mag_err1, fmt = 'go')
+    plt.errorbar(um1,mag1,mag_err1, fmt = 'go', label = 'Total')
 
 ##########################################
 
@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
     mag_err2 = (2.5/log(10))*((1/sqrt(cat.ivar2))/cat.flux2)
 
-    plt.plot(um2,mag2,'r-',label='Red')
+    #plt.plot(um2,mag2,'ro',label='Red')
 
-    plt.errorbar(um2,mag2,yerr= mag_err2, fmt ='ro')
+    plt.errorbar(um2,mag2,yerr= mag_err2, fmt ='ro', label= 'Red')
 
 #########################################
 
@@ -48,25 +48,30 @@ if __name__ == '__main__':
 
     mag_err3 = (2.5/log(10))*((1/sqrt(cat.ivar3))/cat.flux3)
 
-    plt.plot(um3,mag3,'b-',label='Blue')
+    #plt.plot(um3,mag3,'bo',label='Blue')
 
-    plt.errorbar(um3,mag3,yerr=mag_err3, fmt ='bo')
+    plt.errorbar(um3,mag3,yerr=mag_err3, fmt ='bo', label='Blue')
 
 ########################################
 
     bestfit_path = '/home/obsastro1/siena-astrophysics/summer2013/clash/arcphot_bestfit.txt'
     
     ca = se.se_catalog(bestfit_path)
+
     bestfit_um1 = ca.wave1*.0001
     bestfit_mag1 = ca.flux1
-    plt.plot(bestfit_um1, bestfit_mag1, 'g-')
+    #arr1 = np.delete(bestfit_um1,[::2],None)
+    plt.plot(bestfit_um1,bestfit_mag1, 'g-')
+
 
     bestfit_um2 = ca.wave2*.0001
     bestfit_mag2 = ca.flux2
     plt.plot(bestfit_um2, bestfit_mag2, 'r-')
+            
 
     bestfit_um3 = ca.wave3*.0001
     bestfit_mag3 = ca.flux3
+    
     plt.plot(bestfit_um3, bestfit_mag3, 'b-')
     
    
@@ -75,8 +80,8 @@ if __name__ == '__main__':
     ax.set_xlim(0,1.6)
     #ax.set_ylim(ax.get_ylim()[::-1])
     #legend(('Total','Red','Blue'),loc='upper left')
-    plt.legend()
-    plt.title('SED')
+    plt.legend(loc = 'upper left')
+    plt.title('Snake SED')
     plt.xlabel('observed wavelength (um)')
     plt.ylabel('Magnitude (AB)')
     plt.savefig(savepath)
