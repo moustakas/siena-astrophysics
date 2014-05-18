@@ -1,0 +1,97 @@
+#!/bin/sh
+#BSUB -q keck
+#BSUB -J mdg
+#BSUB -n 1
+#BSUB -o mdg.out
+#BSUB -e mdg.err
+#BSUB -u dnarayanan@cfa.harvard.edu
+#BSUB -N
+
+#./MakeDiskGalaxy z3/z3_brant_v3g2q1.txt > z3_brant_v3g2q1.output
+#./MakeDiskGalaxy z3/z3_brant_v4g2q1.txt > z3_brant_v4g2q1.output
+#./MakeDiskGalaxy z3/z3_brant_v6g2q1.txt > z3_brant_v6g2q1.output
+
+
+#./MakeDiskGalaxy hubble/Sb.txt > Sb.output
+#./MakeDiskGalaxy hubble/Sb_primary0.txt > Sb_primary0.output
+#./MakeDiskGalaxy hubble/Sb_no_bulge.txt > Sb_no_bulge.output
+#./MakeDiskGalaxy hubble/Sb_hispin.txt > Sb_hispin.output
+
+
+#./MakeDiskGalaxy hubble/Sb10x.txt > Sb10x.output
+#./MakeDiskGalaxy hubble/Sb10x_hispin.txt > Sb10x_hispin.output
+
+#./MakeDiskGalaxy hubble/Sb5x_1.txt > Sb5x_1.output
+
+#./MakeDiskGalaxy hubble/Sb3x_1.txt > Sb3x_1.output
+#./MakeDiskGalaxy hubble/Sb2x_1.txt > Sb2x_1.output
+
+
+# ./MakeDiskGalaxy a/a3.txt > a3.output
+# ./MakeDiskGalaxy a/a4.txt > a4.output
+# ./MakeDiskGalaxy a/a5.txt > a5.output
+# ./MakeDiskGalaxy a/a6.txt > a6.output
+
+# ./MakeDiskGalaxy vc/vc3c_bulge.txt > vc3c_bulge.output
+# ./MakeDiskGalaxy vc/vc3c_bulge1.txt > vc3c_bulge1.output
+# ./MakeDiskGalaxy vc/vc3c_bulge2.txt > vc3c_bulge2.output
+# ./MakeDiskGalaxy vc/vc3c_bulge3.txt > vc3c_bulge3.output
+# ./MakeDiskGalaxy vc/vc3c_bulge4.txt > vc3c_bulge4.output
+
+
+# ./MakeDiskGalaxy m33/m33.txt > m33.output
+
+
+# ./MakeDiskGalaxy vc/vc3v.txt > vc3v.output
+# ./MakeDiskGalaxy vc/vc2v2.txt > vc2v2.output
+# ./MakeDiskGalaxy vc/vc3x2.txt > vc3x2.output
+# ./MakeDiskGalaxy vc/vc4x3.txt > vc4x3.output
+
+#desika edits
+
+#  ./MakeDiskGalaxy vc/vc3e.txt > outputfiles/vc3e.output
+#./MakeDiskGalaxy z3/b5.txt > outputfiles/b5.output
+#./MakeDiskGalaxy z3/b4.txt > outputfiles/b4.output
+#./MakeDiskGalaxy z3/b3.txt > outputfiles/b3.output
+#./MakeDiskGalaxy z3/b6.txt > outputfiles/b6.output
+
+#./MakeDiskGalaxy z3/b3_bulge_0.1.txt > outputfiles/b3_bulge_0.1.output
+#./MakeDiskGalaxy z3/b4_bulge_0.1.txt > outputfiles/b4_bulge_0.1.output
+#./MakeDiskGalaxy z3/b5_bulge_0.1.txt > outputfiles/b5_bulge_0.1.output
+#./MakeDiskGalaxy z3/b6_bulge_0.1.txt > outputfiles/b6_bulge_0.1.output
+
+#./MakeDiskGalaxy z3/b3_bulge_0.2.txt > outputfiles/b3_bulge_0.2.output
+#./MakeDiskGalaxy z3/b4_bulge_0.2.txt > outputfiles/b4_bulge_0.2.output
+#./MakeDiskGalaxy z3/b5_bulge_0.2.txt > outputfiles/b5_bulge_0.2.output
+#./MakeDiskGalaxy z3/b6_bulge_0.2.txt > outputfiles/b6_bulge_0.2.output
+
+#./MakeDiskGalaxy z3/b5.5.txt > outputfiles/b5.5.output
+#./MakeDiskGalaxy z3/b5_q0.25.txt > outputfiles/b5_q0.25.output
+#./MakeDiskGalaxy z3/b5_q0.5.txt > outputfiles/b5_q0.5.output
+#./MakeDiskGalaxy z3/b5_q0.75.txt > outputfiles/b5_q0.75.output
+#./MakeDiskGalaxy z3/b6_q0.75.txt > outputfiles/b6_q0.75.output
+
+#./MakeDiskGalaxy z3/b4.5.txt > outputfiles/b4.5.output
+
+#./MakeDiskGalaxy z3/b5_tsfrx2.txt > outputfiles/b5_tsfrx2.output
+#./MakeDiskGalaxy z3/b5_tsfrd2.txt > outputfiles/b5_tsfrd2.output
+
+#./MakeDiskGalaxy z3/c6.txt > outputfiles/c6.output
+#./MakeDiskGalaxy z3/d6.txt > outputfiles/d6.output
+
+#./MakeDiskGalaxy z3/c5.txt > outputfiles/c5.output
+#./MakeDiskGalaxy z3/d5.txt > outputfiles/d5.output
+
+#./MakeDiskGalaxy z3/c4.txt > outputfiles/c4.output
+#./MakeDiskGalaxy z3/d4.txt > outputfiles/d4.output
+./MakeDiskGalaxy z0/d5.txt > outputfiles/d5.output
+
+#TWICE resolution runs:
+./MakeDiskGalaxy z3/b5_tr.txt > outputfiles/b5_tr.output
+./MakeDiskGalaxy z3/b6_tr.txt > outputfiles/b6_tr.output
+
+#======================================================
+#Xiaoying's stuff
+#======================================================
+
+#./MakeDiskGalaxy z0/d3.txt > outputfiles/d3.output

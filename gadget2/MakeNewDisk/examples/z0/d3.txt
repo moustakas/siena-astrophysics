@@ -1,0 +1,54 @@
+OutputDir      z0/                       % Output directory
+OutputFile     d3.dat            % Filename of generated initial conditions
+
+
+CC             11.0	  % halo concentration
+V200	       160.0	  % circular velocity v_200 (in km/sec)
+LAMBDA         0.033      % spin parameter          
+MD             0.041      % disk mass fraction      
+MB             0.0        % bulge mass fraction     
+
+MBH            0.0001    % black hole mass fraction. If zero, no black
+                          % hole is generated, otherwise one at the centre
+                          % is added.
+ 
+
+JD             0.041	  % disk spin fraction, typically chosen equal to MD
+
+GasFraction    0.4        % relative content of gas in the disk, the rest is stars
+DiskHeight     0.2        % thickness of stellar disk in units of radial scale length 
+BulgeSize      0.2        % bulge scale length in units of disk scale length 
+
+N_HALO         60000     % desired number of particles in dark halo 
+N_DISK         40000      % desired number of collisionless particles in disk 
+N_GAS          40000      % number of gas particles in disk 
+N_BULGE        0          % number of bulge particles 
+
+HI_GasMassFraction     0.0	% mass of extended, flat HI disk in terms of the total gas mass
+HI_GasDiskScaleLength  6.0	% scale length of extended gas disk in terms of scale length of the disk 
+MaxGasDiskHeight       1.0	% to prevent too big flaring of isothermal outer gas disk
+
+
+RadialDispersionFactor 1.0      % applies to stellar disk: Gives the radial
+                                % dispersion in units of the z-dispersion
+
+
+MaxSfrTimescale     4.5         % Gas consumption timescale (multi-phase model)
+FactorSN            0.1         % beta, mass fraction of massive stars (multi-phase model)
+FactorEVP           3000        % A_0, evaporation parameter (multi-phase model)
+TempSupernova       3e+08       % T_SN, effective "supernova temperature",sets feedback energy (multi-phase model)
+TempClouds          1000        % temperature of cold clouds (multi-phase model)
+
+FactorForSofterEQS  0.25        % Can be used to make the equation of state
+                                % softer. For 1.0, the multiphase model is
+				% used, while for 0.0 isothermal at 10^4 K is
+				% assumed. Intermediate values interpolate
+                                % linearly between the two pressures.
+
+				% Brants additions
+REDSHIFT            0.0         % redshift to scale galaxy properties to
+Omega_m0            0.3         % Omega_m
+Omega_L0            0.7         % Omega_L
+
+
+
