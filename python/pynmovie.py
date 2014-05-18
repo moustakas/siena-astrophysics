@@ -3,7 +3,7 @@ import sys
 import pynbody
 from optparse import OptionParser
 import pynbody.analysis.angmom as angmom
-import pynbody.plot.sph as p_sph
+import pynbody.plot as p_plt
 import pynbody as pyn
 import matplotlib.pyplot as plt
 
@@ -14,7 +14,7 @@ if __name__ == "__main__":
 	parser.add_option("-f", "--fps", action="store", dest="fps", 
 	help="Frame Rate", default=5)
 	parser.add_option("-t", "--type", action="store", dest="ptype", 
-	help="Type of particles to show (gas, dm, or star)", default="gas")
+	help="Type of particles to show (gas, dm, or stars)", default="stars")
 	parser.add_option("-o", "--outname", action="store", dest="outname", 
 	help="Filename of the video to be produced", default="pynmovie.mp4")
 	parser.add_option("-e", action="store", dest="script", 
@@ -36,11 +36,15 @@ if __name__ == "__main__":
 		else:
 			sim = pyn.load(i)
 			ptypes = {"gas":sim.gas, "dm":sim.dm, "stars":sim.stars}
-			p_sph.image(ptypes[opts.ptype], units='m_p cm**-3', cmap="jet", vmin=vmin, vmax=vmax)
+#                       xyz = sim.stars['pos']
+                        xyz = (ptypes[opts.ptype])['pos']
+                        plt.plot(xyz[:,0],xyz[:,1],'bo')
+#			p_plt.image(ptypes[opts.ptype]) #, units='m_p cm**-3', cmap="jet", vmin=vmin, vmax=vmax)
 		plt.savefig("%09d.png" % (imgcount), dpi=150)
 		imgcount += 1
 	if opts.video:
 		import envoy
+                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
 		vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
-		for i in range(imgcount):
-			envoy.run("rm %09d.png" % (i))
+#		for i in range(imgcount):
+#			envoy.run("rm %09d.png" % (i))
