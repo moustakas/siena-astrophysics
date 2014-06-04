@@ -6,6 +6,7 @@
 # blender -b -P BlenderGadgetGV.py
 
 import sys
+import glob
 import pynbody as pyn
 from optparse import OptionParser
 import bpy
@@ -17,20 +18,28 @@ if __name__ == "__main__":
                       help="The range of values to plot (in the format 'min max')")
     parser.add_option("-f", "--fps", action="store", dest="fps", 
                       help="Frame Rate", default=5)
+    parser.add_option("-d", "--directory", action="store", dest="directory", 
+                      help="Directory of snapshot files", default="output")
     parser.add_option("-t", "--type", action="store", dest="ptype", 
                       help="Type of particles to show (gas, dm, or stars)", default="stars")
     parser.add_option("-o", "--outname", action="store", dest="outname", 
                       help="Filename of the video to be produced", default="pynmovie.mp4")
     parser.add_option("-n", action="store_false", dest="video", 
                       help="Don't actually produce a video, just make pngs.", default=True)
+
     (opts, args) = parser.parse_args()
     imgcount = 0
+
+    print opts.directory
+    snapfiles = glob.glob(opts.directory+'snapshot_*')
+    nsnap = len(snapfiles)
 
     try:
         (vmin, vmax) = [float(i) for i in opts.valrange.split()]
     except AttributeError:
         (vmin, vmax) = (None, None)
-        for i in args:
+        for i in snapfiles:
+#       for i in args:
             sim = pyn.load(i)
             ptypes = {"gas": sim.gas, "dm": sim.dm, "stars": sim.stars}
             xyz_dm = sim.dm['pos']
@@ -68,8 +77,7 @@ if __name__ == "__main__":
             bpy.context.object.data.materials.append(mat)
             bpy.context.scene.world.horizon_color=(0,0,0)
 
-            bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,2
-9.0/180*3.14))
+            bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,29.0/180*3.14))
             bpy.context.object.data.clip_end = 1000
             bpy.data.objects['Camera'].select=True
 
@@ -80,8 +88,8 @@ if __name__ == "__main__":
             imgcount += 1
             if opts.video:
                 import envoy
-                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
-                vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
+                print 'ffmpeg -y -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
+                vid = envoy.run('ffmpeg -y -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
                 #		for i in range(imgcount):
                 #			envoy.run("rm %09d.png" % (i))
                 

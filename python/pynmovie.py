@@ -44,7 +44,7 @@ if __name__ == "__main__":
 		imgcount += 1
 	if opts.video:
 		import envoy
-                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
+                print 'ffmpeg -y -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
 		vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
 #		for i in range(imgcount):
 #			envoy.run("rm %09d.png" % (i))
