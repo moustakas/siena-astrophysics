@@ -1,8 +1,11 @@
 # Global git ignore file
 # See https://help.github.com/articles/ignoring-files
 
+
 # Compiled source #
 ###################
+CombineGalaxies
+MakeDiskGalaxy
 *~
 *.com
 *.class

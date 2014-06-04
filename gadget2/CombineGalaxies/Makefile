@@ -12,11 +12,12 @@ OBJS   = main.o  globvars.o \
 
 
 
-INCL   = globvars.h nrsrc/nrutil.h makefile
+INCL   = globvars.h nrsrc/nrutil.h 
 
 
+SYSTYPE="Grawp"
 #SYSTYPE="MPA"
-SYSTYPE="Mako"
+#SYSTYPE="Mako"
 #SYSTYPE="Regatta"
 #SYSTYPE="RZG_LinuxCluster"
 #SYSTYPE="RZG_LinuxCluster-gcc"
@@ -25,6 +26,11 @@ SYSTYPE="Mako"
 CC       =    cc        # sets the C-compiler (default)
 OPTIMIZE =   -O3 -Wall    # optimization and warning flags (default)
 
+
+ifeq ($(SYSTYPE),"Grawp")
+GSL_INCL =  -I/usr/local/gsl/gcc/include
+GSL_LIBS =  -L/usr/local/gsl/gcc/lib
+endif
 
 ifeq ($(SYSTYPE),"MAKO")
 GSL_INCL = 
@@ -73,5 +79,4 @@ $(OBJS): $(INCL)
 
 clean:
 	 rm -f $(OBJS) $(EXEC)
-
 
