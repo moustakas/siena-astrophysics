@@ -36,15 +36,23 @@ if __name__ == "__main__":
 		else:
 			sim = pyn.load(i)
 			ptypes = {"gas":sim.gas, "dm":sim.dm, "stars":sim.stars}
-#                       xyz = sim.stars['pos']
-                        xyz = (ptypes[opts.ptype])['pos']
-                        plt.plot(xyz[:,0],xyz[:,1],'bo')
+			plt.figure(1)
+                        xyz_dm = sim.dm['pos']
+                        xyz_stars = sim.stars['pos']
+                        xyz_gas = sim.gas['pos']
+#                       xyz = (ptypes[opts.ptype])['pos']
+                        plt.plot(xyz_stars[:,0],xyz_stars[:,1],'yo',markersize=3)
+                        plt.plot(xyz_gas[:,0],xyz_gas[:,1],'ro',markersize=2)
+#                       plt.plot(xyz_dm[:,0],xyz_dm[:,1],'bo',markersize=1)
+			plt.axis([-250,250,-250,250])
+#                       plt.plot(xyz[:,0],xyz[:,1],'bo')
 #			p_plt.image(ptypes[opts.ptype]) #, units='m_p cm**-3', cmap="jet", vmin=vmin, vmax=vmax)
 		plt.savefig("%09d.png" % (imgcount), dpi=150)
+		plt.close(1)
 		imgcount += 1
 	if opts.video:
 		import envoy
-                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
+                print 'ffmpeg -y -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
 		vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
 #		for i in range(imgcount):
 #			envoy.run("rm %09d.png" % (i))
