@@ -14,14 +14,12 @@ OBJS   = main.o  globvars.o \
 
 INCL   = globvars.h nrsrc/nrutil.h 
 
-
 SYSTYPE="Grawp"
 #SYSTYPE="MPA"
 #SYSTYPE="Mako"
 #SYSTYPE="Regatta"
 #SYSTYPE="RZG_LinuxCluster"
 #SYSTYPE="RZG_LinuxCluster-gcc"
-
 
 CC       =    cc        # sets the C-compiler (default)
 OPTIMIZE =   -O3 -Wall    # optimization and warning flags (default)
