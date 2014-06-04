@@ -3,7 +3,7 @@
 #
 # load the blender module first, then  
 # use the command:
-# blender -b -P BlenderGadgetGV.py
+# blender -b -P blendergadget2.py
 
 import sys
 import glob
@@ -11,6 +11,7 @@ import pynbody as pyn
 from optparse import OptionParser
 import bpy
 import bmesh
+import glob
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -32,6 +33,8 @@ if __name__ == "__main__":
 
     print opts.directory
     snapfiles = glob.glob(opts.directory+'snapshot_*')
+    print(sys.path)
+
     nsnap = len(snapfiles)
 
     try:
@@ -92,4 +95,3 @@ if __name__ == "__main__":
                 vid = envoy.run('ffmpeg -y -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
                 #		for i in range(imgcount):
                 #			envoy.run("rm %09d.png" % (i))
-                
