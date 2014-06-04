@@ -3,13 +3,14 @@
 #
 # load the blender module first, then  
 # use the command:
-# blender -b -P BlenderGadgetGV.py
+# blender -b -P blendergadget2.py
 
 import sys
-import pynbody as pyn
+#import pynbody as pyn
 from optparse import OptionParser
 import bpy
 import bmesh
+import glob
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -26,11 +27,18 @@ if __name__ == "__main__":
     (opts, args) = parser.parse_args()
     imgcount = 0
 
+    print(sys.path)
+
+    snapfiles = glob.glob('snapshot_*')
+    print(snapfiles)
+    nsnap = len(snapfiles)
+
     try:
         (vmin, vmax) = [float(i) for i in opts.valrange.split()]
     except AttributeError:
         (vmin, vmax) = (None, None)
-        for i in args:
+        for i in snapfiles:
+#       for i in args:
             sim = pyn.load(i)
             ptypes = {"gas": sim.gas, "dm": sim.dm, "stars": sim.stars}
             xyz_dm = sim.dm['pos']
@@ -68,8 +76,7 @@ if __name__ == "__main__":
             bpy.context.object.data.materials.append(mat)
             bpy.context.scene.world.horizon_color=(0,0,0)
 
-            bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,2
-9.0/180*3.14))
+            bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,29.0/180*3.14))
             bpy.context.object.data.clip_end = 1000
             bpy.data.objects['Camera'].select=True
 
@@ -78,10 +85,10 @@ if __name__ == "__main__":
             bpy.ops.render.render( write_still=True ) 
             
             imgcount += 1
-            if opts.video:
-                import envoy
-                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
-                vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
-                #		for i in range(imgcount):
-                #			envoy.run("rm %09d.png" % (i))
+#            if opts.video:
+#                import envoy
+#                print 'ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname)
+#                vid = envoy.run('ffmpeg  -qscale 1 -r %d -i %%09d.png %s' % (int(opts.fps), opts.outname))
+#                #		for i in range(imgcount):
+#                #			envoy.run("rm %09d.png" % (i))
                 

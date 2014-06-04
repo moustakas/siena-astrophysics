@@ -61,8 +61,7 @@ for i in range(Smin, Smax):
     bpy.context.object.data.materials.append(mat)
     bpy.context.scene.world.horizon_color=(0,0,0)
 
-    bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,2
-9.0/180*3.14))
+    bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(200,0,400), rotation=(12.0/180*3.14,24.0/180*3.14,29.0/180*3.14))
     bpy.context.object.data.clip_end = 1000
     bpy.data.objects['Camera'].select=True
     
