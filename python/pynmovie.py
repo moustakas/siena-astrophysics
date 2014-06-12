@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
 import sys
 from optparse import OptionParser
 import pynbody.analysis.angmom as angmom
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         
                 if opts.video:
                         import envoy
-                        print 'ffmpeg -qscale 1 -r %d -i %%09d.png -y %s' % (int(opts.fps), opts.outname)
-                        vid = envoy.run('ffmpeg -qscale 1 -r %d -i %%09d.png -y %s' % (int(opts.fps), opts.outname))
+                        print 'ffmpeg -r %d -i %%09d.png -y %s' % (int(opts.fps), opts.outname)
+                        vid = envoy.run('ffmpeg -r %d -i %%09d.png -y %s' % (int(opts.fps), opts.outname))
 			for i in range(imgcount):
 				envoy.run("rm %09d.png" % (i))
