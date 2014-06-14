@@ -1,0 +1,3 @@
+MAILTO=""
+
+*/5 * * * * /data/allskycam/allskycam_fiveminutes.sh
