@@ -1,0 +1,19 @@
+-code to run motion on webcam:
+
+sudo apt-get install motion
+sudo apt-get install apache2
+motion
+
+
+-runMotionTry file:
+
+54 14 * * * motion start
+01 15 * * * sudo service motion stop
+00 01 * * * find /var/www* -mtime +7 -exec rm {} \;
+@hourly motion start
+
+
+
+-code to run motion with cronjob:
+
+crontab ./runMotionTry

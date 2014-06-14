@@ -1,0 +1,4 @@
+54 14 * * * motion start
+01 15 * * * sudo service motion stop
+00 01 * * * find /var/www* -mtime +7 -exec rm {} \;
+@hourly motion start
