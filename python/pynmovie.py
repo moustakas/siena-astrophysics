@@ -18,10 +18,15 @@ if __name__ == "__main__":
                           help="Type of particles to show (gas, dm, or stars)", default="stars")
 	parser.add_option("-o", "--outname", action="store", dest="outname", 
                           help="Filename of the video to be produced", default="pynmovie.mp4")
+	parser.add_option("-b", "--bins", action="store", dest="nbins", 
+                          help="Number of bins to use for 2D histogram", default=50)
 	parser.add_option("-n", action="store_false", dest="video", 
                           help="Don't actually produce a video, just make pngs.", default=True)
 	(opts, args) = parser.parse_args()
 	imgcount = 0
+
+	bins = float(opts.nbins)
+	
 	try:
                 (vmin, vmax) = [float(i) for i in opts.valrange.split()]
         except AttributeError:
@@ -41,52 +46,56 @@ if __name__ == "__main__":
                         plt.figure(1)
                         # xy, yz, xz for the stars
                         plt.subplot(2,3,1)
-                        plt.hist2d(xyz_stars[:,0],xyz_stars[:,1],bins=50,cmap='Blues',norm=LogNorm())
+                        plt.hist2d(xyz_stars[:,0],xyz_stars[:,1],bins=bins,cmap='Blues',norm=LogNorm())
 #                       plt.plot(xyz_stars[:,0],xyz_stars[:,1],'yo',markersize=3)
                         plt.axis([-width,width,-width,width])
-                        plt.ylabel('Separation (kpc)')
+                        plt.ylabel('Distance (kpc)')
+
                         plt.subplot(2,3,2)
-                        plt.hist2d(xyz_stars[:,1],xyz_stars[:,2],bins=50,cmap='Blues',norm=LogNorm())
+                        plt.hist2d(xyz_stars[:,1],xyz_stars[:,2],bins=bins,cmap='Blues',norm=LogNorm())
 #                       plt.plot(xyz_stars[:,1],xyz_stars[:,2],'yo',markersize=3)
                         plt.axis([-width,width,-width,width])
+
                         plt.subplot(2,3,3)
-                        plt.hist2d(xyz_stars[:,0],xyz_stars[:,2],bins=50,cmap='Blues',norm=LogNorm())
+                        plt.hist2d(xyz_stars[:,0],xyz_stars[:,2],bins=bins,cmap='Blues',norm=LogNorm())
 #                       plt.plot(xyz_stars[:,0],xyz_stars[:,2],'yo',markersize=3)
                         plt.axis([-width,width,-width,width])
 
                         # xy, yz, xz for the gas
                         plt.subplot(2,3,4)
-                        plt.hist2d(xyz_gas[:,0],xyz_gas[:,1],bins=50,cmap='YlOrRd',norm=LogNorm())
+                        plt.hist2d(xyz_gas[:,0],xyz_gas[:,1],bins=bins,cmap='YlOrRd',norm=LogNorm())
 #                       pyn.plot.sph.image(sim.gas,qty='pos',width=width,cmap='YlOrRd',norm=LogNorm())
 #                       plt.plot(xyz_gas[:,0],xyz_gas[:,1],'ro',markersize=2)
                         plt.axis([-width,width,-width,width])
-                        plt.ylabel('Separation (kpc)')
-                        plt.xlabel('Separation (kpc)')
+                        plt.ylabel('Distance (kpc)')
+                        plt.xlabel('Distance (kpc)')
+
                         plt.subplot(2,3,5)
-                        plt.hist2d(xyz_gas[:,1],xyz_gas[:,2],bins=50,cmap='YlOrRd',norm=LogNorm())
+                        plt.hist2d(xyz_gas[:,1],xyz_gas[:,2],bins=bins,cmap='YlOrRd',norm=LogNorm())
 #                       plt.plot(xyz_gas[:,1],xyz_gas[:,2],'ro',markersize=2)
                         plt.axis([-width,width,-width,width])
-                        plt.xlabel('Separation (kpc)')
+                        plt.xlabel('Distance (kpc)')
+
                         plt.subplot(2,3,6)
 #                       plt.plot(xyz_gas[:,0],xyz_gas[:,2],'ro',markersize=2)
-                        plt.hist2d(xyz_gas[:,0],xyz_gas[:,2],bins=50,cmap='YlOrRd',norm=LogNorm())
+                        plt.hist2d(xyz_gas[:,0],xyz_gas[:,2],bins=bins,cmap='YlOrRd',norm=LogNorm())
                         plt.axis([-width,width,-width,width])
-                        plt.xlabel('Separation (kpc)')
+                        plt.xlabel('Distance (kpc)')
 
 #                        # xy, yz, xz for the DM
 #                        plt.subplot(3,3,7)
 #                        plt.plot(xyz_dm[:,0],xyz_dm[:,1],'bo',markersize=1)
 #                        plt.axis([-width,width,-width,width])
-#                        plt.ylabel('Separation (kpc)')
-#                        plt.xlabel('Separation (kpc)')
+#                        plt.ylabel('Distance (kpc)')
+#                        plt.xlabel('Distance (kpc)')
 #                        plt.subplot(3,3,8)
 #                        plt.plot(xyz_dm[:,1],xyz_dm[:,2],'bo',markersize=1)
 #                        plt.axis([-width,width,-width,width])
-#                        plt.xlabel('Separation (kpc)')
+#                        plt.xlabel('Distance (kpc)')
 #                        plt.subplot(3,3,9)
 #                        plt.plot(xyz_dm[:,0],xyz_dm[:,2],'bo',markersize=1)
 #                        plt.axis([-width,width,-width,width])
-#                        plt.xlabel('Separation (kpc)')
+#                        plt.xlabel('Distance (kpc)')
 
 # close the figure
                         plt.savefig("%09d.png" % (imgcount), dpi=150)
