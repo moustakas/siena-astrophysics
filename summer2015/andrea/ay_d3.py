@@ -13,3 +13,4 @@ gnb=GaussianNB()
 gnb.fit(X,y)
 y_pred=gnb.predict(X)
 
+
