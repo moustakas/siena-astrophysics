@@ -62,7 +62,7 @@ ax.set_ylabel('$g-r$')
 print('Writing test_sdss.png')
 plt.savefig('/home/desi2/test_sdss.png')
 
-#!display test_sdss.png &
+
 
 
 
