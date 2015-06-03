@@ -39,9 +39,18 @@ if __name__ == "__main__":
                         xyz_stars = sim.stars['pos']
                         xyz_gas = sim.gas['pos']
 
+# get the weighted center
+			xyz_stars[:,0] = xyz_stars[:,0]-np.average(xyz_stars[:,0],weights=sim.stars['mass'])
+			xyz_stars[:,1] = xyz_stars[:,1]-np.average(xyz_stars[:,1],weights=sim.stars['mass'])
+			xyz_stars[:,2] = xyz_stars[:,2]-np.average(xyz_stars[:,2],weights=sim.stars['mass'])
+			
+			xyz_gas[:,0] = xyz_gas[:,0]-np.average(xyz_gas[:,0])
+			xyz_gas[:,1] = xyz_gas[:,1]-np.average(xyz_gas[:,1])
+			xyz_gas[:,2] = xyz_gas[:,2]-np.average(xyz_gas[:,2])
+			
 # figure out the range
 			if imgcount==0:
-				width = np.max(np.abs(xyz_stars))*1.1
+				width = np.max(np.abs(xyz_stars))*1.2
                         # build the multi-panel plot                
                         plt.figure(1)
                         # xy, yz, xz for the stars
