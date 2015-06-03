@@ -9,7 +9,7 @@
 (load-theme 'zenburn t)
 
 ; Hide the useless and hideous toolbar
-(tool-bar-mode -1)
+;; (tool-bar-mode -1)
 
 ; Set the default EMACS window size
 (add-to-list 'default-frame-alist '(height . 50))
