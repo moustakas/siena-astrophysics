@@ -8,6 +8,7 @@ import random
 import math
 import scipy
 from scipy import spatial
+from astropy.cosmology import FlatLambdaCDM
 infilename1 = sys.argv[1]
 hdulist1=fits.open(infilename1)
 hdulist1.info()
@@ -26,13 +27,61 @@ Ns3new=data2['PLUG_DEC'][Ns3]
 Ns4=data2['PLUG_DEC']<80
 Ns4new=data2['PLUG_DEC'][Ns4]
 
-
 tot=Ns1*Ns2*Ns3*Ns4
 data1=data2[tot]
 
+###### Random Sample #######
+
+print 'Randomizing A Sample'
+a=np.arange(0,len(data1))
+np.random.shuffle(a)
+sample=data1[a[0:200]]
+
+###### Distances (Para and Perp) ########
+
+print 'Conversions'
+# Comoving Distances
+cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+comdist=cosmo.comoving_distance(sample['Z'])
+
+# Converting RA and Dec to Radians
+
+RArad=(sample['PLUG_RA'])*((math.pi)/180)
+Decrad=((sample['PLUG_DEC'])*((math.pi)/180))
+
+# Coverting to Cartesian Coordinates
+
+x=comdist*np.sin(Decrad)*np.cos(RArad)
+y=comdist*np.sin(Decrad)*np.sin(RArad)
+z=comdist*np.cos(Decrad)
+coords=np.column_stack((x,y,z))
+
+# Vectors! (Note that stepcoord is initially the value behind coords[n])  
+
+R_LOS=[]
+print 'Line of Sight'
+for i in range(0,len(sample)):
+    print i
+    stepcoord=coords[i]
+    for n in range(i+1,len(sample)):
+        loscalc=[(stepcoord+coords[n])/2]
+        R_LOS.append(loscalc[0])
+R_LOS=np.array(R_LOS)
+
+dR=[]
+print 'dR'
+for i in range(0,len(sample)):
+    print i
+    stepcoord1=coords[i]
+    for n in range(i+1,len(sample)):
+        dRcalc=[(coords[n]-stepcoord1)]
+        dR.append(dRcalc[0])
+dR=np.array(dR)
+    
 
 
 
+'''
 ###### Distances for Random Galaxies ########
 print 'Conversions'
 a=np.arange(0,len(data1))
@@ -52,7 +101,7 @@ Decrad=((sample['PLUG_DEC'])*((math.pi)/180))
 # Converting to Cartesian Coordinates
 
 x=rho*np.sin(Decrad)*np.cos(RArad)
-y=rho*np.sin(Decrad)*np.cos(RArad)
+y=rho*np.sin(Decrad)*np.sin(RArad)
 z=rho*np.cos(Decrad)
 coords=np.column_stack((x,y,z))
 
@@ -78,7 +127,7 @@ diff=np.diff(dist)/2
 mid=m+diff
 vals=np.column_stack((mid,frequ))
 np.savetxt('DDtest.txt',vals)
-'''
+
 # Scatter
 
 import matplotlib.pylab as plt
