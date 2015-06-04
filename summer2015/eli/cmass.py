@@ -77,7 +77,28 @@ for i in range(0,len(sample)):
         dRcalc=[(coords[n]-stepcoord1)]
         dR.append(dRcalc[0])
 dR=np.array(dR)
-    
+
+R_LOSmag=[]
+print 'Line of sight magnitude'
+for i in range(0,len(R_LOS)):
+    print i
+    losstep=R_LOS[i]
+    losmagcalc=[np.sqrt((losstep[0]**2)+(losstep[1]**2)+(losstep[2]**2))]
+    R_LOSmag.append(losmagcalc[0])
+R_LOSmag=np.array(R_LOSmag)
+
+rpartop=[]
+print 'Numerator of Rpar'
+for i in range(0,len(R_LOS)):
+    print i
+    lstep=R_LOS[i]
+    dstep=dR[i]
+    rcalc=[(lstep[0]*dstep[0])+(lstep[1]*dstep[1])+(lstep[2]*dstep[2])]
+    rpartop.append(rcalc[0])
+rpartop=np.array(rpartop)
+
+Rpar=rpartop/R_LOSmag
+#Rperp=dR-Rpar   #What?
 
 
 
