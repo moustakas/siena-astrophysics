@@ -8,6 +8,7 @@ from sklearn import svm
 from astroML.utils import completeness_contamination
 
 def plot_boundary(clf,xlim,ylim,ax,useproba=False):
+    sns.set(palette='Reds',style='white')
     hh = 0.03  # step size in the mesh
     xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
                          np.arange(ylim[0],ylim[1],hh))
@@ -18,7 +19,7 @@ def plot_boundary(clf,xlim,ylim,ax,useproba=False):
         zz = clf.predict(np.c_[xx.ravel(),yy.ravel()])
     zz = zz.reshape(xx.shape)
     #ax.pcolormesh(xx,yy,zz,cmap=plt.cm.Paired)
-    ax.contour(xx,yy,zz,[0.5],linewidths=5,)
+    ax.contour(xx,yy,zz,[0.5],linewidths=5)
 
 def naive_bayes(colors,labels):
     from sklearn.naive_bayes import GaussianNB
@@ -111,8 +112,11 @@ def main():
     svm_clf, svm_compl, svm_contam = kernel_svm(ugr,objtype)
     print('Completeness = {}, contamination = {}'.format(svm_compl,svm_contam))
 
-
     # Make the plot!
+
+    sns.set(palette='Reds',style='ticks')
+    
+    
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
     plt.xlim(grlim)
     plt.ylim(uglim)
@@ -121,7 +125,7 @@ def main():
     ax4.set_xlabel('g-r')
     ax3.set_ylabel('u-g')
     ax1.set_ylabel('u-g')
-
+   
     # Gaussian NB
     ax1.scatter(ugr[:,0],ugr[:,1],c=objtype)
     plot_boundary(gnb_clf,grlim,uglim,ax1)
@@ -137,6 +141,30 @@ def main():
     #Kernel SVM
     ax4.scatter(ugr[:,0],ugr[:,1],c=objtype)
     plot_boundary(svm_clf,grlim,uglim,ax4)
+
+    #Plotting the Completeness and the contamination
+    classifier = [0,1,2,3]
+    compl = [gnb_compl,gmm_compl,knc_compl,svm_compl]
+    contam = [gnb_contam,gmm_contam,knc_contam,svm_contam]
+    markers = ['x','o','v','d']
+
+    fig, ax = plt.subplots(1,1)
+    ax.plot(compl,'bo',label='Completeness')
+    ax.set_xlabel('classifier')
+    ax.set_ylabel(r'Completeness')
+    ax.set_xlim(-0.25,3.25)
+    ax.set_ylim(0,1)
+    ax.legend(loc='upper left',frameon=True)
+    myxticks = (['Niave Bayes Gaussian','Gaussian Mixed','K-Neighbors','Kernel SVM'])
+    plt.xticks(classifier,myxticks,rotation=45)
+    ax2 = ax.twinx()
+    ax2.plot(contam,'rd',label='Contamination')
+    ax2.set_ylabel(r'Contamination')
+    ax2.set_xlim(-0.25,3.25)
+    ax2.set_ylim(0,1)
+    ax2.margins(0.2)
+    ax2.legend(frameon=True)
+
 
     plt.savefig(os.getenv('HOME')+'/classifiers/starqso_classifiers.png')
     plt.show()
