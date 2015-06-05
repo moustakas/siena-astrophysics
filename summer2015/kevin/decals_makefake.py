@@ -12,15 +12,20 @@ def decals_makefake():
 
     #Set parameter ranges.
     nfake = 5
-    bulgemin = 0.8
-    bulgemax = 5.0
-    diskmin = 0.1
-    diskmax = 1.0
-    bulge_frac = 0.3
-    #phimin = 0.0
-    #phimax = 180.0
-    #axismin = 0.2
-    #axismax = 1.0
+    min_disk_r50 = 0.5
+    max_disk_r50 = 3.0
+    min_bulge_r50 = 0.1
+    max_bulge_r50 = 1.0
+    nbulgemin = 3.0
+    nbulgemax = 5.0
+    ndiskmin = 0.8
+    ndiskmax = 2.0
+    min_bulge_frac = 0.0
+    max_bulge_frac = 1.0
+    phimin = 0.0
+    phimax = 180.0
+    axismin = 0.2
+    axismax = 1.0
     rmagmin = 16.0
     rmagmax = 18.0
     grmin = -0.3
@@ -58,10 +63,13 @@ def decals_makefake():
         flux = np.vstack([gflux,rflux,zflux])
         
         # Randomly generate parameters.
-        bulge = np.random.uniform(bulgemin,bulgemax,nfake)
-        disk = np.random.uniform(diskmin,diskmax,nfake)
-        #phi = np.random.uniform(phimin,phimax,nfake)
-        #axisratio = np.random.uniform(axismin,axismax,nfake)
+        disk_r50 = np.random.uniform(min_disk_r50,max_disk_r50,nfake)
+        bulge_r50 = np.random.uniform(min_bulge_r50,max_bulge_r50,nfake)
+        nbulge = np.random.uniform(nbulgemin,nbulgemax,nfake)
+        ndisk = np.random.uniform(ndiskmin,ndiskmax,nfake)
+        bulge_frac = np.random.uniform(min_bulge_frac,max_bulge_frac,nfake)
+        phi = np.random.uniform(phimin,phimax,nfake)
+        axisratio = np.random.uniform(axismin,axismax,nfake)
 
         # Create a fits table containing the arrays of the randomly generated parameters.
         tbhdu = fits.BinTableHDU.from_columns([
@@ -70,10 +78,13 @@ def decals_makefake():
             fits.Column(name='rmag',format='f4',array=rmag),
             fits.Column(name='grmag',format='f4',array=grmag),
             fits.Column(name='rzmag',format='f4',array=rzmag),
-            fits.Column(name='bulge',format='f4',array=bulge),
-            fits.Column(name='disk',format='f4',array=disk),
-            #fits.Column(name='phi',format='f4',array=phi),
-            #fits.Column(name='axisratio',format='f4',array=axisratio)])
+            fits.Column(name='nbulge',format='f4',array=nbulge),
+            fits.Column(name='ndisk',format='f4',array=ndisk),
+            fits.Column(name='disk_r50',format='f4',array=disk_r50),
+            fits.Column(name='bulge_r50',format='f4',array=bulge_r50),
+            fits.Column(name='bulge_frac',format='f4',array=bulge_frac),
+            fits.Column(name='phi',format='f4',array=phi),
+            fits.Column(name='axisratio',format='f4',array=axisratio)])
         tbhdu.writeto(root_dir+'decals_fake_priors.fits',clobber=True)
 
         # Loop, which reads in an already existing fits image.
@@ -92,16 +103,16 @@ def decals_makefake():
                 pos = wcs.posToImage(galsim.CelestialCoord(
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
             
-                # Need to deal with PSF.
+                # Need to deal with PSF.  
                 #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
 
                 local = wcs.local(pos)
 
                 # Creates the galaxies.
-                bulge = galsim.Sersic(n=bulge[iobj],half_light_radius=disk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
-                disk = galsim.Sersic(disk,disk)
-                stamp = bulge_frac * bulge + (1-bulge_frac) * disk
-                #stamp = stamp.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
+                bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
+                disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
+                stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
+                stamp = stamp.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
                 #im = galsim.Convolve([stamp,psf])
                 stamp = stamp.drawImage()
                 stamp.setCenter(int(pos.x),int(pos.y))
