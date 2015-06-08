@@ -36,7 +36,7 @@ data1=data2[tot]
 print 'Randomizing A Sample'
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-sample=data1[a[0:200]]
+sample=data1[a[0:5000]]
 
 ###### Distances (Para and Perp) ########
 
@@ -107,9 +107,28 @@ for i,r1 in enumerate(coords):
         perps += R_perp.tolist()
 
         #print R_para,R_perp
-
+        print i
 print paras[0:10]
 print perps[0:10]
 print len(paras)
 print len(perps)
 
+################################################################################
+print 'Histogram'
+import matplotlib.pylab as plt
+hist=plt.hist2d(perps,paras,bins=100,range=((0,3000),(-1000,1000)))
+#plt.xlabel('Galactic Distances (Mpc)')
+#plt.ylabel('Frequency')
+#plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')
+plt.show()
+frequ=hist[0]
+distperp=hist[1]
+distpar=hist[2]
+mperp=distperp[0:-1]
+mpar=distpar[0:-1]
+diffperp=np.diff(distperp)/2
+diffpar=np.diff(distpar)/2
+midperp=mperp+diffperp
+midpar=mpar+diffpar
+vals=np.column_stack((midperp,midpar,frequ))
+np.savetxt('DDtest2d.txt',vals)
