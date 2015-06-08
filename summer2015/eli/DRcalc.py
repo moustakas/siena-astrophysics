@@ -43,13 +43,13 @@ totrand=r[tot]
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-samplea=data1[a[0:5000]]
+samplea=data1[a[0:7000]]
 
 
 # Randomizing a sample of Mock Data
 b=np.arange(0,len(totrand))
 np.random.shuffle(b)
-sampleb=totrand[b[0:10000]]
+sampleb=totrand[b[0:12000]]
 
 
 ##### Finding Values for Spherical Coordinates ####
@@ -171,7 +171,7 @@ print len(perps)
 
 print 'Histogram'
 import matplotlib.pylab as plt
-hist=plt.hist2d(perps,paras,bins=100,range=((0,3000),(-1000,1000)))
+hist=plt.hist2d(perps,paras,bins=200,range=((0,1500),(-600,600)))
 #plt.xlabel('Galactic Distances (Mpc)')
 #plt.ylabel('Frequency')
 #plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')
@@ -186,5 +186,5 @@ diffpar=np.diff(distpar)/2
 midperp=mperp+diffperp
 midpar=mpar+diffpar
 vals=np.column_stack((midperp,midpar,frequ))
-np.savetxt('DRtest2d.txt',vals)
+np.savetxt('DRtest2d.txt',frequ)
 

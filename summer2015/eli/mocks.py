@@ -53,7 +53,7 @@ totrand=r[tot]
 
 a=np.arange(0,len(totrand))
 np.random.shuffle(a)
-sample=totrand[a[0:10000]]
+sample=totrand[a[0:12000]]
 
 ###### Distances (Para and Perp) ########
 
@@ -153,7 +153,7 @@ print len(perps)
 ################################################################################
 print 'Histogram'
 import matplotlib.pylab as plt
-hist=plt.hist2d(perps,paras,bins=100,range=((0,3000),(-1000,1000)))
+hist=plt.hist2d(perps,paras,bins=200,range=((0,1500),(-600,600)))
 #plt.xlabel('Galactic Distances (Mpc)')
 #plt.ylabel('Frequency')
 #plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')
@@ -168,5 +168,5 @@ diffpar=np.diff(distpar)/2
 midperp=mperp+diffperp
 midpar=mpar+diffpar
 vals=np.column_stack((midperp,midpar,frequ))
-np.savetxt('RRtest2d.txt',vals)
+np.savetxt('RRtest2d.txt',frequ)
 
