@@ -2,47 +2,82 @@ import numpy as np
 from operator import add
 import matplotlib.pylab as plt
 
-DDvals=np.loadtxt('DDtest.txt',dtype='float')
-DRvals=np.loadtxt('DRtest.txt',dtype='float')
-RRvals=np.loadtxt('RRtest.txt',dtype='float')
+DD=np.loadtxt('DDtest2d.txt',dtype='float')
+DR=np.loadtxt('DRtest2d.txt',dtype='float')
+RR=np.loadtxt('RRtest2d.txt',dtype='float')
 
-#DR[:,1]*=2
-DDvals=DDvals.transpose()
-DRvals=DRvals.transpose()
-RRvals=RRvals.transpose()
 
-print DDvals
+#DDvals=DDvals.transpose()
+#DRvals=DRvals.transpose()
+#RRvals=RRvals.transpose()
+
+#print DDvals
 #exit()
 
-x = DDvals[0]
-DD=DDvals[1]
-DR=DRvals[1]
-RR=RRvals[1]
+#per = DDvals[0]
+#par = DDvals[1]
+#DD=DDvals[2]
+#DR=DRvals[2]
+#RR=RRvals[2]
 
-print sum(DD)
-print sum(DR)
-print sum(RR)
-ndata=20000
-nrand=20000
-DD /=(ndata**2-ndata)/2
-DR /=(nrand*ndata)
-RR /=(nrand**2-nrand)/2
+#print sum(DD)
+#print sum(DR)
+#print sum(RR)
 
+DD = DD.transpose()
+RR = RR.transpose()
+DR = DR.transpose()
 
-#RRdis[-10:-1]=0.00001
-#RRdis[-1]=0.00001
-#top1=np.subtract(DDdis,DRdis)
-#top2=np.add(top1,RRdis)
-#vals=np.array((DD[0]))
-#theta=np.divide(top2,RRdis)
+ndata=7000
+nrand=12000
 
+#ndata=2
+#nrand=2
+
+DD /=(ndata**2-ndata)/2.
+DR /=(nrand*ndata)/1.
+RR /=(nrand**2-nrand)/2.
 theta = (DD - 2*DR + RR)/RR
-plt.loglog(x,theta,'o')
-plt.ylim(0,1)
-plt.xlim(0,30)
-plt.xlabel('Distance (Mpc)')
-plt.ylabel('Theta')
-plt.title('DR10 Correlation Estimator with 20000 Galaxies')
+plt.figure(figsize=(10,10))
+
+
+#extent=
+#plot=plt.imshow(theta)
+extent=[0,1500,-600,600]
+
+plt.subplot(2,2,1)
+a=plt.imshow(DD,extent=extent)
+plt.xlabel('Rperp (Mpc)')
+plt.ylabel('Rpara (Mpc)')
+plt.title('DD')
+
+plt.subplot(2,2,2)
+a=plt.imshow(RR,extent=extent)
+plt.xlabel('Rperp (Mpc)')
+plt.ylabel('Rpara (Mpc)')
+plt.title('RR')
+
+plt.subplot(2,2,3)
+a=plt.imshow(DR,extent=extent)
+plt.xlabel('Rperp (Mpc)')
+plt.ylabel('Rpara (Mpc)')
+plt.title('DR')
+
+plt.subplot(2,2,4)
+a=plt.imshow(theta,extent=extent)
+plt.colorbar(a)
+plt.xlabel('Rperp (Mpc)')
+plt.ylabel('Rpara (Mpc)')
+plt.title('Theta')
+
+#plt.ylim(0,1)
+#plt.xlim(0,30)
+#plt.xlabel('Distance (Mpc)')
+#plt.ylabel('Theta')
+#plt.title('DR10 Correlation Estimator with 20000 Galaxies')
+
+plt.tight_layout()
+
 plt.show()
 
 

@@ -6,6 +6,7 @@ import random
 import math
 import scipy
 import scipy.spatial
+from astropy.cosmology import FlatLambdaCDM
 
 # Opening FITS file (SDSS Data) 'a'
 print 'Reading in FITS Data'
@@ -42,17 +43,17 @@ totrand=r[tot]
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-samplea=data1[a[0:5000]]
+samplea=data1[a[0:7000]]
 
 
 # Randomizing a sample of Mock Data
 b=np.arange(0,len(totrand))
 np.random.shuffle(b)
-sampleb=totrand[b[0:20000]]
+sampleb=totrand[b[0:12000]]
 
 
 ##### Finding Values for Spherical Coordinates ####
-
+'''
 # SDSS
 H=70
 c=2.99792458*10**5
@@ -64,6 +65,16 @@ rhoa=Vra/H  #Distance from Earth to Galaxy in Mpc
 Zshiftb=sampleb[:,2] #Redshift Values
 Vrb=Zshiftb*c #Recession Velocity of Galaxy in km/s
 rhob=Vrb/H  #Distance from Earth to Galaxy in Mpc
+'''
+# Comoving Distances
+cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+comdista=cosmo.comoving_distance(samplea['Z'])
+
+
+comdistb=cosmo.comoving_distance(sampleb[:,2])
+
+
+
 
 ##### Converting RA and Dec to Radians #####
 
@@ -79,19 +90,19 @@ Decradb=((sampleb[:,1])*((math.pi)/180))
 ##### Converting to Cartesian Coordinates #####
 
 # SDSS
-xa=rhoa*np.sin(Decrada)*np.cos(RArada)
-ya=rhoa*np.sin(Decrada)*np.cos(RArada)
-za=rhoa*np.cos(Decrada)
+xa=comdista*np.sin(Decrada)*np.cos(RArada)
+ya=comdista*np.sin(Decrada)*np.sin(RArada)
+za=comdista*np.cos(Decrada)
 coordsa=np.column_stack((xa,ya,za))
-print coordsa
+
 
 # Mock
-xb=rhob*np.sin(Decradb)*np.cos(RAradb)
-yb=rhob*np.sin(Decradb)*np.cos(RAradb)
-zb=rhob*np.cos(Decradb)
+xb=comdistb*np.sin(Decradb)*np.cos(RAradb)
+yb=comdistb*np.sin(Decradb)*np.sin(RAradb)
+zb=comdistb*np.cos(Decradb)
 coordsb=np.column_stack((xb,yb,zb))
 
-
+'''
 ##### Distances #####
 print 'Distances'
 val=scipy.spatial.distance.cdist(coordsa,coordsb)
@@ -100,20 +111,80 @@ vflat = val.flatten()
 #d=list(set(vflat)) # Distance Data
 #print "Done!"
 d = vflat
+'''
+print 'Finished with conversions! Now to calculate distances...'
 
-##### Histogram #####
+# Vectors! (Note that stepcoord is initially the value behind coords[n])  
+
+################################################################################
+# Matt's attempt at this.
+################################################################################
+# Loop over the coordinates and call them r1.
+# Then use the np.array functionality for r2 and for 
+# calculating all the distances to r1.
+
+################################################################################
+# Helper function to calculate the magntiude of a vector.
+def mag(vec):
+
+    m = None
+    # First check if it is an 3xn array of coordinates....
+    if type(vec[0])==np.ndarray or type(vec[0])==astropy.units.quantity.Quantity:
+        m = np.sqrt(vec[:,0]**2 + vec[:,1]**2 + vec[:,2]**2)
+    else:
+        # Or if it is just the 3 coordinates.
+        m = np.sqrt(vec[0]**2 + vec[1]**2 + vec[2]**2)
+
+    return m
+################################################################################
+
+ngals = len(coordsa)
+
+paras = []
+perps = []
+
+for i,r1 in enumerate(coordsa):
+    # First compute R_LOS and dR
+    R_LOS = (r1 + coordsb)/2.
+    dR = coordsb - r1
+
+    R_LOS_mag = mag(R_LOS)
+
+    # Dot product
+    R_para = (dR[:,0]*R_LOS[:,0] + dR[:,1]*R_LOS[:,1] + dR[:,2]*R_LOS[:,2])/R_LOS_mag
+
+    dR_mag = mag(dR)
+    # Make use of the Pythagorean theorem
+    R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
+
+    paras += R_para.tolist()
+    perps += R_perp.tolist()
+
+    #print R_para,R_perp
+    print i
+print paras[0:10]
+print perps[0:10]
+print len(paras)
+print len(perps)
+
+###############################################################################
+
 print 'Histogram'
 import matplotlib.pylab as plt
-hist=plt.hist(d,bins=100,range=(0,20))
-plt.xlabel('Galactic Distances (Mpc)')
-plt.ylabel('Frequency')
-plt.title('DR with 5000 Galaxies')
+hist=plt.hist2d(perps,paras,bins=200,range=((0,1500),(-600,600)))
+#plt.xlabel('Galactic Distances (Mpc)')
+#plt.ylabel('Frequency')
+#plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')
 plt.show()
 frequ=hist[0]
-dist=hist[1]
-m=dist[0:-1]
-diff=np.diff(dist)/2
-mid=m+diff
-vals=np.column_stack((mid,frequ))
-np.savetxt('DRtest.txt',vals)
+distperp=hist[1]
+distpar=hist[2]
+mperp=distperp[0:-1]
+mpar=distpar[0:-1]
+diffperp=np.diff(distperp)/2
+diffpar=np.diff(distpar)/2
+midperp=mperp+diffperp
+midpar=mpar+diffpar
+vals=np.column_stack((midperp,midpar,frequ))
+np.savetxt('DRtest2d.txt',frequ)
 
