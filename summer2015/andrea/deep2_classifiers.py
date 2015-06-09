@@ -2,13 +2,13 @@
 
 import os
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import svm
 from astroML.utils import completeness_contamination
 
 def plot_boundary(clf,xlim,ylim,ax,useproba=False):
-    sns.set(palette='Reds',style='white')
+   # sns.set(palette='Reds',style='white')
     hh = 0.03  # step size in the mesh
     xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
                          np.arange(ylim[0],ylim[1],hh))
@@ -19,7 +19,7 @@ def plot_boundary(clf,xlim,ylim,ax,useproba=False):
         zz = clf.predict(np.c_[xx.ravel(),yy.ravel()])
     zz = zz.reshape(xx.shape)
     #ax.pcolormesh(xx,yy,zz,cmap=plt.cm.Paired)
-    ax.contour(xx,yy,zz,[0.5],linewidths=5)
+    ax.contour(xx,yy,zz,[0.5],colors = 'y',linewidths=2)
 
 def naive_bayes(colors,labels):
     from sklearn.naive_bayes import GaussianNB
@@ -118,7 +118,7 @@ def main():
 
     # Make the plot!
 
-    sns.set(palette='Reds',style='ticks')
+   # sns.set(palette='Reds',style='ticks')
     
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
