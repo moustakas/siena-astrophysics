@@ -3,9 +3,12 @@
 import galsim
 import numpy as np
 import os
+import shutil
 import math
 from astropy.io import fits
 from projects.desi.common import *
+from tractor import psfex
+from tractor.basics import GaussianMixtureEllipsePSF
 
 def decals_makefake():
 
@@ -33,11 +36,14 @@ def decals_makefake():
     grmax = 0.5
     rzmin = 0.0
     rzmax = 1.5
-        
+
+    imw = 2046
+    imh = 4094
+    
     # Set directories.
     decals_dir = os.getenv('DECALS_DIR')
-    out_dir = os.getenv('HOME')+'/decals-fake/'
-    root_dir = '/home/desi3/'
+    fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
+
     brickinfo = fits.getdata(decals_dir+'/decals-bricks.fits',1)
     ccdinfo = fits.getdata(decals_dir+'/decals-ccds.fits',1)
     
@@ -45,6 +51,9 @@ def decals_makefake():
     mybricks = ['2428p117']
     #mybricks = ['2426p197','2428p117']
     band = ['g','r','z']
+
+    # initialize some classes we'll need
+    decals = Decals()
     
     #  Loop randomly generating priors.
     for thisbrick in mybricks:
@@ -61,7 +70,7 @@ def decals_makefake():
         # Calculate the g, r, and z band fluxes and stack them in an array.
         gflux = 10**(-0.4*((rmag+grmag)-22.5))
         rflux = 10**(-0.4*(rmag-22.5))
-        zflux = 10**(-0.4*((rmag-rzmag)-22.5)
+        zflux = 10**(-0.4*((rmag-rzmag)-22.5))
         flux = np.vstack([gflux,rflux,zflux])
         
         # Randomly generate parameters.
@@ -87,60 +96,71 @@ def decals_makefake():
             fits.Column(name='bulge_frac',format='f4',array=bulge_frac),
             fits.Column(name='phi',format='f4',array=phi),
             fits.Column(name='axisratio',format='f4',array=axisratio)])
-        tbhdu.writeto(root_dir+'decals_fake_priors.fits',clobber=True)
+        tbhdu.writeto(fake_decals_dir+'decals_fake_priors.fits',clobber=True)
 
         # Get all the CCDs that touch this brick
+        targetwcs = wcs_for_brick(decals.get_brick_by_name(thisbrick))
+        allccds = decals.ccds_touching_wcs(targetwcs)
 
-        decals = Decals()
-        brick = decals.get_brick_by_name(brickname)
-        targetwcs = wcs_for_brick(brick)
-        C = decals.ccds_touching_wcs(targetwcs)
+        # Put all ccds in the proper directory; if the directory does not exist, create it.
+        for cpimage in list(set(allccds.cpimage)):
+            outcpdir = os.path.join(fake_decals_dir,'images','decam',cpimage.split('/')[1])
+            if not os.path.isdir(outcpdir):
+                os.makedirs(outcpdir)
+            outfile = os.path.join(outcpdir,cpimage.split('/')[2]).strip()
+            print('Copying image {}'.format(outfile))
+            shutil.copyfile(os.path.join(decals_dir,'images',cpimage).strip(),outfile)
 
-        for c in C:
-            print c.filter, c.expnum, c.ra, c.calname, c.cpimage
-        # Make the necessary directories, a catalog of fake galaxies, and copy over the images which will be rewritten
+            outfile = os.path.join(outcpdir,cpimage.split('/')[2]).replace('ooi','oow').strip()
+            print('Copying weight map {}'.format(outfile))
+            shutil.copyfile(os.path.join(decals_dir,'images',
+                                         cpimage).strip().replace('ooi','oow'),outfile)
+                                         
+            outfile = os.path.join(outcpdir,cpimage.split('/')[2]).replace('ooi','ood').strip()
+            print('Copying bad pixel mask {}'.format(outfile))
+            shutil.copyfile(os.path.join(decals_dir,'images',
+                                         cpimage).strip().replace('ooi','ood'),outfile)
+                
 
-#        cpdir = file_dirname(cpimage) # Create name 
-#        cpdir = cpdir[uniq(cpdir,sort(cpdir))] # Ensure uniuqeness?
-#        for nn = 0, n_elements(cpdir)-1 do file_mkdir, fakedir+cpdir[nn] # Run a loop(indexing at 0), making a directory for each image
-#            mwrfits, fake, fakedir+'fake-elgs.fits', /create # Create each image and place it in the proper directory
-#            write_ds9_regionfile, fake.ra, fake.dec, filename=fakedir+'fake-elgs.reg'
-#          
-#            ncpimage = n_elements(cpimage)
-#            for jj = 0, ncpimage-1 do begin
-#                thiscpimage = repstr(cpimage[jj],'.fz','')
-#                thiscpimage_ivar = repstr(thiscpimage,'ooi','oow') ; inverse variance map
-#                
-#                splog, 'Copying '+thiscpimage
-#                file_copy, topdir+'cats/'+thiscpimage, fakedir+thiscpimage, /overwrite
-#                file_copy, topdir+'cats/'+thiscpimage_ivar, fakedir+thiscpimage_ivar, /overwrite
-#             
-#                these = where(cpimage[jj] eq allcpimage,nccd)
-#                for kk = 0, nccd-1 do begin
-#                    splog, 'Processing '+thiscpimage+', CCD'+strtrim(ccdinfo[these[kk]].cpimage_hdu,2)
-#                
-#                    calname = strtrim(ccdinfo[these[kk]].calname,2)
-#                    filt = strtrim(ccdinfo[these[kk]].filter,2)
-#                    filttag = tag_indx(fake[0],filt)
+        for ccd in allccds:
+            print(ccd.ra,ccd.dec,ccd.filter,ccd.calname,ccd.cpimage)
+            calname = ccd.calname.strip()
+            filt = ccd.filter.strip()
 
-        # Loop, which reads in an already existing fits image.
-        for iband, thisband in enumerate(band):
-            print('Working on band {}'.format(thisband))
-            imfile = decals_dir+'/coadd/'+thisbrick[0:3]+'/'+thisbrick+'/decals-'+thisbrick+'-image-'+thisband+'.fits'
+            # document me
+            psffile = os.path.join(decals_dir,'calib','decam','psfex',calname+'.fits')
+            wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
+
+            #psf = psfex.PsfEx.fromFits(psffile)
+            psfex = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
+                                psfClass=GaussianMixtureEllipsePSF,K=2)
+            #wcs = 
 
             # Read the pre-existing decals image.
+            imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Reading {}'.format(imfile))
-            im = galsim.fits.read(imfile)
-            wcs = im.wcs
-            
+            im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
+            wcs = im.wcs # hack!!
+
+            # Read inverse variance array
+            inverse_variance = os.path.join(outcpdir,cpimage.split('/')[2]).replace('ooi','oow').strip()
+            print('Reading inverse variance array')
+            array = galsim.fits.read(inverse_variance,hdu=ccd.ccdnum)
+
             # Loop, which assigns an index (soon to be home to a galaxy) to a randomly selected position.
             for iobj in range(nfake):
                 print(iobj)
                 pos = wcs.posToImage(galsim.CelestialCoord(
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
+                xpos = int(pos.x)
+                ypos = int(pos.y)
+                if xpos> & xpos<
             
                 # Need to deal with PSF.  
                 #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
+                psfim = psfex.instantiateAt(xpos,ypos)[5:-5,5:-5]
+                psf = galsim.Image(psfim)
+                psf = galsim.InterpolatedImage(mm,scale=1.0,flux=1.0)
 
                 local = wcs.local(pos)
 
