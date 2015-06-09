@@ -79,6 +79,7 @@ def get_deep2(usesim=False):
         oii = oii[:][np.where(rmagcut==1)]
         print(oii['CFHTLS_R'].max())
         rz = oii['CFHTLS_R']-oii['CFHTLS_Z']
+        #rz = 10**(-0.4*(oii['CFHTLS_R']-oii['CFHTLS_Z'])) # flux ratio
         gr = oii['CFHTLS_G']-oii['CFHTLS_R']
         zcut = (oii['z']>0.6)*1
         oiicut = (oii['oii_3727']>8E-17)*1
