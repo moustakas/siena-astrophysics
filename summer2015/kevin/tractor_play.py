@@ -7,7 +7,7 @@ from tractor.galaxy import *
 # These match the values in galsim/demo12.py
 pixnoise = 0.02
 psf_sigma = 1.5
-bands = ['g','r','z']
+bands = 'grz'
 nepochs = 3
 
 # Read multiple epochs of imaging for each band.
@@ -19,7 +19,7 @@ for band in bands:
     print 'Band', band, 'Reading', fn
     cube,hdr = fitsio.read(fn, header=True)
     print 'Read', cube.shape
-    pixscale = 0.25
+    pixscale = hdr['GS_SCALE']
     print 'Pixel scale:', pixscale, 'arcsec/pix'
     nims,h,w = cube.shape
     assert(nims == nepochs)
