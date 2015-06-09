@@ -134,11 +134,11 @@ def decals_makefake():
             imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Reading {}'.format(imfile))
             im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
-            wcs = im.wcs # hack!!
+            wcs = galsim.wcs.readFromFitsHeader(fits.getheader(wcsfile))
 
-            # Read inverse variance array
+            #inverse variance array
             inverse_variance = os.path.join(outcpdir,cpimage.split('/')[2]).replace('ooi','oow').strip()
-            print('Reading inverse variance array')
+            print('Reading inverse variance array{}'.format(inverse_variance))
             array = galsim.fits.read(inverse_variance,hdu=ccd.ccdnum)
 
             # Loop, which assigns an index (soon to be home to a galaxy) to a randomly selected position.
@@ -148,7 +148,7 @@ def decals_makefake():
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
                 xpos = int(pos.x)
                 ypos = int(pos.y)
-                if xpos> & xpos<
+                #if xpos> & xpos<
             
                 # Need to deal with PSF.  
                 #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
