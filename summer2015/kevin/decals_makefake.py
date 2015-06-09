@@ -8,6 +8,7 @@ import math
 from astropy.io import fits
 from projects.desi.common import *
 from tractor import psfex
+from tractor.basics import GaussianMixtureEllipsePSF
 
 def decals_makefake():
 
@@ -35,7 +36,10 @@ def decals_makefake():
     grmax = 0.5
     rzmin = 0.0
     rzmax = 1.5
-        
+
+    imw = 2046
+    imh = 4094
+    
     # Set directories.
     decals_dir = os.getenv('DECALS_DIR')
     fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
@@ -128,6 +132,8 @@ def decals_makefake():
             wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
 
             #psf = psfex.PsfEx.fromFits(psffile)
+            psfex = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
+                                psfClass=GaussianMixtureEllipsePSF,K=2)
             #wcs = 
 
             # Read the pre-existing decals image.
@@ -152,6 +158,9 @@ def decals_makefake():
             
                 # Need to deal with PSF.  
                 #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
+                psfim = psfex.instantiateAt(xpos,ypos)[5:-5,5:-5]
+                psf = galsim.Image(psfim)
+                psf = galsim.InterpolatedImage(mm,scale=1.0,flux=1.0)
 
                 local = wcs.local(pos)
 
