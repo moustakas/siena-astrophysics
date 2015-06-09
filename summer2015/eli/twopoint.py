@@ -28,7 +28,7 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=7000
+ndata=3000
 nrand=12000
 
 #ndata=2
@@ -43,7 +43,7 @@ plt.figure(figsize=(10,10))
 
 #extent=
 #plot=plt.imshow(theta)
-extent=[0,1500,-600,600]
+extent=[0,150,-150,150]
 
 plt.subplot(2,2,1)
 a=plt.imshow(DD,extent=extent)
