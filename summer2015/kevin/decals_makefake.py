@@ -15,7 +15,7 @@ def decals_makefake():
     gsparams = galsim.GSParams(maximum_fft_size=2**16)
 
     # Set parameter ranges.
-    nfake = 5
+    nfake = 10
     min_disk_r50 = 0.5
     max_disk_r50 = 3.0
     min_bulge_r50 = 0.1
@@ -36,14 +36,13 @@ def decals_makefake():
     grmax = 0.5
     rzmin = 0.0
     rzmax = 1.5
-
+   
     imw = 2046
     imh = 4094
     
     # Set directories.
     decals_dir = os.getenv('DECALS_DIR')
     fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
-
     brickinfo = fits.getdata(decals_dir+'/decals-bricks.fits',1)
     ccdinfo = fits.getdata(decals_dir+'/decals-ccds.fits',1)
     
@@ -132,18 +131,21 @@ def decals_makefake():
             wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
 
             #psf = psfex.PsfEx.fromFits(psffile)
-            psfex = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
+            psf = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
                                 psfClass=GaussianMixtureEllipsePSF,K=2)
 
             # Read the pre-existing decals image.
             imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Reading {}'.format(imfile))
-            im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
+            #im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
+            image = fits.getdata(imfile,hdu=ccd.ccdnum)
+            hdr = fits.getheader(imfile,hdu=ccd.ccdnum)
+            im = galsim.Image(image)
             wcs, origin = galsim.wcs.readFromFitsHeader(fits.getheader(wcsfile))
 
             #inverse variance array
             ivarfile = imfile.replace('ooi','oow')
-            print('Reading inverse variance array{}'.format(ivarfile)
+            print('Reading inverse variance array{}'.format(ivarfile))
             invvar = galsim.fits.read(ivarfile,hdu=ccd.ccdnum)
 
             # Loop,which converts ra/dec to wcs
@@ -153,44 +155,46 @@ def decals_makefake():
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
                 xpos = int(pos.x)
                 ypos = int(pos.y)
-                #if xpos> & xpos< # do it here!
+
+                if xpos > 242 and xpos < 243:
             
-                # Need to deal with PSF.  
-                #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
-                psfim = psfex.instantiateAt(xpos,ypos)[5:-5,5:-5]
-                psf = galsim.Image(psfim)
-                psf = galsim.InterpolatedImage(psf,scale=1.0,flux=1.0)
+                    # Need to deal with PSF.  
+                    #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
+                    psfim = psf.instantiateAt(xpos,ypos)[5:-5,5:-5]
+                    psf = galsim.Image(psfim)
+                    psf = galsim.InterpolatedImage(psf,scale=1.0,flux=1.0)
 
-                local = wcs.local(pos)
+                    local = wcs.local(pos)
 
-                # Creates the galaxies.
-                #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
-                #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
-                #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
-                stamp = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
-                stamp = stamp.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
-                stamp = galsim.Convolve([stamp,psf])
-                stamp = stamp.drawImage() # does this have a size optional input?
+                    # Creates the galaxies.
+                    #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
+                    #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
+                    #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
+                    stamp = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
+                    stamp = stamp.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
+                    stamp = galsim.Convolve([stamp,psf])
+                    stamp = stamp.drawImage() # does this have a size optional input?
 
-                # Deal with WCS stuff
-                stamp.setCenter(int(pos.x),int(pos.y))
+                    # Deal with WCS stuff
+                    stamp.setCenter(int(pos.x),int(pos.y))
     
     #stamp = im.drawImage(wcs=local, offset=offset)
     #stamp.setCenter(ixx,iyy)
 
-                # Sets the bounds of the image.   
-                bounds = stamp.bounds & im.bounds
-                im[bounds] += stamp[bounds]
+                    # Sets the bounds of the image.   
+                    bounds = stamp.bounds & im.bounds
+                    im[bounds] += stamp[bounds]
 
-                # Need an if statement to make sure the stamp is within the image!
-
-            # Update where the images get written!  just over-write imfile!
-  
             # Writes the images to the output directory.
-            outfile = out_dir+thisbrick+'_'+thisband+'.fits'
-            print('Writing {}'.format(outfile))
-            galsim.fits.write(image=im,file_name=outfile,clobber=True)
+            outfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
+            print('Updating extension {} of image {}'.format(ccd.ccdnum,outfile))
+            fits.update(imfile,im.array,0,header=hdr)
 
 if __name__ == "__main__":
     decals_makefake()
 
+# My to do list:
+    # Work on pixel scale (balrog)
+    # Offset?
+    # PSF
+    # Figure out HDU ext
