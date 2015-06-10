@@ -36,7 +36,7 @@ data1=data2[tot]
 print 'Randomizing A Sample'
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-sample=data1[a[0:3000]]
+sample=data1[a[0:5000]]
 
 ###### Distances (Para and Perp) ########
 
@@ -87,7 +87,7 @@ ngals = len(coords)
 
 paras = []
 perps = []
-
+nperps = []
 for i,r1 in enumerate(coords):
     if i!=ngals-1:
         # First compute R_LOS and dR
@@ -102,21 +102,26 @@ for i,r1 in enumerate(coords):
         dR_mag = mag(dR)
         # Make use of the Pythagorean theorem
         R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
+        negR_perp = -1*np.sqrt(dR_mag*dR_mag - R_para*R_para)
 
         paras += R_para.tolist()
         perps += R_perp.tolist()
-
+        nperps +=negR_perp.tolist()
         #print R_para,R_perp
         print i
 print paras[0:10]
 print perps[0:10]
 print len(paras)
 print len(perps)
+newperps=np.concatenate((perps,nperps))
+newparas=np.concatenate((paras,paras))
+
+
 
 ################################################################################
 print 'Histogram'
 import matplotlib.pylab as plt
-hist=plt.hist2d(perps,paras,bins=50,range=((0,150),(-150,150)))
+hist=plt.hist2d(newperps,newparas,bins=200,range=((-150,150),(-150,150)))
 #plt.xlabel('Galactic Distances (Mpc)')
 #plt.ylabel('Frequency')
 #plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')

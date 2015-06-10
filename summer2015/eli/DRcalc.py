@@ -14,7 +14,7 @@ infilename1 = sys.argv[1]
 hdulist1=fits.open(infilename1)
 hdulist1.info()
 h1=hdulist1[1]
-data1=h1.data
+data2=h1.data
 
 # Opening txt file (Mocks) 'b'
 print 'Reading in Text File'
@@ -39,17 +39,29 @@ zcutnew1=z[zcut1]
 tot=zcut*zcut1
 totrand=r[tot]
 
+#North cut
+Ns1=data2['PLUG_RA']>90
+Ns1new=data2['PLUG_RA'][Ns1]
+Ns2=data2['PLUG_RA']<280
+Ns2new=data2['PLUG_RA'][Ns2]
+Ns3=data2['PLUG_DEC']>-10
+Ns3new=data2['PLUG_DEC'][Ns3]
+Ns4=data2['PLUG_DEC']<80
+Ns4new=data2['PLUG_DEC'][Ns4]
+tot=Ns1*Ns2*Ns3*Ns4
+data1=data2[tot]
+
 # Randomizing a Sample of SDSS Data
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-samplea=data1[a[0:3000]]
+samplea=data1[a[0:5000]]
 
 
 # Randomizing a sample of Mock Data
 b=np.arange(0,len(totrand))
 np.random.shuffle(b)
-sampleb=totrand[b[0:12000]]
+sampleb=totrand[b[0:10000]]
 
 
 ##### Finding Values for Spherical Coordinates ####
@@ -96,13 +108,14 @@ za=comdista*np.cos(Decrada)
 coordsa=np.column_stack((xa,ya,za))
 
 
+
+
 # Mock
 xb=comdistb*np.sin(Decradb)*np.cos(RAradb)
 yb=comdistb*np.sin(Decradb)*np.sin(RAradb)
 zb=comdistb*np.cos(Decradb)
 coordsb=np.column_stack((xb,yb,zb))
 
-'''
 ##### Distances #####
 print 'Distances'
 val=scipy.spatial.distance.cdist(coordsa,coordsb)
@@ -111,7 +124,7 @@ vflat = val.flatten()
 #d=list(set(vflat)) # Distance Data
 #print "Done!"
 d = vflat
-'''
+
 print 'Finished with conversions! Now to calculate distances...'
 
 # Vectors! (Note that stepcoord is initially the value behind coords[n])  
@@ -142,7 +155,7 @@ ngals = len(coordsa)
 
 paras = []
 perps = []
-
+nperps= []
 for i,r1 in enumerate(coordsa):
     # First compute R_LOS and dR
     R_LOS = (r1 + coordsb)/2.
@@ -156,22 +169,23 @@ for i,r1 in enumerate(coordsa):
     dR_mag = mag(dR)
     # Make use of the Pythagorean theorem
     R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
-
+    negR_perp = -1*np.sqrt(dR_mag*dR_mag - R_para*R_para)
     paras += R_para.tolist()
     perps += R_perp.tolist()
-
+    nperps +=negR_perp.tolist()
     #print R_para,R_perp
     print i
 print paras[0:10]
 print perps[0:10]
 print len(paras)
 print len(perps)
-
+newperps=np.concatenate((perps,nperps))
+newparas=np.concatenate((paras,paras))
 ###############################################################################
 
 print 'Histogram'
 import matplotlib.pylab as plt
-hist=plt.hist2d(perps,paras,bins=50,range=((0,150),(-150,150)))
+hist=plt.hist2d(newperps,newparas,bins=200,range=((-150,150),(-150,150)))
 #plt.xlabel('Galactic Distances (Mpc)')
 #plt.ylabel('Frequency')
 #plt.title('Galactic Distance Distribution of 5000 Random CMASS Galaxies')
@@ -187,4 +201,5 @@ midperp=mperp+diffperp
 midpar=mpar+diffpar
 vals=np.column_stack((midperp,midpar,frequ))
 np.savetxt('DRtest2d.txt',frequ)
+
 
