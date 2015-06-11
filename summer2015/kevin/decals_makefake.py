@@ -137,10 +137,12 @@ def decals_makefake():
             # Read the pre-existing decals image.
             imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Reading {}'.format(imfile))
-            #im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
-            image = fits.getdata(imfile,hdu=ccd.ccdnum)
-            hdr = fits.getheader(imfile,hdu=ccd.ccdnum)
-            im = galsim.Image(image)
+            im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
+            hdr = galsim.fits.FitsHeader(imfile,hdu=ccd.ccdnum)
+            #image, hdulist, fin = galsim.fits.readFile(imfile,hdu=ccd.ccdnum)
+            #image = fits.getdata(imfile,hdu=ccd.ccdnum)
+            #hdr = fits.getheader(imfile,hdu=ccd.ccdnum)
+            #im = galsim.Image(image.data)
             wcs, origin = galsim.wcs.readFromFitsHeader(fits.getheader(wcsfile))
 
             #inverse variance array
@@ -188,7 +190,7 @@ def decals_makefake():
             # Writes the images to the output directory.
             outfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Updating extension {} of image {}'.format(ccd.ccdnum,outfile))
-            fits.update(imfile,im.array,0,header=hdr)
+            fits.update(imfile,im.array,ext=ccd.ccdnum,header=fits.Header(hdr.items()))
 
 if __name__ == "__main__":
     decals_makefake()
