@@ -15,7 +15,7 @@ def decals_makefake():
     gsparams = galsim.GSParams(maximum_fft_size=2**16)
 
     # Set parameter ranges.
-    nfake = 10
+    nfake = 1
     min_disk_r50 = 0.5
     max_disk_r50 = 3.0
     min_bulge_r50 = 0.1
@@ -100,6 +100,9 @@ def decals_makefake():
         # Get all the CCDs that touch this brick
         targetwcs = wcs_for_brick(decals.get_brick_by_name(thisbrick))
         allccds = decals.ccds_touching_wcs(targetwcs)
+        # Testing (to be removed)
+        allccds = allccds[:3]
+        
 
         # Put all ccds in the proper directory; if the directory does not exist, create it.
         for cpimage in list(set(allccds.cpimage)):
@@ -126,13 +129,13 @@ def decals_makefake():
             calname = ccd.calname.strip()
             filt = ccd.filter.strip()
 
-            # document me
+            # Name the imags and place them in the proper directory.
             psffile = os.path.join(decals_dir,'calib','decam','psfex',calname+'.fits')
             wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
 
             #psf = psfex.PsfEx.fromFits(psffile)
-            psf = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
-                                psfClass=GaussianMixtureEllipsePSF,K=2)
+            initpsf = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
+                                  psfClass=GaussianMixtureEllipsePSF,K=2)
 
             # Read the pre-existing decals image.
             imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
@@ -155,42 +158,49 @@ def decals_makefake():
                 print(iobj)
                 pos = wcs.posToImage(galsim.CelestialCoord(
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
+                pos = galsim.PositionD(1050.1214,2054.21341)
                 xpos = int(pos.x)
                 ypos = int(pos.y)
+                dx = pos.x-xpos
+                dy = pos.y-ypos
 
-                if xpos > 242 and xpos < 243:
-            
-                    # Need to deal with PSF.  
+                localwcs = wcs.local(image_pos=pos)
+                #localscale = np.sqrt(local.dudx*local.dvdy)
+
+                # Ensure that the galaxy will be within the parameters of the ccd
+
                     #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
-                    psfim = psf.instantiateAt(xpos,ypos)[5:-5,5:-5]
-                    psf = galsim.Image(psfim)
-                    psf = galsim.InterpolatedImage(psf,scale=1.0,flux=1.0)
-
-                    local = wcs.local(pos)
-
+                psfim = PsfEx.instantiateAt(initpsf,xpos,ypos)[5:-5,5:-5]
+                psf = galsim.Image(psfim)
+                psf = galsim.InterpolatedImage(psf,scale=1.0,flux=1.0)
+                psf_centroid = psf.centroid()
+                psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
+                    
                     # Creates the galaxies.
+
                     #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
                     #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
                     #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
-                    stamp = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
-                    stamp = stamp.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
-                    stamp = galsim.Convolve([stamp,psf])
-                    stamp = stamp.drawImage() # does this have a size optional input?
+                gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],flux=1E8)
+                gal = gal.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
+                gal = gal.shift(dx=-100.0,dy=75.0)
+                    #gal = gal.shift(dx=dx,dy=dy)
+                gal = galsim.Convolve([gal,psf])
 
-                    # Deal with WCS stuff
-                    stamp.setCenter(int(pos.x),int(pos.y))
-    
-    #stamp = im.drawImage(wcs=local, offset=offset)
-    #stamp.setCenter(ixx,iyy)
+                stamp = gal.drawImage(wcs=localwcs)
+                stamp.setCenter(xpos,ypos)
 
                     # Sets the bounds of the image.   
-                    bounds = stamp.bounds & im.bounds
-                    im[bounds] += stamp[bounds]
+                bounds = stamp.bounds & im.bounds
+                # if bounds is not within the image, crop stamp so it will fit in im and update bounds else
+                im[bounds] += stamp[bounds]
 
             # Writes the images to the output directory.
             outfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Updating extension {} of image {}'.format(ccd.ccdnum,outfile))
             fits.update(imfile,im.array,ext=ccd.ccdnum,header=fits.Header(hdr.items()))
+
+            galsim.fits.write(im,file_name='/home/desi3/junk.fits',clobber=True)
 
 if __name__ == "__main__":
     decals_makefake()
@@ -199,4 +209,5 @@ if __name__ == "__main__":
     # Work on pixel scale (balrog)
     # Offset?
     # PSF
-    # Figure out HDU ext
+   
+    
