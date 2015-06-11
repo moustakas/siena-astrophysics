@@ -40,7 +40,7 @@ def gaussmix_bayes(colors,labels):
 
 def kneighbor(colors,labels):
     from sklearn.neighbors import KNeighborsClassifier
-    kvals = 3#comment me
+    kvals = 3 #comment me
     clf = KNeighborsClassifier(n_neighbors=kvals,p=1)
     clf.fit(colors, labels)
     pred = clf.predict(colors)
@@ -77,17 +77,18 @@ def get_deep2(usesim=False):
         oii = fits.getdata(filename,1)
         rmagcut = (oii['CFHTLS_R']<23.4)*1
         oii = oii[:][np.where(rmagcut==1)]
-        print(oii['CFHTLS_R'].max())
+        #print(oii['CFHTLS_R'].max())
         rz = oii['CFHTLS_R']-oii['CFHTLS_Z']
         #rz = 10**(-0.4*(oii['CFHTLS_R']-oii['CFHTLS_Z'])) # flux ratio
         gr = oii['CFHTLS_G']-oii['CFHTLS_R']
+        #gr = 10**(-0.4*(oii['CFHTLS_G']-oii['CFHTLS_R']))
         zcut = (oii['z']>0.6)*1
         oiicut = (oii['oii_3727']>8E-17)*1
         rzg = np.vstack((rz,gr)).T
         objtype = zcut & oiicut
 
         rzlim = [-0.5,2.0]
-        grlim = [-0.5,1.5]
+        grlim = [-0.25,1.5]
 
     return rzg, objtype, rzlim, grlim
 
@@ -154,7 +155,7 @@ def main():
     markers = ['x','o','v','d']
 
     fig, ax = plt.subplots(1,1)
-    ax.plot(compl,'bo',label='Completeness')
+    ax.plot(compl,'bo',markersize=15,label='Completeness')
     ax.set_xlabel('classifier')
     ax.set_ylabel(r'Completeness')
     ax.set_xlim(-0.25,3.25)
@@ -163,7 +164,7 @@ def main():
     myxticks = (['Niave Bayes Gaussian','Gaussian Mixed','K-Neighbors','Kernel SVM'])
     plt.xticks(classifier,myxticks,rotation=45)
     ax2 = ax.twinx()
-    ax2.plot(contam,'rd',label='Contamination')
+    ax2.plot(contam,'rd',markersize=15,label='Contamination')
     ax2.set_ylabel(r'Contamination')
     ax2.set_xlim(-0.25,3.25)
     ax2.set_ylim(0,1)
