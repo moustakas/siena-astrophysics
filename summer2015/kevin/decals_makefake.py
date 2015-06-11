@@ -193,6 +193,8 @@ def decals_makefake():
                     # Sets the bounds of the image.   
                 bounds = stamp.bounds & im.bounds
                 # if bounds is not within the image, crop stamp so it will fit in im and update bounds else
+                if not xpos>0 and xpos<2046 and ypos>0 and ypos<4094:
+                    #How do you slice the image at the edge?
                 im[bounds] += stamp[bounds]
 
             # Writes the images to the output directory.
