@@ -7,19 +7,14 @@ import matplotlib.pyplot as plt
 from sklearn import svm
 from astroML.utils import completeness_contamination
 
-#def plot_boundary(clf,xlim,ylim,ax,useproba=False):
-#   sns.set(palette='Reds',style='white')
-#   hh = 0.03  # step size in the mesh
-#    xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
-#                         np.arange(ylim[0],ylim[1],hh))
-#    if useproba:
-#        zz = clf.predict_proba(np.c_[xx.ravel(),yy.ravel()])
-#        zz = zz[:,1]
-#    else:
-#        zz = clf.predict(np.c_[xx.ravel(),yy.ravel()])
-#    zz = zz.reshape(xx.shape)
-#    #ax.pcolormesh(xx,yy,zz,cmap=plt.cm.Paired)
-#    ax.contour(xx,yy,zz,[0.5],linewidths=5)
+
+#def kernel_svm(colors, labels):
+ #   from sklearn.svm import SVC
+ #   clf = SVC(kernel='rbf')
+ #   clf.fit(colors, labels)
+ #   pred = clf.predict(colors)
+ #   compl, contam = completeness_contamination(pred,labels)
+ #   return clf, compl, contam
 
 def kneighbor(colors,labels):
     from sklearn.neighbors import KNeighborsClassifier
@@ -93,35 +88,21 @@ def main():
     knc_clf3, knc_compl3, knc_contam3 = kneighbor(rzgw1w2,objtype)
     print('Completeness = {}, contamination = {}'.format(knc_compl3,knc_contam3))
 
-    
-    # Make the plot!
+ # Kernel SVM
+   # print('Working on gr vs. rz...')
+   # svm_clf1, svm_compl1, svm_contam1 = kernel_svm(rzg,objtype)
+   # print('Completeness = {}, contamination = {}'.format(svm_compl1,svm_contam1))
 
-#    sns.set(palette='Reds',style='ticks')
-    
-    
-#    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
-#    plt.xlim(rzlim)
-#    plt.ylim(grlim)
-#    plt.tight_layout(pad=0.9, w_pad=0.5, h_pad=1.0)
-#    ax3.set_xlabel('r-z')
-#    ax4.set_xlabel('r-z')
-#    ax3.set_ylabel('g-r')
-#    ax1.set_ylabel('g-r')
-   
+ # Kernel SVM
+   # print('Working on gr vs. rz vs. w1...')
+   # svm_clf2, svm_compl2, svm_contam2 = kernel_svm(rzgw1,objtype)
+   # print('Completeness = {}, contamination = {}'.format(svm_compl2,svm_contam2))
 
-    #gr-rz
-#    ax1.scatter(rzg[:,0],rzg[:,1],c=objtype)
-#    plot_boundary(knc_clf,rzlim,grlim,ax1)
-
-    #gr-rz-w1
-#    ax2.scatter(rzgw1[:,0],rzgw1[:,1],c=objtype)
-#    plot_boundary(knc_clf,rzlim,grlim,ax2)
-    
-    #gr-rz-w1-w2
-#    ax3.scatter(rzgw1w2[:,0],rzgw1w2[:,1],c=objtype)
-#    plot_boundary(knc_clf,rzlim,grlim,ax3)
-
-
+  # Kernel SVM
+   # print('Working on gr vs. rz vs. w1 vs. w2...')
+   # svm_clf3, svm_compl3, svm_contam3 = kernel_svm(rzgw1w2,objtype)
+   # print('Completeness = {}, contamination = {}'.format(svm_compl3,svm_contam3))
+          
     #Plotting the Completeness and the contamination
     classifier = [0,1,2]
     compl = [knc_compl1,knc_compl2,knc_compl3]
@@ -129,18 +110,18 @@ def main():
     markers = ['d','o','v']
     fig, ax = plt.subplots(1,1)
     for ii,mm in enumerate(markers):
-        ax.plot(ii,compl[ii],'b'+mm,label='Completeness',markersize=10)
+        ax.plot(ii,compl[ii],'b'+mm,label='Completeness',markersize=15)
     ax.set_xlabel('classifier')
     ax.set_ylabel(r'Completeness')
     ax.set_xlim(-0.25,2.25)
     #ax.set_ylim(0.2,0.8)
     ax.set_ylim(0,1)
-    #ax.legend(loc='upper left',frameon=True)
+    ax.legend(loc='best', fancybox=True, framealpha=0.5)
     myxticks = (['gr-rz','gr-rz-w1','gr-rz-w1-w2'])
     plt.xticks(classifier,myxticks,rotation=45)
     ax2 = ax.twinx()
     for ii,mm in enumerate(markers):
-        ax2.plot(ii,contam[ii],'r'+mm,label='Contamination',markersize=10)
+        ax2.plot(ii,contam[ii],'r'+mm,label='Contamination',markersize=15)
     ax2.set_ylabel(r'Contamination')
     ax2.set_xlim(-0.25,2.25)
     #ax2.set_ylim(0.2,0.8)
