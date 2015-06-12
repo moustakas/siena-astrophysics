@@ -73,49 +73,55 @@ def get_deep2(usesim=False):
         rzlim = [-0.5,2.0]
         grlim = [-0.5,1.5]
     else: 
-        filename = '/home/desi2/data'+'/deep2egs-oii.fits.gz'
+        filename = '/home/desi2/data'+'/deep2-oii.fits.gz'
+        filestars = '/home/desi2/data'+'/deep2-stars.fits.gz'
         oii = fits.getdata(filename,1)
+        stars = fits.getdata(filestars,1)
         rmagcut = (oii['CFHTLS_R']<23.4)*1
         oii = oii[:][np.where(rmagcut==1)]
         #print(oii['CFHTLS_R'].max())
         rz = oii['CFHTLS_R']-oii['CFHTLS_Z']
+        rz_stars = stars['CFHTLS_R']-stars['CFHTLS_Z']
         #rz = 10**(-0.4*(oii['CFHTLS_R']-oii['CFHTLS_Z'])) # flux ratio
         gr = oii['CFHTLS_G']-oii['CFHTLS_R']
+        gr_stars = stars['CFHTLS_G']-stars['CFHTLS_R']
         #gr = 10**(-0.4*(oii['CFHTLS_G']-oii['CFHTLS_R']))
         zcut = (oii['z']>0.6)*1
         oiicut = (oii['oii_3727']>8E-17)*1
-        rzg = np.vstack((rz,gr)).T
+        rzg_oii = np.vstack((rz,gr)).T
+        rzg_stars = np.vstack((rz_stars,gr_stars)).T
         objtype = zcut & oiicut
+        objtype_stars = np.zeros(len(stars))
 
         rzlim = [-0.5,2.0]
-        grlim = [-0.25,1.5]
+        grlim = [-0.5,1.5]
 
-    return rzg, objtype, rzlim, grlim
+    return rzg_oii, objtype, rzlim, grlim, rzg_stars, objtype_stars
 
 def main():
     """Document me"""
 
     # Comment
-    rzg, objtype, rzlim, grlim = get_deep2(usesim=False)
+    rzg_oii, objtype, rzlim, grlim, rzg_stars, objtype_stars = get_deep2(usesim=False)
 
     # Gaussian NB
     print('Working on Gaussian NB classifier...')
-    gnb_clf, gnb_compl, gnb_contam = naive_bayes(rzg,objtype)
+    gnb_clf, gnb_compl, gnb_contam = naive_bayes(rzg_oii,objtype)
     print('Completeness = {}, contamination = {}'.format(gnb_compl,gnb_contam))
 
     # Gaussian Mixture
     print('Working on Gaussian mixture Gauss classifier...')
-    gmm_clf, gmm_compl, gmm_contam = gaussmix_bayes(rzg,objtype)
+    gmm_clf, gmm_compl, gmm_contam = gaussmix_bayes(rzg_oii,objtype)
     print('Completeness = {}, contamination = {}'.format(gmm_compl,gmm_contam))
 
     # K Neighbors
     print('Working on Kneighbors classifier...')
-    knc_clf, knc_compl, knc_contam = kneighbor(rzg,objtype)
+    knc_clf, knc_compl, knc_contam = kneighbor(rzg_oii,objtype)
     print('Completeness = {}, contamination = {}'.format(knc_compl,knc_contam))
 
     # Kernel SVM
     print('Working on Kernel SVM classifier...')
-    svm_clf, svm_compl, svm_contam = kernel_svm(rzg,objtype)
+    svm_clf, svm_compl, svm_contam = kernel_svm(rzg_oii,objtype)
     print('Completeness = {}, contamination = {}'.format(svm_compl,svm_contam))
 
     # Make the plot!
@@ -133,20 +139,25 @@ def main():
     ax1.set_ylabel('g-r')
    
     # Gaussian NB
-    ax1.scatter(rzg[:,0],rzg[:,1],c=objtype)
+    ax1.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(gnb_clf,rzlim,grlim,ax1)
+    ax1.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
     
     # Gaussian Mixed
-    ax2.scatter(rzg[:,0],rzg[:,1],c=objtype)
+    ax2.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(gmm_clf,rzlim,grlim,ax2,useproba=True)
+    ax2.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
 
     #KNeighbors
-    ax3.scatter(rzg[:,0],rzg[:,1],c=objtype)
+    ax3.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(knc_clf,rzlim,grlim,ax3)
+    ax3.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
 
     #Kernel SVM
-    ax4.scatter(rzg[:,0],rzg[:,1],c=objtype)
+    ax4.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(svm_clf,rzlim,grlim,ax4)
+    ax4.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    
 
     #Plotting the Completeness and the contamination
     classifier = [0,1,2,3]
