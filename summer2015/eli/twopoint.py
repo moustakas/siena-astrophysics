@@ -2,9 +2,9 @@ import numpy as np
 from operator import add
 import matplotlib.pylab as plt
 
-DD=np.loadtxt('DDtest2d.txt',dtype='float')
-DR=np.loadtxt('DRtest2d.txt',dtype='float')
-RR=np.loadtxt('RRtest2d.txt',dtype='float')
+DD=np.loadtxt('DDtest.txt',dtype='float')
+DR=np.loadtxt('DRtest.txt',dtype='float')
+RR=np.loadtxt('RRtest.txt',dtype='float')
 
 
 #DDvals=DDvals.transpose()
@@ -28,8 +28,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=5000
-nrand=10000
+ndata=25000
+nrand=25000
 
 #ndata=2
 #nrand=2

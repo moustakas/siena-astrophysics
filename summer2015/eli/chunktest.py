@@ -9,7 +9,7 @@ import math
 import scipy
 import scipy.spatial
 from astropy.cosmology import FlatLambdaCDM
-
+import matplotlib.pylab as plt
 # Opening FITS file (SDSS Data) 'a'
 print 'Reading in FITS Data'
 infilename1 = sys.argv[1]
@@ -89,8 +89,9 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-for i,r1 in enumerate(coordsa[0:1000]):
-        # First compute R_LOS and dR
+freq = []
+for i,r1 in enumerate(coordsa):
+        # First compute R_LOS and dRt
         R_LOS1 = (r1 + coordsb)/2.
         dR1 = coordsb - r1
 
@@ -107,18 +108,22 @@ for i,r1 in enumerate(coordsa[0:1000]):
         paras1 += R_para1.tolist()
         perps1 += R_perp1.tolist()
         nperps1 +=negR_perp1.tolist()
-        print i
+        if i%100 == 0:
+            hist=plt.hist2d(perps1,paras1,bins=200,range=((-150,150),(-150,150)))
+            print i
+            freq = hist[0]
 print len(paras1)
 print len(perps1)
-newperps1=np.concatenate((perps1,nperps1))
-newparas1=np.concatenate((paras1,paras1))
-
+#newperps1=np.concatenate((perps1,nperps1))
+#newparas1=np.concatenate((paras1,paras1))
+'''
 print 'Histogram1'
 import matplotlib.pylab as plt
 hist1=plt.hist2d(newperps1,newparas1,bins=200,range=((-150,150),(-150,150)))
 
 frequ1=hist1[0]
 #############################################################################
+
 paras2 = []
 perps2 = []
 nperps2 = []
@@ -151,3 +156,4 @@ import matplotlib.pylab as plt
 hist2=plt.hist2d(newperps2,newparas2,bins=200,range=((-150,150),(-150,150)))
 
 frequ2=hist2[0]
+'''
