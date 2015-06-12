@@ -161,39 +161,34 @@ def decals_makefake():
                 pos = galsim.PositionD(1050.1214,2054.21341)
                 xpos = int(pos.x)
                 ypos = int(pos.y)
-                dx = pos.x-xpos
-                dy = pos.y-ypos
-
-                localwcs = wcs.local(image_pos=pos)
-                #localscale = np.sqrt(local.dudx*local.dvdy)
+                offset = galsim.PositionD(pos.x-xpos,pos.y-ypos)
 
                 # Ensure that the galaxy will be within the parameters of the ccd
 
-                    #psf = galsim.Gaussian(flux=1.0, sigma=1.0)
                 psfim = PsfEx.instantiateAt(initpsf,xpos,ypos)[5:-5,5:-5]
-                psf = galsim.Image(psfim)
-                psf = galsim.InterpolatedImage(psf,scale=1.0,flux=1.0)
+                psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=1.0,flux=1.0)
                 psf_centroid = psf.centroid()
                 psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
                     
-                    # Creates the galaxies.
+                # Creates the galaxies.
 
-                    #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],gsparams=gsparams,flux=flux[iband,iobj])
-                    #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
-                    #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
+                #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],
+                #                      gsparams=gsparams,flux=flux[iband,iobj])
+                #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
+                #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
                 gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],flux=1E8)
                 gal = gal.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
-                gal = gal.shift(dx=-100.0,dy=75.0)
-                    #gal = gal.shift(dx=dx,dy=dy)
+                #gal = gal.shift(dx=-100.0,dy=75.0)
+                #gal = gal.shift(dx=dx,dy=dy)
                 gal = galsim.Convolve([gal,psf])
 
-                stamp = gal.drawImage(wcs=localwcs)
+                stamp = gal.drawImage(wcs=wcs.local(image_pos=pos),offset=offset,method='no_pixel')
                 stamp.setCenter(xpos,ypos)
 
                     # Sets the bounds of the image.   
                 bounds = stamp.bounds & im.bounds
                 # if bounds is not within the image, crop stamp so it will fit in im and update bounds else
-                if not xpos>0 and xpos<2046 and ypos>0 and ypos<4094:
+                #if not xpos>0 and xpos<2046 and ypos>0 and ypos<4094:
                     #How do you slice the image at the edge?
                 im[bounds] += stamp[bounds]
 
