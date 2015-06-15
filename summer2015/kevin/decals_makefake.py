@@ -15,7 +15,7 @@ def decals_makefake():
     gsparams = galsim.GSParams(maximum_fft_size=2**16)
 
     # Set parameter ranges.
-    nfake = 1
+    nfake = 5
     min_disk_r50 = 0.5
     max_disk_r50 = 3.0
     min_bulge_r50 = 0.1
@@ -36,20 +36,22 @@ def decals_makefake():
     grmax = 0.5
     rzmin = 0.0
     rzmax = 1.5
-   
-    imw = 2046
-    imh = 4094
+
+    stampwidth = 55 # postage stamp width [pixels, roughly 14 arcsec]
     
     # Set directories.
     decals_dir = os.getenv('DECALS_DIR')
     fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
-    brickinfo = fits.getdata(decals_dir+'/decals-bricks.fits',1)
-    ccdinfo = fits.getdata(decals_dir+'/decals-ccds.fits',1)
+
+    brickinfo = fits.getdata(os.path.join(decals_dir,'decals-bricks.fits'),1)
+    ccdinfo = fits.getdata(os.path.join(decals_dir,'decals-ccds.fits'),1)
+    zpts =  fits.getdata(os.path.join(decals_dir,'calib','decam','photom','zeropoints.fits'))
+    zptfilename = np.array(list(os.path.basename(ff).strip() for ff in zpts['FILENAME']))
     
     # Create an array for both the bricks and bands.
     mybricks = ['2428p117']
     #mybricks = ['2426p197','2428p117']
-    band = ['g','r','z']
+    band = np.array(['g','r','z'])
 
     # initialize some classes we'll need
     decals = Decals()
@@ -62,14 +64,19 @@ def decals_makefake():
         # Randomly generate location and flux parameters.
         ra = np.random.uniform(info['ra1'],info['ra2'],nfake)
         dec = np.random.uniform(info['dec1'],info['dec2'],nfake)
+
+        print('Hack!')
+        ra = np.random.uniform(242.68343197690362-1000*0.262/3600,242.68343197690362+1000*0.262/3600,nfake)
+        dec = np.random.uniform(11.933249806710897-2000*0.262/3600,11.933249806710897+2000*0.262/3600,nfake)
+
         rmag = np.random.uniform(rmagmin,rmagmax,nfake)
         grmag = np.random.uniform(grmin,grmax,nfake)
         rzmag = np.random.uniform(rzmin,rzmax,nfake)
 
         # Calculate the g, r, and z band fluxes and stack them in an array.
-        gflux = 10**(-0.4*((rmag+grmag)-22.5))
-        rflux = 10**(-0.4*(rmag-22.5))
-        zflux = 10**(-0.4*((rmag-rzmag)-22.5))
+        gflux = 10**(-0.4*(rmag+grmag))
+        rflux = 10**(-0.4*rmag)
+        zflux = 10**(-0.4*(rmag-rzmag))
         flux = np.vstack([gflux,rflux,zflux])
         
         # Randomly generate parameters.
@@ -82,12 +89,13 @@ def decals_makefake():
         axisratio = np.random.uniform(axismin,axismax,nfake)
 
         # Create a fits table containing the arrays of the randomly generated parameters.
-        tbhdu = fits.BinTableHDU.from_columns([
+        fakeinfo = fits.BinTableHDU.from_columns([
             fits.Column(name='ra',format='f4',array=ra),
             fits.Column(name='dec',format='f4',array=dec),
             fits.Column(name='rmag',format='f4',array=rmag),
             fits.Column(name='grmag',format='f4',array=grmag),
             fits.Column(name='rzmag',format='f4',array=rzmag),
+            #fits.Column(name='flux',format='f4',array=flux),
             fits.Column(name='nbulge',format='f4',array=nbulge),
             fits.Column(name='ndisk',format='f4',array=ndisk),
             fits.Column(name='disk_r50',format='f4',array=disk_r50),
@@ -95,15 +103,14 @@ def decals_makefake():
             fits.Column(name='bulge_frac',format='f4',array=bulge_frac),
             fits.Column(name='phi',format='f4',array=phi),
             fits.Column(name='axisratio',format='f4',array=axisratio)])
-        tbhdu.writeto(fake_decals_dir+'decals_fake_priors.fits',clobber=True)
+        fakeinfo.writeto(fake_decals_dir+'decals_fake_priors.fits',clobber=True)
 
         # Get all the CCDs that touch this brick
         targetwcs = wcs_for_brick(decals.get_brick_by_name(thisbrick))
         allccds = decals.ccds_touching_wcs(targetwcs)
         # Testing (to be removed)
-        allccds = allccds[:3]
+        allccds = allccds[:1]
         
-
         # Put all ccds in the proper directory; if the directory does not exist, create it.
         for cpimage in list(set(allccds.cpimage)):
             outcpdir = os.path.join(fake_decals_dir,'images','decam',cpimage.split('/')[1])
@@ -125,79 +132,83 @@ def decals_makefake():
                 
 
         for ccd in allccds:
-            print(ccd.ra,ccd.dec,ccd.filter,ccd.calname,ccd.cpimage)
-            calname = ccd.calname.strip()
-            filt = ccd.filter.strip()
 
-            # Name the imags and place them in the proper directory.
+            # Get filenames.
+            cpname = os.path.basename(ccd.cpimage).strip().replace('.fz','')
+            calname = ccd.calname.strip()
+            thisband = np.where((ccd.filter==band)*1)
+
+            imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
+            ivarfile = imfile.replace('ooi','oow')
             psffile = os.path.join(decals_dir,'calib','decam','psfex',calname+'.fits')
             wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
 
-            #psf = psfex.PsfEx.fromFits(psffile)
-            initpsf = psfex.PsfEx(psffile,imw,imh,ny=13,nx=7,
-                                  psfClass=GaussianMixtureEllipsePSF,K=2)
-
-            # Read the pre-existing decals image.
-            imfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
+            # Read the data.
             print('Reading {}'.format(imfile))
             im = galsim.fits.read(imfile,hdu=ccd.ccdnum)
-            hdr = galsim.fits.FitsHeader(imfile,hdu=ccd.ccdnum)
-            #image, hdulist, fin = galsim.fits.readFile(imfile,hdu=ccd.ccdnum)
-            #image = fits.getdata(imfile,hdu=ccd.ccdnum)
-            #hdr = fits.getheader(imfile,hdu=ccd.ccdnum)
-            #im = galsim.Image(image.data)
-            wcs, origin = galsim.wcs.readFromFitsHeader(fits.getheader(wcsfile))
-
-            #inverse variance array
-            ivarfile = imfile.replace('ooi','oow')
-            print('Reading inverse variance array{}'.format(ivarfile))
             invvar = galsim.fits.read(ivarfile,hdu=ccd.ccdnum)
+            hdr = galsim.fits.FitsHeader(imfile,hdu=ccd.ccdnum)
 
-            # Loop,which converts ra/dec to wcs
+            # Get the WCS info and initialize the PSF
+            wcs, origin = galsim.wcs.readFromFitsHeader(galsim.fits.FitsHeader(wcsfile))
+            initpsf = psfex.PsfEx(psffile,im.xmax,im.ymax,ny=13,nx=7,
+                                  psfClass=GaussianMixtureEllipsePSF,K=2)
+
+            # Get the zeropoint info for this image and CCD
+            zptinfo = zpts[np.where(((zptfilename==cpname)*1)*((ccd.extname==zpts['CCDNAME'])*1))]
+            magzpt = zptinfo['ZPT'] + 2.5*np.log10(zptinfo['EXPTIME'])
+
+            # Loop on each fake galaxy.
             for iobj in range(nfake):
-                print(iobj)
-                pos = wcs.posToImage(galsim.CelestialCoord(
+                print(iobj, ra[iobj], dec[iobj])
+
+                #ra[iobj] = ccd.ra-0.01
+                #dec[iobj] = ccd.dec+0.01
+
+                # Get the position of the galaxy on the CCD and build the PSF.
+                pos = wcs.toImage(galsim.CelestialCoord(
                     ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
-                pos = galsim.PositionD(1050.1214,2054.21341)
                 xpos = int(pos.x)
                 ypos = int(pos.y)
-                offset = galsim.PositionD(pos.x-xpos,pos.y-ypos)
 
-                # Ensure that the galaxy will be within the parameters of the ccd
+                wcslocal = wcs.local(image_pos=pos)
+                offset = galsim.PositionD(pos.x-xpos,pos.y-ypos)
+                pixscale, shear, theta, flip = wcslocal.getDecomposition() # get the pixel scale
 
                 psfim = PsfEx.instantiateAt(initpsf,xpos,ypos)[5:-5,5:-5]
-                psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=1.0,flux=1.0)
+                psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=pixscale,flux=1.0)
                 psf_centroid = psf.centroid()
                 psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
-                    
-                # Creates the galaxies.
 
+                # Build the postage stamp of the object convolved with the PSF.
                 #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],
                 #                      gsparams=gsparams,flux=flux[iband,iobj])
                 #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
                 #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
-                gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],flux=1E8)
+                gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],
+                                    flux=1000*float(flux[thisband,iobj]*10**(-0.4*magzpt)))
                 gal = gal.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
-                #gal = gal.shift(dx=-100.0,dy=75.0)
-                #gal = gal.shift(dx=dx,dy=dy)
                 gal = galsim.Convolve([gal,psf])
-
-                stamp = gal.drawImage(wcs=wcs.local(image_pos=pos),offset=offset,method='no_pixel')
+                #gal = gal.shift(pos.x-xpos,pos.y-ypos) # apply sub-pixel shift
+                
+                stamp = gal.drawImage(wcs=wcslocal,method='no_pixel')
+                #stamp = gal.drawImage(nx=stampwidth,ny=stampwidth,wcs=wcslocal,
+                #                      offset=offset,method='no_pixel')
                 stamp.setCenter(xpos,ypos)
 
-                    # Sets the bounds of the image.   
-                bounds = stamp.bounds & im.bounds
-                # if bounds is not within the image, crop stamp so it will fit in im and update bounds else
-                #if not xpos>0 and xpos<2046 and ypos>0 and ypos<4094:
-                    #How do you slice the image at the edge?
-                im[bounds] += stamp[bounds]
+                overlap = stamp.bounds & im.bounds
+                if (overlap.xmax>=0 and overlap.ymax>=0 and overlap.xmin<=im.xmax and
+                    overlap.ymin<=im.ymax and overlap.area()>0):
+                    print('Adding object {} to ...'.format(iobj))
+                    print(xpos, ypos)
+                    im[overlap] += stamp[overlap]
 
             # Writes the images to the output directory.
             outfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
             print('Updating extension {} of image {}'.format(ccd.ccdnum,outfile))
             fits.update(imfile,im.array,ext=ccd.ccdnum,header=fits.Header(hdr.items()))
 
-            galsim.fits.write(im,file_name='/home/desi3/junk.fits',clobber=True)
+            galsim.fits.write(im,file_name='junk.fits',clobber=True)
 
 if __name__ == "__main__":
     decals_makefake()
