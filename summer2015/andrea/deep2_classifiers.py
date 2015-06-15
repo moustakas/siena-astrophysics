@@ -2,13 +2,13 @@
 
 import os
 import numpy as np
-#import seaborn as sns
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import svm
 from astroML.utils import completeness_contamination
 
 def plot_boundary(clf,xlim,ylim,ax,useproba=False):
-   # sns.set(palette='Reds',style='white')
+    sns.set(palette='Reds',style='white')
     hh = 0.03  # step size in the mesh
     xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
                          np.arange(ylim[0],ylim[1],hh))
@@ -127,7 +127,7 @@ def main():
     # Make the plot!
 
    # sns.set(palette='Reds',style='ticks')
-    
+    pal = sns.color_palette("Blues_r")
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
     plt.xlim(rzlim)
@@ -141,23 +141,28 @@ def main():
     # Gaussian NB
     ax1.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(gnb_clf,rzlim,grlim,ax1)
-    ax1.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    sns.kdeplot(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,ax=ax1,color=pal)
     
     # Gaussian Mixed
     ax2.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(gmm_clf,rzlim,grlim,ax2,useproba=True)
-    ax2.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    #ax2.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    sns.kdeplot(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,ax=ax2,bw="silverman",color=pal)
+
 
     #KNeighbors
     ax3.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(knc_clf,rzlim,grlim,ax3)
-    ax3.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    #ax3.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    sns.kdeplot(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,ax=ax3, color=pal)
 
+    
     #Kernel SVM
     ax4.scatter(rzg_oii[:,0],rzg_oii[:,1],c=objtype)
     plot_boundary(svm_clf,rzlim,grlim,ax4)
-    ax4.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
-    
+    #ax4.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
+    sns.kdeplot(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,ax=ax4, color=pal)
+
 
     #Plotting the Completeness and the contamination
     classifier = [0,1,2,3]
