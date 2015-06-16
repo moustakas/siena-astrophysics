@@ -38,7 +38,7 @@ a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:5000]]
 '''
-ngals_for_calculation = 25000
+ngals_for_calculation = 50000
 
 np.random.seed(1)
 
@@ -97,13 +97,12 @@ for j in xrange(nchunks):
 
     paras = []
     perps = []
-
+    
     for i,r1 in enumerate(coordsa[lo:hi]):
         if i!=ngals-1:
             # First compute R_LOS and dR
             R_LOS1 = (r1 + coordsa[i+1:])/2.
             dR1 = coordsa[i+1:] - r1
-
             R_LOS_mag1 = mag(R_LOS1)
 
             # Dot product
@@ -113,11 +112,10 @@ for j in xrange(nchunks):
             # Make use of the Pythagorean theorem
             R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
             #negR_perp1 = -1*R_perp1
-
             paras += R_para1.tolist()
             perps += R_perp1.tolist()
             #nperps1 += negR_perp1.tolist()
-            if i%500==0:
+            if i%1000==0:
                 print i
 
     #print len(paras)
@@ -147,7 +145,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-
+np.savetxt('DDtest2d.txt',tot_freq)
 '''
 ngals = len(coordsa)
 

@@ -1,10 +1,10 @@
 import numpy as np
 from operator import add
 import matplotlib.pylab as plt
-
-DD=np.loadtxt('DDtest.txt',dtype='float')
-DR=np.loadtxt('DRtest.txt',dtype='float')
-RR=np.loadtxt('RRtest.txt',dtype='float')
+import math
+DD=np.loadtxt('DDtest2d.txt',dtype='float')
+DR=np.loadtxt('DRtest2d.txt',dtype='float')
+RR=np.loadtxt('RRtest2d.txt',dtype='float')
 
 
 #DDvals=DDvals.transpose()
@@ -28,8 +28,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=25000
-nrand=25000
+ndata=50000
+nrand=50000
 
 #ndata=2
 #nrand=2
@@ -38,6 +38,16 @@ DD /=(ndata**2-ndata)/2.
 DR /=(nrand*ndata)/1.
 RR /=(nrand**2-nrand)/2.
 theta = (DD - 2*DR + RR)/RR
+
+#R^2 WEIGHTING
+
+#R Values
+for i in range(200):
+    for j in range(200):
+        r2=(100-i)**2 + (j-100)**2
+        theta[i][j] *= r2
+
+
 plt.figure(figsize=(10,10))
 
 
@@ -52,20 +62,20 @@ plt.ylabel('Rpara (Mpc)')
 plt.title('DD')
 
 plt.subplot(2,2,2)
-a=plt.imshow(RR,extent=extent)
+b=plt.imshow(RR,extent=extent)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
 plt.title('RR')
 
 plt.subplot(2,2,3)
-a=plt.imshow(DR,extent=extent)
+c=plt.imshow(DR,extent=extent)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
 plt.title('DR')
 
 plt.subplot(2,2,4)
-a=plt.imshow(theta,extent=extent)
-plt.colorbar(a)
+d=plt.imshow(np.log(theta),extent=extent)
+plt.colorbar(d)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
 plt.title('Theta')

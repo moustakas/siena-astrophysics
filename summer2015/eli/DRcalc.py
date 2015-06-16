@@ -55,7 +55,7 @@ data1=data2[tot]
 print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 25000
+ngals_for_calculation = 50000
 
 np.random.seed(1)
 
@@ -157,12 +157,11 @@ for j in xrange(nchunks):
 
     paras = []
     perps = []
-
+  
     for i,r1 in enumerate(coordsa[lo:hi]):
             # First compute R_LOS and dR
-            R_LOS1 = (r1 + coordsb)/2.
+            R_LOS1 = (r1 + coordsb[:])/2
             dR1 = coordsb - r1
-
             R_LOS_mag1 = mag(R_LOS1)
 
             # Dot product
@@ -182,7 +181,7 @@ for j in xrange(nchunks):
     #print len(paras)
     #print len(perps)
     #newperps1=np.concatenate((perps1,nperps1))
-    #newparas1=np.concatenate((paras1,paras1))
+    #newparas1len=np.concatenate((paras1,paras1))
 
     #print 'Histogram1'
 
@@ -206,7 +205,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-
+np.savetxt('DRtest2d.txt',tot_freq)
 
 #newperps2=np.concatenate((perps2,nperps2))
 #newparas2=np.concatenate((paras2,paras2))

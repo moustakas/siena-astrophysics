@@ -2,6 +2,7 @@ import astropy.io
 from astropy.io import fits
 import numpy as np
 import sys
+import matplotlib.pylab as plt
 #hdulist=fits.open('specObj-dr12.fits' , ignore_missing_end=True)
 
 infilename = sys.argv[1]
@@ -13,7 +14,7 @@ data=h.data
 
 #Test#
 #data=data[0:10000]
-
+'''
 print 'Data is Read'
 ##### CMASS Galaxies ######
 
@@ -110,14 +111,14 @@ tot8=tot7*zcut1*zcut
 print " %d of those passed the Z cut" % len(data[tot8])
 
 totcmass=data[tot8]
-
-print "Remaining CMASS Galaxies: %d" % len(totcmass)
-
-
 '''
+#print "Remaining CMASS Galaxies: %d" % len(totcmass)
+plt.plot(data['PLUG_RA'],data['PLUG_DEC'],'o')
+
+
 ##### LOWZ GALAXIES #####
 
-
+'''
 # BOSS TARGET CUT
 print 'Cutting BOSS Targets'
 indbt1=data['BOSS_TARGET1']>0
@@ -195,10 +196,12 @@ print "Remaining LOWZ Galaxies: %d" % len(totlowz)
 
 
 
-
+'''
+'''
 #####Histogram######
 import matplotlib.pylab as plt
 print 'Creating CMASS Histogram'
+
 plt.figure()
 plt.hist(data['Z'],bins=100,range=(0.0,1.0),label='Total CMASS Data',facecolor='orange') 
 print 'a'
