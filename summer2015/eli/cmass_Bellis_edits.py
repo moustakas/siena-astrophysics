@@ -38,7 +38,7 @@ a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:5000]]
 '''
-ngals_for_calculation = 50000
+ngals_for_calculation = 60000
 
 np.random.seed(1)
 
@@ -88,7 +88,7 @@ nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []
 
-tot_freq = np.zeros((200,200)) 
+tot_freq = np.zeros((300,300)) 
 
 for j in xrange(nchunks):
     lo = j*chunk_size
@@ -115,7 +115,7 @@ for j in xrange(nchunks):
             paras += R_para1.tolist()
             perps += R_perp1.tolist()
             #nperps1 += negR_perp1.tolist()
-            if i%1000==0:
+            if i%(chunk_size/4)==0:
                 print i
 
     #print len(paras)
@@ -126,11 +126,11 @@ for j in xrange(nchunks):
     #print 'Histogram1'
 
     import matplotlib.pylab as plt
-    hist=plt.hist2d(perps,paras,bins=200,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(perps,paras,bins=300,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
     # Mirror the negative perps
-    hist=plt.hist2d(-1*np.array(perps),paras,bins=200,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(-1*np.array(perps),paras,bins=300,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
 
@@ -145,7 +145,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('DDtest2d.txt',tot_freq)
+np.savetxt('DDtest2d1.txt',tot_freq)
 '''
 ngals = len(coordsa)
 

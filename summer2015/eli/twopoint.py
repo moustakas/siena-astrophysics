@@ -2,9 +2,9 @@ import numpy as np
 from operator import add
 import matplotlib.pylab as plt
 import math
-DD=np.loadtxt('DDtest2d.txt',dtype='float')
-DR=np.loadtxt('DRtest2d.txt',dtype='float')
-RR=np.loadtxt('RRtest2d.txt',dtype='float')
+DD=np.loadtxt('DDtest2d1.txt',dtype='float')
+DR=np.loadtxt('DRtest2d1.txt',dtype='float')
+RR=np.loadtxt('RRtest2d1.txt',dtype='float')
 
 
 #DDvals=DDvals.transpose()
@@ -28,8 +28,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=50000
-nrand=50000
+ndata=60000
+nrand=75000
 
 #ndata=2
 #nrand=2
@@ -41,10 +41,13 @@ theta = (DD - 2*DR + RR)/RR
 
 #R^2 WEIGHTING
 
+nbins=300
+
+
 #R Values
-for i in range(200):
-    for j in range(200):
-        r2=(100-i)**2 + (j-100)**2
+for i in range(nbins):
+    for j in range(nbins):
+        r2=((nbins/2)-i)**2 + (j-(nbins/2))**2
         theta[i][j] *= r2
 
 
@@ -74,7 +77,7 @@ plt.ylabel('Rpara (Mpc)')
 plt.title('DR')
 
 plt.subplot(2,2,4)
-d=plt.imshow(np.log(theta),extent=extent)
+d=plt.imshow(theta,extent=extent)
 plt.colorbar(d)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
