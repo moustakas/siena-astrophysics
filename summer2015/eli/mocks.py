@@ -55,7 +55,7 @@ a=np.arange(0,len(totrand))
 np.random.shuffle(a)
 sample=totrand[a[0:12000]]
 '''
-ngals_for_calculation = 75000
+ngals_for_calculation = 100000
 
 np.random.seed(1)
 
@@ -85,7 +85,7 @@ rho=Vr/H  #Distance from Earth to Galaxy in Mpc
 # Converting RA and Dec to Radians
 
 RArad=(sample[:,0])*((math.pi)/180)
-Decrad=((sample[:,1])*((math.pi)/180))
+Decrad=((math.pi)/2)-((sample[:,1])*((math.pi)/180))
 
 # Converting to Cartesian Coordinates
 
@@ -131,12 +131,12 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 1000
+chunk_size = 500
 nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []
 
-tot_freq = np.zeros((300,300)) 
+tot_freq = np.zeros((200,200)) 
 
 for j in xrange(nchunks):
     lo = j*chunk_size
@@ -176,11 +176,11 @@ for j in xrange(nchunks):
     #print 'Histogram1'
 
     import matplotlib.pylab as plt
-    hist=plt.hist2d(perps,paras,bins=300,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(perps,paras,bins=200,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
     # Mirror the negative perps
-    hist=plt.hist2d(-1*np.array(perps),paras,bins=300,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(-1*np.array(perps),paras,bins=200,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
 

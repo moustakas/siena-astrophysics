@@ -55,8 +55,8 @@ data1=data2[tot]
 print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 60000
-nrands=75000
+ngals_for_calculation = 100000
+nrands=100000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
@@ -98,11 +98,11 @@ comdistb=cosmo.comoving_distance(sampleb[:,2])
 
 # SDSS
 RArada=(samplea['PLUG_RA'])*((math.pi)/180)
-Decrada=((samplea['PLUG_DEC'])*((math.pi)/180))
+Decrada=((math.pi)/2)-((samplea['PLUG_DEC'])*((math.pi)/180))
 
 # Mock
 RAradb=(sampleb[:,0])*((math.pi)/180)
-Decradb=((sampleb[:,1])*((math.pi)/180))
+Decradb=((math.pi)/2)-((sampleb[:,1])*((math.pi)/180))
 
 
 ##### Converting to Cartesian Coordinates #####
@@ -143,12 +143,12 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 1000
+chunk_size = 500
 nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []
 
-tot_freq = np.zeros((300,300)) 
+tot_freq = np.zeros((200,200)) 
 
 for j in xrange(nchunks):
     lo = j*chunk_size
@@ -186,11 +186,11 @@ for j in xrange(nchunks):
     #print 'Histogram1'
 
     import matplotlib.pylab as plt
-    hist=plt.hist2d(perps,paras,bins=300,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(perps,paras,bins=200,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
     # Mirror the negative perps
-    hist=plt.hist2d(-1*np.array(perps),paras,bins=300,range=((-150,150),(-150,150)))
+    hist=plt.hist2d(-1*np.array(perps),paras,bins=200,range=((-150,150),(-150,150)))
     tot_freq += hist[0]
 
 
