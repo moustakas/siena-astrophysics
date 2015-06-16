@@ -29,7 +29,9 @@ weight_z=r[:,6]
 veto=r[:,7]
 #ztrue=data4560[:,8]
 #flag=data4560[:,9]
+print "Read in text file......"
 
+print "Making cuts......"
 # Txt Z Cut
 zcut=z>0.43
 zcutnew=z[zcut]
@@ -50,18 +52,22 @@ Ns4=data2['PLUG_DEC']<80
 Ns4new=data2['PLUG_DEC'][Ns4]
 tot=Ns1*Ns2*Ns3*Ns4
 data1=data2[tot]
+print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
+ngals_for_calculation = 50000
+
+np.random.seed(1)
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
-samplea=data1[a[0:17500]]
+samplea=data1[a[0:ngals_for_calculation]]
 
 
 # Randomizing a sample of Mock Data
 b=np.arange(0,len(totrand))
 np.random.shuffle(b)
-sampleb=totrand[b[0:17500]]
+sampleb=totrand[b[0:ngals_for_calculation]]
 
 
 ##### Finding Values for Spherical Coordinates ####
@@ -137,137 +143,81 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-for i,r1 in enumerate(coordsa[0:4375]):
-        # First compute R_LOS and dR
-        R_LOS1 = (r1 + coordsb)/2.
-        dR1 = coordsb - r1
+chunk_size = 1000
+nchunks = ngals_for_calculation/chunk_size
 
-        R_LOS_mag1 = mag(R_LOS1)
+frequencies = []
 
-        # Dot product
-        R_para1 = (dR1[:,0]*R_LOS1[:,0] + dR1[:,1]*R_LOS1[:,1] + dR1[:,2]*R_LOS1[:,2])/R_LOS_mag1
+tot_freq = np.zeros((200,200)) 
 
-        dR_mag1 = mag(dR1)
-        # Make use of the Pythagorean theorem
-        R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
-        negR_perp1 = -1*np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
+for j in xrange(nchunks):
+    lo = j*chunk_size
+    hi = (j+1)*chunk_size
+    print "Performing calculations for %d chunk: %d-%d" % (j,lo,hi)
 
-        paras1 += R_para1.tolist()
-        perps1 += R_perp1.tolist()
-        nperps1 +=negR_perp1.tolist()
-        print i
-print len(paras1)
-print len(perps1)
-newperps1=np.concatenate((perps1,nperps1))
-newparas1=np.concatenate((paras1,paras1))
+    paras = []
+    perps = []
+  
+    for i,r1 in enumerate(coordsa[lo:hi]):
+            # First compute R_LOS and dR
+            R_LOS1 = (r1 + coordsb[:])/2
+            dR1 = coordsb - r1
+            R_LOS_mag1 = mag(R_LOS1)
 
-print 'Histogram1'
+            # Dot product
+            R_para1 = (dR1[:,0]*R_LOS1[:,0] + dR1[:,1]*R_LOS1[:,1] + dR1[:,2]*R_LOS1[:,2])/R_LOS_mag1
 
-import matplotlib.pylab as plt
-hist1=plt.hist2d(newperps1,newparas1,bins=200,range=((-150,150),(-150,150)))
+            dR_mag1 = mag(dR1)
+            # Make use of the Pythagorean theorem
+            R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
+            #negR_perp1 = -1*R_perp1
 
-frequ1=hist1[0]
+            paras += R_para1.tolist()
+            perps += R_perp1.tolist()
+            #nperps1 += negR_perp1.tolist()
+            if i%1000==0:
+                print i
+
+    #print len(paras)
+    #print len(perps)
+    #newperps1=np.concatenate((perps1,nperps1))
+    #newparas1len=np.concatenate((paras1,paras1))
+
+    #print 'Histogram1'
+
+    import matplotlib.pylab as plt
+    hist=plt.hist2d(perps,paras,bins=200,range=((-150,150),(-150,150)))
+    tot_freq += hist[0]
+
+    # Mirror the negative perps
+    hist=plt.hist2d(-1*np.array(perps),paras,bins=200,range=((-150,150),(-150,150)))
+    tot_freq += hist[0]
+
+
+    #print type(hist1[0])
+    #frequ1=hist1[0]
+    #plt.close()
+
+    print tot_freq
+
+extent = [-150,150, -150,150]
+fig = plt.figure()
+axes = fig.add_subplot(1,1,1)
+ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+plt.show()
+np.savetxt('DRtest2d.txt',tot_freq)
+
+#newperps2=np.concatenate((perps2,nperps2))
+#newparas2=np.concatenate((paras2,paras2))
+
+#print 'Histogram2'
+#import matplotlib.pylab as plt
+#hist2=plt.hist2d(newperps2,newparas2,bins=200,range=((-150,150),(-150,150)))
+#
+#frequ2=hist2[0]
+#plt.close()
 #############################################################################
-paras2 = []
-perps2 = []
-nperps2 = []
-for i,r1 in enumerate(coordsa[4375:8750]):
-        # First compute R_LOS and dR
-        R_LOS2 = (r1 + coordsb)/2.
-        dR2 = coordsb - r1
-
-        R_LOS_mag2 = mag(R_LOS2)
-
-        # Dot product
-        R_para2 = (dR2[:,0]*R_LOS2[:,0] + dR2[:,1]*R_LOS2[:,1] + dR2[:,2]*R_LOS2[:,2])/R_LOS_mag2
-
-        dR_mag2 = mag(dR2)
-        # Make use of the Pythagorean theorem
-        R_perp2 = np.sqrt(dR_mag2*dR_mag2 - R_para2*R_para2)
-        negR_perp2 = -1*np.sqrt(dR_mag2*dR_mag2 - R_para2*R_para2)
-
-        paras2 += R_para2.tolist()
-        perps2 += R_perp2.tolist()
-        nperps2 +=negR_perp2.tolist()
-        print i
-print len(paras2)
-print len(perps2)
-newperps2=np.concatenate((perps2,nperps2))
-newparas2=np.concatenate((paras2,paras2))
-
-print 'Histogram2'
-import matplotlib.pylab as plt
-hist2=plt.hist2d(newperps2,newparas2,bins=200,range=((-150,150),(-150,150)))
-
-frequ2=hist2[0]
-#############################################################################
-paras3 = []
-perps3 = []
-nperps3 = []
-for i,r1 in enumerate(coordsa[8750:13125]):
-        # First compute R_LOS and dR
-        R_LOS3 = (r1 + coordsb)/2.
-        dR3 = coordsb - r1
-
-        R_LOS_mag3 = mag(R_LOS3)
-
-        # Dot product
-        R_para3 = (dR3[:,0]*R_LOS3[:,0] + dR3[:,1]*R_LOS3[:,1] + dR3[:,2]*R_LOS3[:,2])/R_LOS_mag3
-
-        dR_mag3 = mag(dR3)
-        # Make use of the Pythagorean theorem
-        R_perp3 = np.sqrt(dR_mag3*dR_mag3 - R_para3*R_para3)
-        negR_perp3 = -1*np.sqrt(dR_mag3*dR_mag3 - R_para3*R_para3)
-
-        paras3 += R_para3.tolist()
-        perps3 += R_perp3.tolist()
-        nperps3 +=negR_perp3.tolist()
-        print i
-print len(paras3)
-print len(perps3)
-newperps3=np.concatenate((perps3,nperps3))
-newparas3=np.concatenate((paras3,paras3))
-
-print 'Histogram3'
-import matplotlib.pylab as plt
-hist3=plt.hist2d(newperps3,newparas3,bins=200,range=((-150,150),(-150,150)))
-
-frequ3=hist3[0]
-#############################################################################
-paras4 = []
-perps4 = []
-nperps4 = []
-for i,r1 in enumerate(coordsa[13125:len(coordsa)]):
-        # First compute R_LOS and dR
-        R_LOS4 = (r1 + coordsb)/2.
-        dR4 = coordsb - r1
-
-        R_LOS_mag4 = mag(R_LOS4)
-
-        # Dot product
-        R_para4 = (dR4[:,0]*R_LOS4[:,0] + dR4[:,1]*R_LOS4[:,1] + dR4[:,2]*R_LOS4[:,2])/R_LOS_mag4
-
-        dR_mag4 = mag(dR4)
-        # Make use of the Pythagorean theorem
-        R_perp4 = np.sqrt(dR_mag4*dR_mag4 - R_para4*R_para4)
-        negR_perp4 = -1*np.sqrt(dR_mag4*dR_mag4 - R_para4*R_para4)
-
-        paras4 += R_para4.tolist()
-        perps4 += R_perp4.tolist()
-        nperps4 +=negR_perp4.tolist()
-        print i
-print len(paras4)
-print len(perps4)
-newperps4=np.concatenate((perps4,nperps4))
-newparas4=np.concatenate((paras4,paras4))
-
-print 'Histogram4'
-import matplotlib.pylab as plt
-hist4=plt.hist2d(newperps4,newparas4,bins=200,range=((-150,150),(-150,150)))
-
-frequ4=hist4[0]
-
-totfrequ=frequ1+frequ2+frequ3+frequ4
+#totfrequ=frequ1+frequ2+frequ3+frequ4
 '''
 ############# NOT IN CHUNKS ################################################### 
 # Vectors! (Note that stepcoord is initially the value behind coords[n])  
