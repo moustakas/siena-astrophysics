@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import pandas
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -74,23 +75,25 @@ def get_starqso(usesim=False):
         grlim = [-1,8]
     else: 
         filename = os.getenv('HOME')+'/data/stars_qsos_sdss.fits'
-        data = fits.getdata(filename,1)
-        ug = data['u'] - data['g']
-        gr = data['g'] - data['r']
-        
-        ugr = np.vstack((gr,ug)).T
-        objtype = (data['class'] == 'QSO')*1
-
+        fitsdata = fits.getdata(filename,1)
+        ug = fitsdata['u'] - fitsdata['g']
+        gr = fitsdata['g'] - fitsdata['r']
+        objtype = (fitsdata['class'] == 'QSO')*1
+            
+        data = np.vstack((gr,ug,objtype)).T
+        pdata = pandas.DataFrame(data,columns=['g-r','u-g','type'])
         uglim = [-0.5,3.0]
         grlim = [-0.5,1.5]
 
-    return ugr, objtype, uglim, grlim
+    return pdata, uglim, grlim
+    #return ugr, objtype, uglim, grlim
 
 def main():
     """Document me"""
 
     # Comment
-    ugr, objtype, uglim, grlim = get_starqso(usesim=False)
+    data, uglim, grlim = get_starqso(usesim=False)
+    #ugr, objtype, uglim, grlim = get_starqso(usesim=False)
 
     # Gaussian NB
     print('Working on Gaussian NB classifier...')
@@ -114,7 +117,48 @@ def main():
 
     # Make the plot!
 
-    sns.set(palette='Reds',style='ticks')
+    # Temporary hack!
+    sns.set(context='talk',style='dark',font_scale=1.5)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax1)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax2)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax3)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax4)
+    fig.tight_layout(pad=0.9, w_pad=0.5, h_pad=1.0)
+    plt.show()
+
+    
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
+    plt.xlim(grlim)
+    plt.ylim(uglim)
+    ax1.scatter(data['g-r'].values,data['u-g'].values,c=data['type'].values,
+                cmap='Reds')
+    plt.show()
+    
+
+
+    plt.xlim(grlim)
+    plt.ylim(uglim)
+
+    ax3.set_xlabel('g-r')
+    ax4.set_xlabel('g-r')
+    ax3.set_ylabel('u-g')
+    ax1.set_ylabel('u-g')
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax1,sharex=True,sharey=True)
+    plt.show()
+
+
+
+    ax2.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    ax3.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    ax4.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    plt.show()
+    
     
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)

@@ -163,7 +163,9 @@ def main():
     #ax4.scatter(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,color='g',s=50)
     sns.kdeplot(rzg_stars[:,0],rzg_stars[:,1],c=objtype_stars,ax=ax4, color=pal)
 
+     plt.savefig(os.getenv('HOME')+'/classifiers/deep2_classifiers.png')
 
+     
     #Plotting the Completeness and the contamination
     classifier = [0,1,2,3]
     compl = [gnb_compl,gmm_compl,knc_compl,svm_compl]
@@ -188,7 +190,7 @@ def main():
     ax2.legend(frameon=True)
 
 
-    plt.savefig(os.getenv('HOME')+'/classifiers/deep2_classifiers.png')
+    plt.savefig(os.getenv('HOME')+'/classifiers/deep2_contam.png') 
     plt.show()
  
 if __name__ == '__main__':
