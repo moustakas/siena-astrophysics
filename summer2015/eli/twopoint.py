@@ -28,8 +28,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=100000
-nrand=100000
+ndata=30000
+nrand=30000
 
 #ndata=2
 #nrand=2
@@ -42,7 +42,7 @@ theta = (DD - 2*DR + RR)/RR
 #R^2 WEIGHTING
 
 nbins=200
-
+rangeval=200
 
 #R Values
 for i in range(nbins):
@@ -56,7 +56,7 @@ plt.figure(figsize=(10,10))
 
 #extent=
 #plot=plt.imshow(theta)
-extent=[-150,150,-150,150]
+extent=[-rangeval,rangeval,-rangeval,rangeval]
 
 plt.subplot(2,2,1)
 a=plt.imshow(DD,extent=extent)
