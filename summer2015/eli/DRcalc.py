@@ -187,11 +187,11 @@ for j in xrange(nchunks):
     #print 'Histogram1'
 
     import matplotlib.pylab as plt
-    hist=plt.hist2d(perps,paras,bins=nbins,range=((-200,200),(-200,200)))
+    hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
     # Mirror the negative perps
-    hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-200,200),(-200,200)))
+    hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
 
@@ -202,12 +202,12 @@ for j in xrange(nchunks):
     print tot_freq
     print tot_freq[100,100]
 #tot_freq[(nbins/2),(nbins/2)]=0
-extent = [-200,200, -200,200]
+extent = [-rangeval,rangeval, -rangeval,rangeval]
 fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-#np.savetxt('DRtest2d1.txt',tot_freq)
+np.savetxt('DRtest2d2.txt',tot_freq)
 
 #newperps2=np.concatenate((perps2,nperps2))
 #newparas2=np.concatenate((paras2,paras2))
