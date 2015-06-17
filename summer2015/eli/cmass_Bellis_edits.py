@@ -38,7 +38,7 @@ a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:5000]]
 '''
-ngals_for_calculation = 3000
+ngals_for_calculation = 200000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
@@ -139,13 +139,13 @@ for j in xrange(nchunks):
     #plt.close()
 
     print tot_freq
-tot_freq[(nbins/2),(nbins/2)]=0
+#tot_freq[(nbins/2),(nbins/2)]=0
 extent = [-rangeval,rangeval, -rangeval,rangeval]
 fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-#np.savetxt('DDtest2d1.txt',tot_freq)
+np.savetxt('DDtest2d2.txt',tot_freq)
 '''
 ngals = len(coordsa)
 

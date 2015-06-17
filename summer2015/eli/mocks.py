@@ -55,7 +55,7 @@ a=np.arange(0,len(totrand))
 np.random.shuffle(a)
 sample=totrand[a[0:12000]]
 '''
-ngals_for_calculation = 30000
+ngals_for_calculation = 150000
 
 np.random.seed(1)
 
@@ -190,13 +190,13 @@ for j in xrange(nchunks):
     #plt.close()
 
     print tot_freq
-tot_freq[(nbins/2),(nbins/2)]=0
+#tot_freq[(nbins/2),(nbins/2)]=0
 extent = [-rangeval,rangeval, -rangeval,rangeval]
 fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('RRtest2d1.txt',tot_freq)
+np.savetxt('RRtest2d2.txt',tot_freq)
 '''
 ngals = len(coords)
 
@@ -205,6 +205,7 @@ perps = []
 nperps = []
 for i,r1 in enumerate(coords):
     if i!=ngals-1:
+In [16]: run eli/twopoint.py
         # First compute R_LOS and dR
         R_LOS = (r1 + coords[i+1:])/2.
         dR = coords[i+1:] - r1

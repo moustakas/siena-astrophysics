@@ -55,8 +55,8 @@ data1=data2[tot]
 print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 3000
-nrands=3000
+ngals_for_calculation = 150000
+nrands=200000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
