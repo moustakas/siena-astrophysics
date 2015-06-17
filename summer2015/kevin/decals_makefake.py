@@ -74,10 +74,11 @@ def decals_makefake():
 #       decmax = 11.933249806710897+0.1
 
         ## Temporarily focus on the center of the brick.
-        ramin = info['ra']-200*avgpixscale/3600
-        ramax = info['ra']+200*avgpixscale/3600
-        decmin = info['dec']-200*avgpixscale/3600
-        decmax = info['dec']+200*avgpixscale/3600
+        ramin = info['ra']-500*avgpixscale/3600
+        ramax = info['ra']+500*avgpixscale/3600
+        decmin = info['dec']-500*avgpixscale/3600
+        decmax = info['dec']+500*avgpixscale/3600
+
         ra = np.random.uniform(ramin,ramax,nfake)
         dec = np.random.uniform(decmin,decmax,nfake)
 
