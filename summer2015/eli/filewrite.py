@@ -20,7 +20,7 @@ data2=h1.data
 '''
 # Opening txt file (Mocks) 'b'
 print 'Reading in Text File'
-r=np.loadtxt('cmass_dr10_north_randoms_ir4419.v10.1.release.txt')
+r=np.loadtxt('cmass_dr10_north_randoms_ir4418.v10.1.release.txt')
 ra=r[:,0]
 dec=r[:,1]
 z=r[:,2]
@@ -92,7 +92,7 @@ zb=comdistb*np.cos(Decradb)
 
 
 mockdat=np.column_stack((ra1,dec1,z1,xb,yb,zb))
-np.savetxt('amockdat4419.txt',mockdat)
+#np.savetxt('amockdat4419.txt',mockdat)
 
 
 

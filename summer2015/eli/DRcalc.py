@@ -55,8 +55,8 @@ data1=data2[tot]
 print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 100000
-nrands=100000
+ngals_for_calculation = 150000
+nrands=200000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
@@ -143,7 +143,7 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 500
+chunk_size = 250
 nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []

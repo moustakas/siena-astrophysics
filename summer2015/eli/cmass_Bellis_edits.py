@@ -38,7 +38,7 @@ a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:5000]]
 '''
-ngals_for_calculation = 100000
+ngals_for_calculation = 150000
 
 np.random.seed(1)
 
@@ -55,7 +55,7 @@ comdist=cosmo.comoving_distance(sample['Z'])
 # Converting RA and Dec to Radians
 
 RArad=(sample['PLUG_RA'])*((math.pi)/180)
-Decrad=((sample['PLUG_DEC'])*((math.pi)/180))
+Decrad=((math.pi)/2)-((sample['PLUG_DEC'])*((math.pi)/180))
 
 # Coverting to Cartesian Coordinates
 
@@ -83,7 +83,7 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 500
+chunk_size = 250
 nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []

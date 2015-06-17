@@ -55,7 +55,7 @@ a=np.arange(0,len(totrand))
 np.random.shuffle(a)
 sample=totrand[a[0:12000]]
 '''
-ngals_for_calculation = 100000
+ngals_for_calculation = 200000
 
 np.random.seed(1)
 
@@ -131,7 +131,7 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 500
+chunk_size = 250
 nchunks = ngals_for_calculation/chunk_size
 
 frequencies = []
@@ -165,7 +165,7 @@ for j in xrange(nchunks):
             paras += R_para1.tolist()
             perps += R_perp1.tolist()
             #nperps1 += negR_perp1.tolist()
-            if i%500==0:
+            if i%(chunk_size/4)==0:
                 print i
 
     #print len(paras)

@@ -28,8 +28,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=60000
-nrand=75000
+ndata=100000
+nrand=100000
 
 #ndata=2
 #nrand=2
@@ -41,7 +41,7 @@ theta = (DD - 2*DR + RR)/RR
 
 #R^2 WEIGHTING
 
-nbins=300
+nbins=200
 
 
 #R Values

@@ -17,7 +17,7 @@ data=h.data
 '''
 print 'Data is Read'
 ##### CMASS Galaxies ######
-
+'''
 # BOSS TARGET CUT
 print 'Cutting BOSS Targets'
 indbt1=data['BOSS_TARGET1']>0
@@ -56,7 +56,7 @@ wv=data['ZWARNING_NOQSO']==0
 wvnew=data['ZWARNING_NOQSO'][wv]
 notwv=len(data)-len(wvnew)
 print " %d targets contained redshift errors" % notwv
-
+'''
 # CHUNK CUT
 print 'Chunk Cut'
 c1=data['CHUNK']!="boss1"
@@ -75,7 +75,7 @@ ifib=ifibbin==0
 ifibnew=ifibbin[ifib]
 notifib=len(data)-len(ifibnew)
 print " %d targets had a fiber magnitude over 21.5 " % notifib
-
+'''
 # Z CUT #
 print 'Z Cut'
 zcut=data['Z']>0.43
@@ -85,12 +85,12 @@ zcut1=data['Z']<0.70
 zcutnew1=data['Z'][zcut1]
 notzcut=(len(data)-len(zcutnew))+(len(data)-len(zcutnew1))
 print " %d targets failed the Z cut" % notzcut
+'''
+'''
+tot=indbt1*cmass*po*wv*gal*zcut1*zcut
+totcmass=data[tot]
 
-
-
-
-
-
+'''
 # TOTAL CUT
 print 'Finalizing CMASS Cut'
 tot1=indbt1
@@ -113,9 +113,11 @@ print " %d of those passed the Z cut" % len(data[tot8])
 totcmass=data[tot8]
 '''
 #print "Remaining CMASS Galaxies: %d" % len(totcmass)
-plt.plot(data['PLUG_RA'],data['PLUG_DEC'],'o')
-
-
+plt.plot(totcmass['PLUG_RA'],totcmass['PLUG_DEC'],'o',markersize=0.2)
+plt.xlim(90,280)
+plt.ylim(-10,80)
+plt.title('BOSS,CMASS,Primary Obs,ZWarning,Galaxy, and Z cut')
+plt.show()
 ##### LOWZ GALAXIES #####
 
 '''
