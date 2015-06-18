@@ -2,6 +2,8 @@ import numpy as np
 from operator import add
 import matplotlib.pylab as plt
 import math
+from matplotlib.colors import LogNorm
+import matplotlib as mpl
 DD=np.loadtxt('DDtest2d2.txt',dtype='float')
 DR=np.loadtxt('DRtest2d2.txt',dtype='float')
 RR=np.loadtxt('RRtest2d2.txt',dtype='float')
@@ -29,27 +31,33 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=150000
-nrand=200000
-
+ndata1=150000
+ndata2=200000
+nrand1=150000
+nrand2=200000
 #ndata=2
 #nrand=2
 
-DD /=(ndata**2-ndata)/2.
-DR /=(nrand*ndata)/1.
-RR /=(nrand**2-nrand)/2.
+DD /=(ndata2**2-ndata2)/1.
+DR /=(nrand2*ndata1)/1.
+RR /=(nrand1**2-nrand1)/1.
 theta = (DD - 2*DR + RR)/RR
-theta*= 0.7
+#theta*= 0.7
 #R^2 WEIGHTING
 
 nbins=200
 rangeval=200
 
+# Correct for little h
+rangeval *= 0.7
+
 #R Values
+'''
 for i in range(nbins):
     for j in range(nbins):
         r2=((nbins/2)-i)**2 + (j-(nbins/2))**2
         theta[i][j] *= r2
+'''
 
 
 plt.figure(figsize=(10,10))
@@ -77,8 +85,14 @@ plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
 plt.title('DR')
 
+
+newtheta= np.zeros((nbins,nbins))
+newtheta += theta
+for i in range(0,nbins):
+    newtheta[i] += theta[(nbins-1)-i]
+
 plt.subplot(2,2,4)
-d=plt.imshow(theta,extent=extent)
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.0001,vmax=0.3))
 plt.colorbar(d)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
