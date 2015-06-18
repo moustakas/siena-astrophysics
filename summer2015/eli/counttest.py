@@ -25,7 +25,7 @@ zcutnew1=z[zcut1]
 tot=zcut*zcut1
 totrand=r[tot]
 
-ngals_for_calculation = 1000
+ngals_for_calculation = 5000
 
 np.random.seed(1)
 
@@ -82,9 +82,10 @@ for j in xrange(nchunks):
     paras = []
     perps = []
 
-    for i,r1 in enumerate(coordsa[lo:hi]):
+    for i in range(lo,hi):
         if i!=ngals-1:
             # First compute R_LOS and dR
+            r1=coordsa[i]
             R_LOS1 = (r1 + coordsa[i+1:])/2.
             dR1 = coordsa[i+1:] - r1
 
