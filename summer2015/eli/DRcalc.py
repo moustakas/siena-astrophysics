@@ -143,10 +143,10 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 250
+chunk_size = 100
 nchunks = ngals_for_calculation/chunk_size
 nbins=200
-rangeval=200
+rangeval=300
 frequencies = []
 
 tot_freq = np.zeros((nbins,nbins)) 

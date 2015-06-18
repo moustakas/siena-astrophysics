@@ -8,8 +8,7 @@ DD=np.loadtxt('DDtest2d2.txt',dtype='float')
 DR=np.loadtxt('DRtest2d2.txt',dtype='float')
 RR=np.loadtxt('RRtest2d2.txt',dtype='float')
 
-DD[100,100]=0
-RR[100,100]=0
+
 #DDvals=DDvals.transpose()
 #DRvals=DRvals.transpose()
 #RRvals=RRvals.transpose()
@@ -31,22 +30,18 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata1=150000
-ndata2=200000
-nrand1=150000
-nrand2=200000
-#ndata=2
-#nrand=2
+ndata=10000
+nrand=10000
 
-DD /=(ndata2**2-ndata2)/1.
-DR /=(nrand2*ndata1)/1.
-RR /=(nrand1**2-nrand1)/1.
+DD /=(ndata**2-ndata)/2.
+DR /=(nrand*ndata)/1.
+RR /=(nrand**2-nrand)/2.
 theta = (DD - 2*DR + RR)/RR
 #theta*= 0.7
 #R^2 WEIGHTING
 
 nbins=200
-rangeval=200
+rangeval=300
 
 # Correct for little h
 rangeval *= 0.7
@@ -85,14 +80,14 @@ plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
 plt.title('DR')
 
-
+### Mirror Over the X-Axis #### 
 newtheta= np.zeros((nbins,nbins))
 newtheta += theta
 for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.0001,vmax=0.3))
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.0001,vmax=2))
 plt.colorbar(d)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
