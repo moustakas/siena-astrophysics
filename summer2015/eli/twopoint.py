@@ -2,11 +2,12 @@ import numpy as np
 from operator import add
 import matplotlib.pylab as plt
 import math
-DD=np.loadtxt('DDtest2d1.txt',dtype='float')
-DR=np.loadtxt('DRtest2d1.txt',dtype='float')
-RR=np.loadtxt('RRtest2d1.txt',dtype='float')
+DD=np.loadtxt('DDtest2d2.txt',dtype='float')
+DR=np.loadtxt('DRtest2d2.txt',dtype='float')
+RR=np.loadtxt('RRtest2d2.txt',dtype='float')
 
-
+DD[100,100]=0
+RR[100,100]=0
 #DDvals=DDvals.transpose()
 #DRvals=DRvals.transpose()
 #RRvals=RRvals.transpose()
@@ -28,8 +29,8 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=30000
-nrand=30000
+ndata=150000
+nrand=200000
 
 #ndata=2
 #nrand=2
@@ -38,7 +39,7 @@ DD /=(ndata**2-ndata)/2.
 DR /=(nrand*ndata)/1.
 RR /=(nrand**2-nrand)/2.
 theta = (DD - 2*DR + RR)/RR
-
+theta*= 0.7
 #R^2 WEIGHTING
 
 nbins=200
