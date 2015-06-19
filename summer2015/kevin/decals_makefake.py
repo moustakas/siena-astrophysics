@@ -63,6 +63,7 @@ def build_priors(nobj=20,brickname=None,objtype='ELG',ra_range=None,
 
     """
 
+    from astropy.table import Table
     rand = np.random.RandomState(seed=seed)
 
     # Assign central coordinates uniformly
@@ -96,19 +97,21 @@ def build_priors(nobj=20,brickname=None,objtype='ELG',ra_range=None,
 
         # Pack into a Table.
 
-        priors = fits.BinTableHDU.from_columns([
-            fits.Column(name='ra',format='f8',array=ra),
-            fits.Column(name='dec',format='f8',array=dec),
-            fits.Column(name='r',format='f4',array=rmag),
-            fits.Column(name='gr',format='f4',array=gr),
-            fits.Column(name='rz',format='f4',array=rz),
-            fits.Column(name='disk_n',format='f4',array=disk_n),
-            fits.Column(name='disk_r50',format='f4',array=disk_r50),
-            fits.Column(name='disk_ba',format='f4',array=disk_ba),
-            fits.Column(name='disk_phi',format='f4',array=disk_phi)])
-        outfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
-        print('Writing {}'.format(outfile))
-        priors.writeto(outfile,clobber=True)
+    priors = fits.BinTableHDU.from_columns([
+        fits.Column(name='ra',format='f8',array=ra),
+        fits.Column(name='dec',format='f8',array=dec),
+        fits.Column(name='r',format='f4',array=rmag),
+        fits.Column(name='gr',format='f4',array=gr),
+        fits.Column(name='rz',format='f4',array=rz),
+        fits.Column(name='disk_n',format='f4',array=disk_n),
+        fits.Column(name='disk_r50',format='f4',array=disk_r50),
+        fits.Column(name='disk_ba',format='f4',array=disk_ba),
+        fits.Column(name='disk_phi',format='f4',array=disk_phi)])
+    outfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
+    print('Writing {}'.format(outfile))
+    priors.writeto(outfile,clobber=True)
+
+    return Table(priors)
 
 def copyfiles(ccdinfo=None):
     """Copy the CP-processed images, inverse variance maps, and bad-pixel masks we
@@ -144,7 +147,7 @@ def copyfiles(ccdinfo=None):
         #log.info('{}-->{}'.format(os.path.join(indir,imfile),os.path.join(outdir,imfile)))
         shutil.copyfile(os.path.join(indir,imfile),os.path.join(outdir,imfile))
                 
-def insert_simobj(gsparams=None):
+def insert_simobj(gsparams=None,priors=None,ccdinfo=None):
 
     stampwidth = 95 # postage stamp width [pixels, roughly 14 arcsec]
     stampbounds = galsim.BoundsD(0,stampwidth,0,stampwidth)
@@ -152,12 +155,12 @@ def insert_simobj(gsparams=None):
     band = np.array(['g','r','z'])
 
     # Calculate the g, r, and z band fluxes and stack them in an array.
-    gflux = 10**(-0.4*(rmag+grmag)) # [nanomaggies]
-    rflux = 10**(-0.4*rmag)
-    zflux = 10**(-0.4*(rmag-rzmag))
+    gflux = 10**(-0.4*(priors['r']+priors['gr'])) # [nanomaggies]
+    rflux = 10**(-0.4*priors['r'])
+    zflux = 10**(-0.4*(priors['r']-priors['rz']))
     flux = np.vstack([gflux,rflux,zflux])
         
-    for ccd in allccds:
+    for ccd in ccdinfo:
         print(ccd.ra,ccd.dec)
 
         # Get the filenames we need.
@@ -315,15 +318,17 @@ def main():
         
     # Build the prior parameters.
     log.info('Building the table of prior parameters.')
-    build_priors(nobj,brickname,objtype,ra_range,dec_range,
-                 seed=args.seed)
+    priors = build_priors(nobj,brickname,objtype,ra_range,dec_range,
+                          seed=args.seed)
 
     # Copy the files we need.
     copyfiles(ccdinfo)
 
+  
+
     # Simulate objects and place them into the images.
     gsparams = galsim.GSParams(maximum_fft_size=2L**30L)
-    insert_simobj(gsparams=gsparams)
+    insert_simobj(gsparams=gsparams,priors=priors,ccdinfo=ccdinfo)
 
 
 
