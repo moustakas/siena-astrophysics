@@ -38,7 +38,7 @@ a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:5000]]
 '''
-ngals_for_calculation = 150000
+ngals_for_calculation = 50000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
@@ -146,7 +146,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('DDtest2d2.txt',tot_freq)
+np.savetxt('DDtest2d5.txt',tot_freq)
 '''
 ngals = len(coordsa)
 
