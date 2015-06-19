@@ -6,9 +6,9 @@ def galaxy2():
     
     pixel_scale = 0.25
     half = 20.0
-    n = 2.0
+    n = 4.0
     flux = 1e5
-    q = 0.2
+    q = 1
     beta = 75 * galsim.degrees
 
     gal = galsim.Sersic(n=n, half_light_radius=half, flux=flux)
@@ -21,7 +21,7 @@ def galaxy2():
     
     #image.addNoise(galsim.GaussianNoise(sigma=noise))
     print('Writing Test Galaxy')
-    image.write('sersic1.fits',clobber=True)
+    image.write('sersic4.fits',clobber=True)
 
 if __name__ == "__main__":
     galaxy2()
