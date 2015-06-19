@@ -55,8 +55,8 @@ data1=data2[tot]
 print "Made cuts....."
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 150000
-nrands=200000
+ngals_for_calculation = 50000
+nrands=50000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
@@ -207,7 +207,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('DRtest2d2.txt',tot_freq)
+np.savetxt('DRtest2d5.txt',tot_freq)
 
 #newperps2=np.concatenate((perps2,nperps2))
 #newparas2=np.concatenate((paras2,paras2))
