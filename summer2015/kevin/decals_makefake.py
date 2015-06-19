@@ -12,15 +12,12 @@ import os
 import sys
 import logging
 import argparse
-
-import galsim
 import numpy as np
 
+import galsim
 from astropy.io import fits
 
 from projects.desi.common import *
-from tractor import psfex
-from tractor.basics import GaussianMixtureEllipsePSF
 
 # Global variables.
 decals_dir = os.getenv('DECALS_DIR')
@@ -63,7 +60,7 @@ def build_priors(nobj=20,brickname=None,objtype='ELG',ra_range=None,
 
     """
 
-    from astropy.table import Table
+    from astropy.table import Table, Column
     rand = np.random.RandomState(seed=seed)
 
     # Assign central coordinates uniformly
@@ -95,48 +92,61 @@ def build_priors(nobj=20,brickname=None,objtype='ELG',ra_range=None,
         gr = rand.uniform(gr_range[0],gr_range[1],nobj)
         rz = rand.uniform(rz_range[0],rz_range[1],nobj)
 
-        # Pack into a Table.
+    # For convenience, also store the grz fluxes in nanomaggies.
+    gflux = 1E9*10**(-0.4*(rmag+gr))
+    rflux = 1E9*10**(-0.4*rmag)
+    zflux = 1E9*10**(-0.4*(rmag-rz))
 
-    priors = fits.BinTableHDU.from_columns([
-        fits.Column(name='ra',format='f8',array=ra),
-        fits.Column(name='dec',format='f8',array=dec),
-        fits.Column(name='r',format='f4',array=rmag),
-        fits.Column(name='gr',format='f4',array=gr),
-        fits.Column(name='rz',format='f4',array=rz),
-        fits.Column(name='disk_n',format='f4',array=disk_n),
-        fits.Column(name='disk_r50',format='f4',array=disk_r50),
-        fits.Column(name='disk_ba',format='f4',array=disk_ba),
-        fits.Column(name='disk_phi',format='f4',array=disk_phi)])
+    # Pack into a Table.
+    priors = Table()
+    priors['ID'] = Column(np.arange(nobj,dtype='i4'))
+    priors['RA'] = Column(ra,dtype='f8')
+    priors['DEC'] = Column(dec,dtype='f8')
+    priors['R'] = Column(rmag,dtype='f4')
+    priors['GR'] = Column(gr,dtype='f4')
+    priors['RZ'] = Column(rz,dtype='f4')
+    priors['GFLUX'] = Column(gflux,dtype='f4')
+    priors['RFLUX'] = Column(rflux,dtype='f4')
+    priors['ZFLUX'] = Column(zflux,dtype='f4')
+    priors['DISK_N'] = Column(disk_n,dtype='f4')
+    priors['DISK_R50'] = Column(disk_r50,dtype='f4')
+    priors['DISK_BA'] = Column(disk_ba,dtype='f4')
+    priors['DISK_PHI'] = Column(disk_phi,dtype='f4')
+
+    # Write out.
     outfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
-    print('Writing {}'.format(outfile))
-    priors.writeto(outfile,clobber=True)
+    log.info('Writing {}'.format(outfile))
+    if os.path.isfile(outfile):
+        os.remove(outfile)
+    priors.write(outfile)
 
-    return Table(priors)
+    return priors
 
 def copyfiles(ccdinfo=None):
     """Copy the CP-processed images, inverse variance maps, and bad-pixel masks we
     need from DECALS_DIR to FAKE_DECALS_DIR, creating directories as necessary.
 
     """
-    log.info('Copying files...')
-    
     import shutil
 
     allcpimage = ccdinfo['CPIMAGE']
     allcpdir = set([cpim.split('/')[1] for cpim in allcpimage])
     
+    log.info('Creating directories...')
     for cpdir in list(allcpdir):
         outdir = os.path.join(fake_decals_dir,'images','decam',cpdir)
         if not os.path.isdir(outdir):
-            log.info('Creating directory {}'.format(outdir))
+            log.info('   {}'.format(outdir))
             os.makedirs(outdir)
     
+    log.info('Copying files...')
     for cpimage in list(set(allcpimage)):
         cpdir = cpimage.split('/')[1]
         indir = os.path.join(decals_dir,'images','decam',cpdir)
+        outdir = os.path.join(fake_decals_dir,'images','decam',cpdir)
 
         imfile = cpimage.split('/')[2].split()[0]
-        log.info('  Copying {}'.format(imfile))
+        log.info('  {}'.format(imfile))
         shutil.copyfile(os.path.join(indir,imfile),os.path.join(outdir,imfile))
 
         imfile = imfile.replace('ooi','oow')
@@ -146,122 +156,178 @@ def copyfiles(ccdinfo=None):
         imfile = imfile.replace('oow','ood')
         #log.info('{}-->{}'.format(os.path.join(indir,imfile),os.path.join(outdir,imfile)))
         shutil.copyfile(os.path.join(indir,imfile),os.path.join(outdir,imfile))
-                
-def insert_simobj(gsparams=None,priors=None,ccdinfo=None):
 
+class simobj_info():
+    from tractor import psfex
+    def __init__(self,ccdinfo):
+        """Access everything we need about an individual CCD.
+        
+        """        
+        self.cpimage = ccdinfo['CPIMAGE']
+        self.ccdnum = ccdinfo['CCDNUM']
+        self.calname = ccdinfo['CALNAME']
+        self.filter = ccdinfo['FILTER']
+        self.imfile = os.path.join(fake_decals_dir,'images',self.cpimage)
+        self.ivarfile = self.imfile.replace('ooi','oow')
+        self.wcsfile = os.path.join(decals_dir,'calib','decam',
+                                    'astrom-pv',self.calname+'.wcs.fits')
+        self.psffile = os.path.join(decals_dir,'calib','decam',
+                                    'psfex',self.calname+'.fits')
+        self.magzpt = float(ccdinfo['CCDZPT'] + 2.5*np.log10(ccdinfo['EXPTIME']))
+        self.gain = float(ccdinfo['ARAWGAIN']) # [electron/ADU]
+
+    def getdata(self):
+        """Read the CCD image and inverse variance data, and the corresponding headers. 
+        
+        """
+        print('Reading extension {} of image {}'.format(self.ccdnum,self.imfile))
+        image = galsim.fits.read(self.imfile,hdu=self.ccdnum)       # [ADU]
+        invvar = galsim.fits.read(self.ivarfile,hdu=self.ccdnum) # [1/ADU^2]
+        
+        imhdr = galsim.fits.FitsHeader(self.imfile,hdu=self.ccdnum)
+        ivarhdr = galsim.fits.FitsHeader(self.ivarfile,hdu=self.ccdnum)
+        
+        self.width = image.xmax
+        self.height = image.ymax
+        
+        return image, invvar, imhdr, ivarhdr
+
+    def getwcs(self):
+        """Read the global WCS for this CCD."""
+        wcs, origin = galsim.wcs.readFromFitsHeader(
+            galsim.fits.FitsHeader(self.wcsfile))
+        self.wcs = wcs
+
+        return wcs
+    
+    def getpsf(self):
+        """Read the PSF for this CCD."""
+        from tractor.basics import GaussianMixtureEllipsePSF
+        psf = psfex.PsfEx(self.psffile,self.width,self.height,ny=13,nx=7,
+                          psfClass=GaussianMixtureEllipsePSF,K=2)
+        self.psf = psf
+
+        return psf
+
+    def getlocalwcs(self,image_pos=None):
+        """Get the local WCS, given a position."""
+        localwcs = self.wcs.local(image_pos=image_pos)
+        pixscale, shear, theta, flip = localwcs.getDecomposition() # get the pixel scale
+
+        return localwcs, pixscale
+
+    def getlocalpsf(self,image_pos=None,pixscale=0.262):
+        """Get the local PSF, given a position.  Need to recentroid because this is a
+        PSFeX PSF."""
+        xpos = int(image_pos.x)
+        ypos = int(image_pos.y)
+        psfim = PsfEx.instantiateAt(self.psf,xpos,ypos)[5:-5,5:-5] # trim
+        psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=pixscale,flux=1.0)
+        psf_centroid = psf.centroid()
+        psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
+
+        return psf
+    
+    def getobjflux(self,objinfo):
+        """Calculate the flux of a given object in ADU."""
+        flux = objinfo[self.filter.upper()+'FLUX']
+        flux *= 10**(0.4*(self.magzpt-22.5)) # [ADU]
+
+        return float(flux)
+
+    
+def insert_simobj(gsparams=None,priors=None,ccdinfo=None):
+    """Simulate objects and place them into individual CCDs.
+
+    """
     stampwidth = 95 # postage stamp width [pixels, roughly 14 arcsec]
-    stampbounds = galsim.BoundsD(0,stampwidth,0,stampwidth)
+    stampbounds = galsim.BoundsI(0,stampwidth,0,stampwidth)
     
     band = np.array(['g','r','z'])
 
     # Calculate the g, r, and z band fluxes and stack them in an array.
-    gflux = 10**(-0.4*(priors['r']+priors['gr'])) # [nanomaggies]
-    rflux = 10**(-0.4*priors['r'])
-    zflux = 10**(-0.4*(priors['r']-priors['rz']))
-    flux = np.vstack([gflux,rflux,zflux])
+    #flux = np.vstack([gflux,rflux,zflux])
         
     for ccd in ccdinfo:
-        print(ccd.ra,ccd.dec)
+        # Gather some basic info on this CCD and then read the data, the WCS
+        # info, and initialize the PSF.
+        siminfo = simobj_info(ccd)
 
-        # Get the filenames we need.
-        cpname = ccd.cpimage.strip()
-        calname = ccd.calname.strip()
-        thisband = np.where((ccd.filter==band)*1)
+        image, invvar, imhdr, ivarhdr = siminfo.getdata()
+        wcs = siminfo.getwcs()
+        initpsf = siminfo.getpsf()
         
-        imfile = os.path.join(fake_decals_dir,'images',cpname)
-        ivarfile = imfile.replace('ooi','oow')
-        psffile = os.path.join(decals_dir,'calib','decam','psfex',calname+'.fits')
-        wcsfile = os.path.join(decals_dir,'calib','decam','astrom-pv',calname+'.wcs.fits')
-        
-        # Read the data.
-        print('Reading extension {} of image {}'.format(ccd.ccdnum,imfile))
-        im = galsim.fits.read(imfile,hdu=ccd.ccdnum)       # [ADU]
-        invvar = galsim.fits.read(ivarfile,hdu=ccd.ccdnum) # [1/ADU^2]
-        hdr = galsim.fits.FitsHeader(imfile,hdu=ccd.ccdnum)
-        ivarhdr = galsim.fits.FitsHeader(ivarfile,hdu=ccd.ccdnum)
-        
-        # Get the WCS info and initialize the PSF
-        wcs, origin = galsim.wcs.readFromFitsHeader(galsim.fits.FitsHeader(wcsfile))
-        initpsf = psfex.PsfEx(psffile,im.xmax,im.ymax,ny=13,nx=7,
-                              psfClass=GaussianMixtureEllipsePSF,K=2)
+        # Loop on each object and figure out which, if any, objects will be
+        # placed on this CCD.
 
-        # Get the zeropoint info for this image and CCD
-        zptinfo = zpts[np.where(((zpts['CPIMAGE']==ccd.cpimage)*1)*((zpts['EXTNAME']==ccd.extname)*1))]
-        magzpt = float(zptinfo['CCDZPT'] + 2.5*np.log10(zptinfo['EXPTIME']))
-        gain = float(zptinfo['ARAWGAIN']) # [electron/ADU]
+        onccd = []
+        for iobj, objinfo in enumerate(priors):
+            pos = wcs.toImage(galsim.CelestialCoord(objinfo['RA']*galsim.degrees,
+                objinfo['DEC']*galsim.degrees))
+            stampbounds = stampbounds.shift(galsim.PositionI(int(pos.x/2),int(pos.y/2)))
+            
+            overlap = stampbounds & image.bounds
+            if (overlap.xmax>=0 and overlap.ymax>=0 and overlap.xmin<=image.xmax and
+                overlap.ymin<=image.ymax and overlap.area()>0):
+                onccd.append(iobj)
 
-        # Loop on each fake galaxy.
+        nobj = len(onccd)
+        log.info('Adding {} objects to CCD {}'.format(nobj,siminfo.ccdnum))
+
         for iobj in range(nobj):
-            # Get the position of the galaxy on the CCD and build the PSF.
-            pos = wcs.toImage(galsim.CelestialCoord(
-                ra[iobj]*galsim.degrees,dec[iobj]*galsim.degrees))
+            objinfo = priors[onccd[iobj]]
+            pos = wcs.toImage(galsim.CelestialCoord(objinfo['RA']*galsim.degrees,
+                objinfo['DEC']*galsim.degrees))
+
             xpos = int(pos.x)
             ypos = int(pos.y)
-            print(iobj, xpos, ypos, ndisk[iobj], disk_r50[iobj])
-
-            galflux = float(flux[thisband,iobj]*10**(0.4*magzpt)) # [ADU]
-
-            wcslocal = wcs.local(image_pos=pos)
             offset = galsim.PositionD(pos.x-xpos,pos.y-ypos)
-            pixscale, shear, theta, flip = wcslocal.getDecomposition() # get the pixel scale
 
-            psfim = PsfEx.instantiateAt(initpsf,xpos,ypos)[5:-5,5:-5]
-            psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=pixscale,flux=1.0)
-            psf_centroid = psf.centroid()
-            psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
+            # Get the WCS and PSF at the center of the stamp and the integrated
+            # flux of the object (in the appropriate band).
+            localwcs, pixscale = siminfo.getlocalwcs(image_pos=pos)
+            localpsf = siminfo.getlocalpsf(image_pos=pos,pixscale=pixscale)
 
-            # Build the postage stamp of the object convolved with the PSF.
-            #bulge = galsim.Sersic(n=nbulge[iobj],half_light_radius=ndisk[iobj],
-            #                      gsparams=gsparams,flux=flux[iband,iobj])
-            #disk = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj])
-            #stamp = bulge_frac[iobj] * bulge + (1-bulge_frac[iobj]) * disk
-            gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],
-                                flux=galflux,gsparams=gsparams)
-            #gal = galsim.Sersic(ndisk[iobj],scale_radius=disk_r50[iobj],
-            #                    flux=float(flux[thisband,iobj]*10**(-0.4*magzpt)))
-            gal = gal.shear(q=axisratio[iobj],beta=phi[iobj]*galsim.degrees)
-            gal = galsim.Convolve([gal,psf])
-            #gal = gal.shift(pos.x-xpos,pos.y-ypos) # apply sub-pixel shift
+            objflux = siminfo.getobjflux(objinfo)
+
+            # Finally build the object.
+            obj = galsim.Sersic(float(objinfo['DISK_N']),half_light_radius=float(objinfo['DISK_R50']),
+                                flux=objflux,gsparams=gsparams)
+            obj = obj.shear(q=float(objinfo['DISK_BA']),beta=float(objinfo['DISK_PHI'])*galsim.degrees)
+            obj = galsim.Convolve([obj,localpsf])
             
-            #stamp = gal.drawImage(wcs=wcslocal,method='no_pixel')
-            stamp = gal.drawImage(nx=stampwidth,ny=stampwidth,wcs=wcslocal,method='no_pixel')
+            stamp = obj.drawImage(nx=stampwidth,ny=stampwidth,offset=offset,
+                                  wcs=localwcs,method='no_pixel')
+
             stamp.setCenter(xpos,ypos)
-            
-            overlap = stamp.bounds & im.bounds
-            if (overlap.xmax>=0 and overlap.ymax>=0 and overlap.xmin<=im.xmax and
-                overlap.ymin<=im.ymax and overlap.area()>0):
-                print('Adding object {} to x={}, y={}, ra={}, dec={} with flux {}'.format(
-                        iobj,pos.x,pos.y,ra[iobj],dec[iobj],galflux))
+            overlap = stamp.bounds & image.bounds
+            stamp = stamp[overlap]
+
+            # Add Poisson noise
+            varstamp = invvar[overlap].copy()
+            varstamp.invertSelf() # [ADU^2]
+            medvar = np.median(varstamp.array[varstamp.array>0])
+            neg = np.where(varstamp.array<(0.2*medvar))
+            if neg[0].size>0:
+                varstamp.array[neg] = medvar
                     
-                stamp = stamp[overlap]
+            stamp *= siminfo.gain # [electrons]
+            varstamp *= siminfo.gain**2
+            varstamp += stamp
 
-                # Add Poisson noise
-                varstamp = invvar[overlap].copy()
-                varstamp.invertSelf() # [ADU^2]
-                medvar = np.median(varstamp.array[varstamp.array>0])
-                neg = np.where(varstamp.array<(0.2*medvar))
-                if neg[0].size>0:
-                    varstamp.array[neg] = medvar
-                        
-                stamp *= gain # [electrons]
-                varstamp *= gain**2
-                varstamp += stamp
-                
-                stamp.addNoise(galsim.VariableGaussianNoise(galsim.BaseDeviate(),varstamp))
+            stamp.addNoise(galsim.VariableGaussianNoise(galsim.BaseDeviate(),varstamp))
 
-                stamp /= gain         # [ADU]
-                varstamp /= gain**2   # [ADU^2]
-                varstamp.invertSelf() # [1/ADU^2]
+            stamp /= siminfo.gain         # [ADU]
+            varstamp /= siminfo.gain**2   # [ADU^2]
+            varstamp.invertSelf()         # [1/ADU^2]
 
-                im[overlap] += stamp
-                invvar[overlap] += varstamp
+            image[overlap] += stamp
+            invvar[overlap] += varstamp
 
-            # Writes the images to the output directory.
-            outfile = os.path.join(fake_decals_dir,'images',ccd.cpimage.strip())
-            print('Updating extension {} of image {}'.format(ccd.ccdnum,outfile))
-            fits.update(imfile,im.array,ext=ccd.ccdnum,header=fits.Header(hdr.items()))
-            fits.update(ivarfile,invvar.array,ext=ccd.ccdnum,header=fits.Header(ivarhdr.items()))
-            #galsim.fits.write(im,file_name='junk.fits',clobber=True)
+            # Write out.
+            print('Updating extension {} of image {}'.format(siminfo.ccdnum,siminfo.imfile))
+#           fits.update(imfile,im.array,ext=ccd.ccdnum,header=fits.Header(imhdr.items()))
+#           fits.update(ivarfile,invvar.array,ext=ccd.ccdnum,header=fits.Header(ivarhdr.items()))
 
 def main():
 
@@ -306,32 +372,50 @@ def main():
 
         ra, dec = brickwcs.pixelxy2radec(zoom[0]+dx/2,zoom[2]+dy/2)
         ra_range = [ra-dx*pixscale/2,ra+dx*pixscale/2]
-        dec_range = [ra-dy*pixscale/2,dec+dy*pixscale/2]
+        dec_range = [dec-dy*pixscale/2,dec+dy*pixscale/2]
 
         brickwcs = brickwcs.get_subimage(zoom[0],zoom[2],dx,dy)
 
     # Get the CCDs in the region of interest.
     ccdinfo = get_ccdinfo(brickwcs)
 
-    log.info('RA range {:.6f}-{:.6f}'.format(float(ra_range[0]),float(ra_range[1])))
-    log.info('DEC range {:.6f}-{:.6f}'.format(float(dec_range[0]),float(dec_range[1])))
+    log.info('RA range: {:.6f} to {:.6f}'.format(float(ra_range[0]),float(ra_range[1])))
+    log.info('DEC range: {:.6f} to {:.6f}'.format(float(dec_range[0]),float(dec_range[1])))
         
-    # Build the prior parameters.
-    log.info('Building the table of prior parameters.')
+    # Build the prior parameters and make some QAplots.
+    log.info('Building the PRIORS table.')
     priors = build_priors(nobj,brickname,objtype,ra_range,dec_range,
                           seed=args.seed)
 
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    fig = plt.figure()
+    ax = fig.gca()
+    ax.plot(priors['RA'],priors['DEC'],'bo',markersize=3)
+    for ccd in ccdinfo:
+        width = ccd['WIDTH']*0.262/3600.0
+        height = ccd['HEIGHT']*0.262/3600.0
+        rect = plt.Rectangle((ccd['RA']-width/2,ccd['DEC']-height/2),
+                             width,height,fill=False,lw=3,color='g')
+        ax.add_patch(rect)
+    rect = plt.Rectangle((brickinfo['RA1'],brickinfo['DEC1']),brickinfo['RA2']-brickinfo['RA1'],
+                         brickinfo['DEC2']-brickinfo['DEC1'],fill=False,lw=3,color='b')
+    ax.add_patch(rect)
+    #plt.plot(ccdinfo['RA'],ccdinfo['DEC'],'gs')
+    ax.set_xlim(np.array([brickinfo['RA1'][0],brickinfo['RA2'][0]])*[0.9999,1.0001])
+    ax.set_ylim(np.array([brickinfo['DEC1'][0],brickinfo['DEC2'][0]])*[0.99,1.01])
+    #ax.set_xlim(np.array(ra_range))#*[0.9,1.1])
+    #ax.set_ylim(np.array(dec_range))#*[0.9,1.1])
+    fig.savefig(os.path.join(fake_decals_dir,'qa_'+brickname+'.png'))
+
+
     # Copy the files we need.
-    copyfiles(ccdinfo)
+#    copyfiles(ccdinfo)
 
-  
-
-    # Simulate objects and place them into the images.
+    # Do the simulation!
     gsparams = galsim.GSParams(maximum_fft_size=2L**30L)
-    insert_simobj(gsparams=gsparams,priors=priors,ccdinfo=ccdinfo)
-
-
-
+#    insert_simobj(gsparams=gsparams,priors=priors,ccdinfo=ccdinfo)
 
 if __name__ == "__main__":
     main()
