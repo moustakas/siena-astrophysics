@@ -6,29 +6,22 @@ import random
 import math
 import scipy
 import scipy.spatial
+import matplotlib.pylab as plt
 from astropy.cosmology import FlatLambdaCDM
 
-# Opening FITS file (SDSS Data) 'a'
+# Opening FITS file (SDSS Data) 'a' Argument = dr10cmassnorth.fits
 print 'Reading in FITS Data'
 infilename1 = sys.argv[1]
 hdulist1=fits.open(infilename1)
 hdulist1.info()
 h1=hdulist1[1]
-data2=h1.data
+data1=h1.data
 
 # Opening txt file (Mocks) 'b'
 print 'Reading in Text File'
 r=np.loadtxt('cmass_dr10_north_randoms_ir4500.v10.1.release.txt')
-ra=r[:,0]
-dec=r[:,1]
 z=r[:,2]
-peculiarv=r[:,3]
-weight_cboss=r[:,4]
-weight_cp=r[:,5]
-weight_z=r[:,6]
-veto=r[:,7]
-#ztrue=data4560[:,8]
-#flag=data4560[:,9]
+
 print "Read in text file......"
 
 print "Making cuts......"
@@ -38,61 +31,34 @@ zcutnew=z[zcut]
 
 zcut1=z<0.7
 zcutnew1=z[zcut1]
+
 tot=zcut*zcut1
 totrand=r[tot]
-
-#North cut
-Ns1=data2['PLUG_RA']>90
-Ns1new=data2['PLUG_RA'][Ns1]
-Ns2=data2['PLUG_RA']<280
-Ns2new=data2['PLUG_RA'][Ns2]
-Ns3=data2['PLUG_DEC']>-10
-Ns3new=data2['PLUG_DEC'][Ns3]
-Ns4=data2['PLUG_DEC']<80
-Ns4new=data2['PLUG_DEC'][Ns4]
-tot=Ns1*Ns2*Ns3*Ns4
-data1=data2[tot]
-print "Made cuts....."
+del tot
+del r
 
 # Randomizing a Sample of SDSS Data
-ngals_for_calculation = 50000
-nrands=50000
+ngals_for_calculation = 100000
+nrands=100000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
 samplea=data1[a[0:ngals_for_calculation]]
 
-
+del a
 # Randomizing a sample of Mock Data
 b=np.arange(0,len(totrand))
 np.random.shuffle(b)
 sampleb=totrand[b[0:nrands]]
-
-
+del b
+del totrand
 ##### Finding Values for Spherical Coordinates ####
-'''
-# SDSS
-H=70
-c=2.99792458*10**5
-Zshifta=samplea['Z'] #Redshift Values
-Vra=Zshifta*c #Recession Velocity of Galaxy in km/s
-rhoa=Vra/H  #Distance from Earth to Galaxy in Mpc
 
-# Mock
-Zshiftb=sampleb[:,2] #Redshift Values
-Vrb=Zshiftb*c #Recession Velocity of Galaxy in km/s
-rhob=Vrb/H  #Distance from Earth to Galaxy in Mpc
-'''
 # Comoving Distances
 cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
 comdista=cosmo.comoving_distance(samplea['Z'])
-
-
 comdistb=cosmo.comoving_distance(sampleb[:,2])
-
-
-
 
 ##### Converting RA and Dec to Radians #####
 
@@ -113,16 +79,26 @@ ya=comdista*np.sin(Decrada)*np.sin(RArada)
 za=comdista*np.cos(Decrada)
 coordsa=np.column_stack((xa,ya,za))
 
-
-
-
+del RArada
+del Decrada
+del xa
+del ya
+del za
+del comdista
+del samplea
 # Mock
 xb=comdistb*np.sin(Decradb)*np.cos(RAradb)
 yb=comdistb*np.sin(Decradb)*np.sin(RAradb)
 zb=comdistb*np.cos(Decradb)
 coordsb=np.column_stack((xb,yb,zb))
 
-
+del RAradb
+del Decradb
+del xb
+del yb
+del zb
+del comdistb
+del sampleb
 print 'Finished with conversions! Now to calculate distances...'
 
 def mag(vec):
@@ -139,15 +115,11 @@ def mag(vec):
 ################################################################################
 
 ngals = len(coordsa)
-
-paras1 = []
-perps1 = []
-nperps1 = []
-chunk_size = 100
+chunk_size = 50
 nchunks = ngals_for_calculation/chunk_size
 nbins=200
 rangeval=300
-frequencies = []
+
 
 tot_freq = np.zeros((nbins,nbins)) 
 
@@ -186,7 +158,7 @@ for j in xrange(nchunks):
 
     #print 'Histogram1'
 
-    import matplotlib.pylab as plt
+   
     hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
@@ -207,7 +179,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('DRtest2d5.txt',tot_freq)
+np.savetxt('DRtest2d3.txt',tot_freq)
 
 #newperps2=np.concatenate((perps2,nperps2))
 #newparas2=np.concatenate((paras2,paras2))

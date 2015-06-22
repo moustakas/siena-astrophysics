@@ -1,5 +1,5 @@
 #### CMASS DATA #####
-#### Argument = cmass.fits ####
+#### Argument = dr10cmassnorth.fits ####
 import astropy.io 
 from astropy.io import fits
 import numpy as np
@@ -9,43 +9,25 @@ import math
 import scipy
 from scipy import spatial
 from astropy.cosmology import FlatLambdaCDM
+import matplotlib.pylab as plt
 infilename1 = sys.argv[1]
 hdulist1=fits.open(infilename1)
 hdulist1.info()
 h1=hdulist1[1]
 print 'Reading in Data'
-data2=h1.data
+data1=h1.data
 print 'Finished reading in data....'
 
-#### North Sector Cut ####
+del h1
 
-Ns1=data2['PLUG_RA']>90
-Ns1new=data2['PLUG_RA'][Ns1]
-Ns2=data2['PLUG_RA']<280
-Ns2new=data2['PLUG_RA'][Ns2]
-Ns3=data2['PLUG_DEC']>-10
-Ns3new=data2['PLUG_DEC'][Ns3]
-Ns4=data2['PLUG_DEC']<80
-Ns4new=data2['PLUG_DEC'][Ns4]
-
-tot=Ns1*Ns2*Ns3*Ns4
-data1=data2[tot]
-
-###### Random Sample #######
-'''
-print 'Randomizing A Sample'
-a=np.arange(0,len(data1))
-np.random.shuffle(a)
-sample=data1[a[0:5000]]
-'''
-ngals_for_calculation = 50000
+ngals_for_calculation = 100000
 np.random.seed(1)
 
 a=np.arange(0,len(data1))
 np.random.shuffle(a)
 sample=data1[a[0:ngals_for_calculation]]
 ###### Distances (Para and Perp) ########
-
+del data1
 print 'Conversions'
 # Comoving Distances
 cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
@@ -62,7 +44,13 @@ x=comdist*np.sin(Decrad)*np.cos(RArad)
 y=comdist*np.sin(Decrad)*np.sin(RArad)
 z=comdist*np.cos(Decrad)
 coordsa=np.column_stack((x,y,z))
-
+del RArad
+del Decrad
+del x
+del y
+del z
+del sample
+del comdist
 print 'Finished with conversions! Now to calculate distances...'
 def mag(vec):
 
@@ -82,7 +70,7 @@ ngals = len(coordsa)
 paras1 = []
 perps1 = []
 nperps1 = []
-chunk_size = 100
+chunk_size = 50
 nchunks = ngals_for_calculation/chunk_size
 nbins=200
 rangeval=300
@@ -126,7 +114,7 @@ for j in xrange(nchunks):
 
     #print 'Histogram1'
 
-    import matplotlib.pylab as plt
+    
     hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
@@ -146,7 +134,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('DDtest2d5.txt',tot_freq)
+np.savetxt('DDtest2d3.txt',tot_freq)
 '''
 ngals = len(coordsa)
 

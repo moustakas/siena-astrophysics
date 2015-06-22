@@ -2,18 +2,13 @@ import numpy as np
 import math
 import scipy.spatial
 from astropy.cosmology import FlatLambdaCDM
-import astropy.io 
+import astropy.io
+import matplotlib.pylab as plt
 r=np.loadtxt('cmass_dr10_north_randoms_ir4500.v10.1.release.txt')
 ra=r[:,0]
 dec=r[:,1]
 z=r[:,2]
-peculiarv=r[:,3]
-weight_cboss=r[:,4]
-weight_cp=r[:,5]
-weight_z=r[:,6]
-veto=r[:,7]
-#ztrue=data4560[:,8]
-#flag=data4560[:,9]
+
 
 ##### Z Cut #####
 
@@ -24,6 +19,8 @@ zcut1=z<0.7
 zcutnew1=z[zcut1]
 tot=zcut*zcut1
 totrand=r[tot]
+del tot
+del r
 '''
 ##### Weight Cut ######
 
@@ -50,18 +47,16 @@ tot=wc*wp*wz*vc
 totrand=r[tot]
 '''
 ########### Distances ################
-'''
-a=np.arange(0,len(totrand))
-np.random.shuffle(a)
-sample=totrand[a[0:12000]]
-'''
-ngals_for_calculation = 50000
+
+ngals_for_calculation = 100000
 
 np.random.seed(1)
 
 a=np.arange(0,len(totrand))
 np.random.shuffle(a)
 sample=totrand[a[0:ngals_for_calculation]]
+del a
+del totrand
 ###### Distances (Para and Perp) ########
 
 print 'Conversions'
@@ -69,19 +64,6 @@ print 'Conversions'
 cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
 comdist=cosmo.comoving_distance(sample[:,2])
 
-
-
-
-
-
-
-'''
-H=70
-c=2.99792458*10**5
-Zshift=sample[:,2] #Redshift Values
-Vr=Zshift*c #Recession Velocity of Galaxy in km/s
-rho=Vr/H  #Distance from Earth to Galaxy in Mpc
-'''
 # Converting RA and Dec to Radians
 
 RArad=(sample[:,0])*((math.pi)/180)
@@ -93,14 +75,15 @@ x=comdist*np.sin(Decrad)*np.cos(RArad)
 y=comdist*np.sin(Decrad)*np.sin(RArad)
 z=comdist*np.cos(Decrad)
 coordsa=np.column_stack((x,y,z))
+del RArad
+del Decrad
+del x
+del y
+del z
+del comdist
+del sample
 # Distances
-'''
-d1=scipy.spatial.distance.pdist(coords)
 
-vflat1 = val1.flatten()
-d1=list(set(vflat))
-d1.remove(0.0)
-'''
 print 'Finished with conversions! Now to calculate distances...'
 
 # Vectors! (Note that stepcoord is initially the value behind coords[n])  
@@ -127,15 +110,11 @@ def mag(vec):
     return m
 ################################################################################
 ngals = len(coordsa)
-
-paras1 = []
-perps1 = []
-nperps1 = []
-chunk_size = 100
+chunk_size = 50
 nchunks = ngals_for_calculation/chunk_size
 nbins=200
 rangeval=300
-frequencies = []
+
 
 tot_freq = np.zeros((nbins,nbins)) 
 
@@ -162,22 +141,15 @@ for j in xrange(nchunks):
             dR_mag1 = mag(dR1)
             # Make use of the Pythagorean theorem
             R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
-            #negR_perp1 = -1*R_perp1
+           
 
             paras += R_para1.tolist()
             perps += R_perp1.tolist()
-            #nperps1 += negR_perp1.tolist()
+            
             if i%(chunk_size/4)==0:
                 print i
 
-    #print len(paras)
-    #print len(perps)
-    #newperps1=np.concatenate((perps1,nperps1))
-    #newparas1=np.concatenate((paras1,paras1))
-
-    #print 'Histogram1'
-
-    import matplotlib.pylab as plt
+   
     hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
@@ -197,7 +169,7 @@ fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
-np.savetxt('RRtest2d5.txt',tot_freq)
+np.savetxt('RRtest2d3.txt',tot_freq)
 '''
 ngals = len(coords)
 
