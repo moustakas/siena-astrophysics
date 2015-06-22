@@ -66,15 +66,11 @@ def mag(vec):
 ################################################################################
 
 ngals = len(coordsa)
-
-paras1 = []
-perps1 = []
-nperps1 = []
 chunk_size = 50
 nchunks = ngals_for_calculation/chunk_size
 nbins=200
 rangeval=300
-frequencies = []
+
 
 tot_freq = np.zeros((nbins,nbins)) 
 
@@ -89,19 +85,26 @@ for j in xrange(nchunks):
     for i in range(lo,hi):
         if i!=ngals-1:
             # First compute R_LOS and dR
+            print 'r1'
             r1=coordsa[i]
+            print 'RLOS'
             R_LOS1 = (r1 + coordsa[i+1:])/2.
+            print 'dr'
             dR1 = coordsa[i+1:] - r1
+            print 'RLOS mag'
             R_LOS_mag1 = mag(R_LOS1)
 
             # Dot product
+            print 'R Para'
             R_para1 = (dR1[:,0]*R_LOS1[:,0] + dR1[:,1]*R_LOS1[:,1] + dR1[:,2]*R_LOS1[:,2])/R_LOS_mag1
-
+            print 'dR mag'
             dR_mag1 = mag(dR1)
             # Make use of the Pythagorean theorem
+            print 'R perp'
             R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
-            #negR_perp1 = -1*R_perp1
+            print 'Paras'
             paras += R_para1.tolist()
+            print 'Perps'
             perps += R_perp1.tolist()
             #nperps1 += negR_perp1.tolist()
             if i%(chunk_size/4)==0:
@@ -112,26 +115,24 @@ for j in xrange(nchunks):
     #newperps1=np.concatenate((perps1,nperps1))
     #newparas1=np.concatenate((paras1,paras1))
 
-    #print 'Histogram1'
+    print 'Histogram'
 
     
     hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+    print 'Total Frequency'
     tot_freq += hist[0]
-
+    print 'Mirroring'
     # Mirror the negative perps
     hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
-
-    #print type(hist1[0])
-    #frequ1=hist1[0]
-    #plt.close()
-
     print tot_freq
 #tot_freq[(nbins/2),(nbins/2)]=0
+print 'Final Plot'    
 extent = [-rangeval,rangeval, -rangeval,rangeval]
 fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
+print 'Imshow'
 ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
 plt.show()
 np.savetxt('DDtest2d3.txt',tot_freq)

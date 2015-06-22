@@ -133,19 +133,25 @@ for j in xrange(nchunks):
   
     for i,r1 in enumerate(coordsa[lo:hi]):
             # First compute R_LOS and dR
+            print 'RLOS'
             R_LOS1 = (r1 + coordsb[:])/2
+            print 'dR1'
             dR1 = coordsb - r1
+            print 'RLOS mag'
             R_LOS_mag1 = mag(R_LOS1)
 
             # Dot product
+            print 'R para'
             R_para1 = (dR1[:,0]*R_LOS1[:,0] + dR1[:,1]*R_LOS1[:,1] + dR1[:,2]*R_LOS1[:,2])/R_LOS_mag1
-
+            print 'dR mag'
             dR_mag1 = mag(dR1)
             # Make use of the Pythagorean theorem
+            print 'R perp'
             R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
             #negR_perp1 = -1*R_perp1
-
+            print 'Paras'
             paras += R_para1.tolist()
+            print 'Perps'
             perps += R_perp1.tolist()
             #nperps1 += negR_perp1.tolist()
             if i%(chunk_size/4)==0:
@@ -158,10 +164,11 @@ for j in xrange(nchunks):
 
     #print 'Histogram1'
 
-   
+    print 'Histogram'
     hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+    print 'Total Frequency'
     tot_freq += hist[0]
-
+    print 'Mirroring'
     # Mirror the negative perps
     hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
@@ -174,6 +181,7 @@ for j in xrange(nchunks):
     print tot_freq
     print tot_freq[100,100]
 #tot_freq[(nbins/2),(nbins/2)]=0
+print 'Final Plot'    
 extent = [-rangeval,rangeval, -rangeval,rangeval]
 fig = plt.figure()
 axes = fig.add_subplot(1,1,1)
