@@ -126,6 +126,9 @@ for j in xrange(nchunks):
     hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
     tot_freq += hist[0]
 
+    del paras
+    del perps
+    
     print tot_freq
 #tot_freq[(nbins/2),(nbins/2)]=0
 print 'Final Plot'    
