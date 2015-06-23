@@ -144,7 +144,7 @@ def RR():
     print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    np.savetxt('RRtest2d4.txt',tot_freq)
+    np.savetxt('RRtest2d1.txt',tot_freq)
     t1=time.time()
     tottime=t1-t0
     totmin=tottime/60
