@@ -18,7 +18,7 @@ from astroML.utils import completeness_contamination
 
 def kneighbor(colors,labels):
     from sklearn.neighbors import KNeighborsClassifier
-    kvals = 3 #number of neighbors the point looks at - makes run time longer
+    kvals = 5 #number of neighbors the point looks at - makes run time longer
               #as the number decreases
     clf = KNeighborsClassifier(n_neighbors=kvals)
     clf.fit(colors, labels)
@@ -109,19 +109,20 @@ def main():
     contam = [knc_contam1,knc_contam2,knc_contam3]
     markers = ['d','o','v']
     fig, ax = plt.subplots(1,1)
+    fig.subplots_adjust(bottom=0.2)
     for ii,mm in enumerate(markers):
-        ax.plot(ii,compl[ii],'b'+mm,label='Completeness',markersize=15)
+        ax.plot(ii,compl[ii],'b'+mm,label='Completeness',markersize=20)
     ax.set_xlabel('classifier')
     ax.set_ylabel(r'Completeness')
     ax.set_xlim(-0.25,2.25)
     #ax.set_ylim(0.2,0.8)
     ax.set_ylim(0,1)
-    ax.legend(loc='best', fancybox=True, framealpha=0.5)
+    #ax.legend(loc='best', fancybox=True, framealpha=0.5)
     myxticks = (['gr-rz','gr-rz-w1','gr-rz-w1-w2'])
     plt.xticks(classifier,myxticks,rotation=45)
     ax2 = ax.twinx()
     for ii,mm in enumerate(markers):
-        ax2.plot(ii,contam[ii],'r'+mm,label='Contamination',markersize=15)
+        ax2.plot(ii,contam[ii],'r'+mm,label='Contamination',markersize=20)
     ax2.set_ylabel(r'Contamination')
     ax2.set_xlim(-0.25,2.25)
     #ax2.set_ylim(0.2,0.8)
