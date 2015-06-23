@@ -1,6 +1,6 @@
 @profile
 def DD():
-
+    
     #### CMASS DATA #####
     #### Argument = dr10cmassnorth.fits ####
     import astropy.io 
@@ -13,6 +13,8 @@ def DD():
     from scipy import spatial
     from astropy.cosmology import FlatLambdaCDM
     import matplotlib.pylab as plt
+    import time
+    t0=time.time()
     infilename1 = sys.argv[1]
     hdulist1=fits.open(infilename1)
     hdulist1.info()
@@ -141,6 +143,12 @@ def DD():
 
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
+    
     np.savetxt('DDtest2d4.txt',tot_freq)
+    t1=time.time()
+    tottime=t1-t0
+    totmin=tottime/60
+    tothr=totmin/60
+    print 'This code took %f hours to run' %tothr
 DD()
 

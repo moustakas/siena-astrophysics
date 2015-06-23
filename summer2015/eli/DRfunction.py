@@ -10,6 +10,8 @@ def DR():
     import scipy.spatial
     import matplotlib.pylab as plt
     from astropy.cosmology import FlatLambdaCDM
+    import time
+    t0=time.time()
 
     # Opening FITS file (SDSS Data) 'a' Argument = dr10cmassnorth.fits
     print 'Reading in FITS Data'
@@ -192,4 +194,9 @@ def DR():
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
     np.savetxt('DRtest2d4.txt',tot_freq)
+    t1=time.time()
+    tottime=t1-t0
+    totmin=tottime/60
+    tothr=totmin/60
+    print 'This code took %f hours to run' %tothr
 DR()

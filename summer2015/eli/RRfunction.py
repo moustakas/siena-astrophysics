@@ -6,6 +6,8 @@ def RR():
     from astropy.cosmology import FlatLambdaCDM
     import astropy.io
     import matplotlib.pylab as plt
+    import time
+    t0=time.time()
     r=np.loadtxt('cmass_dr10_north_randoms_ir4500.v10.1.release.txt')
     ra=r[:,0]
     dec=r[:,1]
@@ -143,4 +145,9 @@ def RR():
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
     np.savetxt('RRtest2d4.txt',tot_freq)
+    t1=time.time()
+    tottime=t1-t0
+    totmin=tottime/60
+    tothr=totmin/60
+    print 'This code took %f hours to run' %tothr
 RR()
