@@ -27,13 +27,13 @@ def RR():
     del r
     ########### Distances ################
 
-    ngals_for_calculation = 200000
+    nrands_for_calculation = 250000
 
     np.random.seed(1)
 
     a=np.arange(0,len(totrand))
     np.random.shuffle(a)
-    sample=totrand[a[0:ngals_for_calculation]]
+    sample=totrand[a[0:nrands_for_calculation]]
     del a
     del totrand
     ###### Distances (Para and Perp) ########
@@ -79,7 +79,7 @@ def RR():
     ################################################################################
     ngals = len(coordsa)
     chunk_size = 50
-    nchunks = ngals_for_calculation/chunk_size
+    nchunks = nrands_for_calculation/chunk_size
     nbins=200
     rangeval=300
 
@@ -89,7 +89,7 @@ def RR():
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
-        print "Performing calculations for %d chunk: %d-%d" % (j,lo,hi)
+        print "Performing calculations for RR %d chunk: %d-%d" % (j,lo,hi)
 
         paras = []
         perps = []
@@ -144,7 +144,7 @@ def RR():
     print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    np.savetxt('RRtest2d4.txt',tot_freq)
+    np.savetxt('RRtest2d1.txt',tot_freq)
     t1=time.time()
     tottime=t1-t0
     totmin=tottime/60
