@@ -1,14 +1,13 @@
-#!/usr/bin/env python
-
 import os
 import pandas
 import numpy as np
-#import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import svm
 from astroML.utils import completeness_contamination
+import seaborn as sns
 
 def plot_boundary(clf,xlim,ylim,ax,useproba=False):
+    sns.set(palette='Reds',style='white')
     hh = 0.03  # step size in the mesh
     xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
                          np.arange(ylim[0],ylim[1],hh))
@@ -19,7 +18,7 @@ def plot_boundary(clf,xlim,ylim,ax,useproba=False):
         zz = clf.predict(np.c_[xx.ravel(),yy.ravel()])
     zz = zz.reshape(xx.shape)
     #ax.pcolormesh(xx,yy,zz,cmap=plt.cm.Paired)
-    ax.contour(xx,yy,zz,[0.5],linewidths=2.5,colors='orange')
+    ax.contour(xx,yy,zz,[0.5],linewidths=5)
 
 def naive_bayes(colors,labels):
     from sklearn.naive_bayes import GaussianNB
@@ -54,7 +53,6 @@ def kernel_svm(colors, labels):
     pred = clf.predict(colors)
     compl, contam = completeness_contamination(pred,labels)
     return clf, compl, contam
-
 def get_starqso(usesim=False):
     from astropy.io import fits
     """Document me"""
@@ -79,17 +77,20 @@ def get_starqso(usesim=False):
         gr = fitsdata['g'] - fitsdata['r']
         objtype = (fitsdata['class'] == 'QSO')*1
             
-        ugr = np.vstack((gr,ug)).T
+        data = np.vstack((gr,ug,objtype)).T
+        pdata = pandas.DataFrame(data,columns=['g-r','u-g','type'])
         uglim = [-0.5,3.0]
         grlim = [-0.5,1.5]
 
-    return ugr, objtype, uglim, grlim
+    return pdata, uglim, grlim
+    #return ugr, objtype, uglim, grlim
 
 def main():
     """Document me"""
 
     # Comment
-    ugr, objtype, uglim, grlim = get_starqso(usesim=False)
+    data, uglim, grlim = get_starqso(usesim=False)
+    #ugr, objtype, uglim, grlim = get_starqso(usesim=False)
 
     # Gaussian NB
     print('Working on Gaussian NB classifier...')
@@ -112,40 +113,60 @@ def main():
     print('Completeness = {}, contamination = {}'.format(svm_compl,svm_contam))
 
     # Make the plot!
+
+    # Temporary hack!
+    sns.set(context='talk',style='dark',font_scale=1.5)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax1)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax2)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax3)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax4)
+    fig.tight_layout(pad=0.9, w_pad=0.5, h_pad=1.0)
+    plt.show()
+
+    
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
     plt.xlim(grlim)
     plt.ylim(uglim)
-    #plt.xticks(fontsize=14)
-    #plt.yticks(fontsize=14)
+    ax1.scatter(data['g-r'].values,data['u-g'].values,c=data['type'].values,
+                cmap='Reds')
+    plt.show()
+    
+
+
+    plt.xlim(grlim)
+    plt.ylim(uglim)
+
     ax3.set_xlabel('g-r')
     ax4.set_xlabel('g-r')
     ax3.set_ylabel('u-g')
     ax1.set_ylabel('u-g')
-    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-  
-    #removing the plot frame lines
-    ax1.spines['top'].set_visible(False)
-    ax2.spines['top'].set_visible(False)
-    ax3.spines['top'].set_visible(False)
-    ax4.spines['top'].set_visible(False)
-
-    ax1.spines['right'].set_visible(False)
-    ax2.spines['right'].set_visible(False)
-    ax3.spines['right'].set_visible(False)
-    ax4.spines['right'].set_visible(False)
+    sns.lmplot('g-r','u-g',data,hue='type',markers=['s','o'],
+               fit_reg=False,ax=ax1,sharex=True,sharey=True)
+    plt.show()
 
 
-    #Axis ticks only on the bottom and left
-    ax1.get_xaxis().tick_bottom()
-    ax2.get_xaxis().tick_bottom()
-    ax3.get_xaxis().tick_bottom()
-    ax4.get_xaxis().tick_bottom()
+
+    ax2.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    ax3.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    ax4.scatter(ugr[:,0],ugr[:,1],c=objtype)
+    plt.show()
     
-    ax1.get_yaxis().tick_left() 
-    ax2.get_yaxis().tick_left() 
-    ax3.get_yaxis().tick_left() 
-    ax4.get_yaxis().tick_left() 
     
+    
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2,sharex=True,sharey=True)
+    plt.xlim(grlim)
+    plt.ylim(uglim)
+    plt.tight_layout(pad=0.9, w_pad=0.5, h_pad=1.0)
+    ax3.set_xlabel('g-r')
+    ax4.set_xlabel('g-r')
+    ax3.set_ylabel('u-g')
+    ax1.set_ylabel('u-g')
+   
     # Gaussian NB
     ax1.scatter(ugr[:,0],ugr[:,1],c=objtype)
     plot_boundary(gnb_clf,grlim,uglim,ax1)
@@ -162,32 +183,31 @@ def main():
     ax4.scatter(ugr[:,0],ugr[:,1],c=objtype)
     plot_boundary(svm_clf,grlim,uglim,ax4)
 
-    plt.savefig(os.getenv('HOME')+'/classifiers/starqso_classifiers.png')
-
     #Plotting the Completeness and the contamination
     classifier = [0,1,2,3]
     compl = [gnb_compl,gmm_compl,knc_compl,svm_compl]
     contam = [gnb_contam,gmm_contam,knc_contam,svm_contam]
+    markers = ['x','o','v','d']
 
     fig, ax = plt.subplots(1,1)
-    fig.subplots_adjust(bottom=0.25)
-    ax.plot(compl,'o',label='Completeness',markersize=20)
+    ax.plot(compl,'bo',label='Completeness')
     ax.set_xlabel('classifier')
     ax.set_ylabel(r'Completeness')
     ax.set_xlim(-0.25,3.25)
     ax.set_ylim(0,1)
-   # ax.legend()#loc='upper left',frameon=True)
+    ax.legend(loc='upper left',frameon=True)
     myxticks = (['Niave Bayes Gaussian','Gaussian Mixed','K-Neighbors','Kernel SVM'])
     plt.xticks(classifier,myxticks,rotation=45)
     ax2 = ax.twinx()
-    ax2.plot(contam,'rd',label='Contamination',markersize=20)
+    ax2.plot(contam,'rd',label='Contamination')
     ax2.set_ylabel(r'Contamination')
     ax2.set_xlim(-0.25,3.25)
     ax2.set_ylim(0,1)
     ax2.margins(0.2)
+    ax2.legend(frameon=True)
 
-    
-    plt.savefig(os.getenv('HOME')+'/classifiers/starqso_contam.png')
+
+    plt.savefig(os.getenv('HOME')+'/classifiers/starqso_classifiers.png')
     plt.show()
 
 if __name__ == '__main__':

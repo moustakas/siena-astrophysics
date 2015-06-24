@@ -6,6 +6,8 @@ def RR():
     from astropy.cosmology import FlatLambdaCDM
     import astropy.io
     import matplotlib.pylab as plt
+    import time
+    t0=time.time()
     r=np.loadtxt('cmass_dr10_north_randoms_ir4500.v10.1.release.txt')
     ra=r[:,0]
     dec=r[:,1]
@@ -25,7 +27,7 @@ def RR():
     del r
     ########### Distances ################
 
-    ngals_for_calculation = 100000
+    ngals_for_calculation = 200000
 
     np.random.seed(1)
 
@@ -129,9 +131,10 @@ def RR():
         # Mirror the negative perps
         hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
         tot_freq += hist[0]
-
-
-
+        
+        del paras
+        del perps
+        del hist
         print tot_freq
     #tot_freq[(nbins/2),(nbins/2)]=0
     print 'Final Plot'    
@@ -141,5 +144,10 @@ def RR():
     print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    np.savetxt('RRtest2d3.txt',tot_freq)
+    np.savetxt('RRtest2d1.txt',tot_freq)
+    t1=time.time()
+    tottime=t1-t0
+    totmin=tottime/60
+    tothr=totmin/60
+    print 'This code took %f hours to run' %tothr
 RR()
