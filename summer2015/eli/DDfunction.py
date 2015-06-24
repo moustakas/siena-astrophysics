@@ -25,7 +25,7 @@ def DD():
 
     del h1
 
-    ngals_for_calculation = 250000
+    ngals_for_calculation = 200000
     np.random.seed(1)
 
     a=np.arange(0,len(data1))
@@ -82,7 +82,7 @@ def DD():
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
-        print "Performing calculations for %d chunk: %d-%d" % (j,lo,hi)
+        print "Performing calculations for DD %d chunk: %d-%d" % (j,lo,hi)
 
         paras = []
         perps = []

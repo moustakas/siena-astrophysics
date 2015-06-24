@@ -130,7 +130,7 @@ def DR():
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
-        print "Performing calculations for %d chunk: %d-%d" % (j,lo,hi)
+        print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
 
         paras = []
         perps = []

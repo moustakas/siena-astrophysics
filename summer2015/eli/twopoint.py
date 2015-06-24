@@ -4,9 +4,9 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DDtest2d4.txt',dtype='float')
-DR=np.loadtxt('DRtest2d4.txt',dtype='float')
-RR=np.loadtxt('RRtest2d4.txt',dtype='float')
+DD=np.loadtxt('DDtest2d1.txt',dtype='float')
+DR=np.loadtxt('DRtest2d1.txt',dtype='float')
+RR=np.loadtxt('RRtest2d1.txt',dtype='float')
 
 
 #DDvals=DDvals.transpose()
@@ -30,8 +30,9 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
-ndata=150000
+ndata=250000
 nrand=200000
+
 
 DD /=(ndata**2-ndata)/2.
 DR /=(nrand*ndata)/1.
@@ -87,7 +88,7 @@ for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.0001,vmax=0.2))
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.1,vmax=.7))
 plt.colorbar(d)
 plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
 plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
