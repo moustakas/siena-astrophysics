@@ -84,7 +84,7 @@ def build_priors(nobj=20,brickname=None,objtype='ELG',ra_range=None,
         #bdratio_range = [0.0,1.0] # bulge-to-disk ratio
 
         # Magnitudes and colors
-        rmag_range = [16.0,19.0]
+        rmag_range = [17.0,22.0]
         gr_range = [-0.3,0.5]
         rz_range = [0.0,1.5]
 
