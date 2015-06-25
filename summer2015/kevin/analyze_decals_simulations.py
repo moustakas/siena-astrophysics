@@ -30,8 +30,6 @@ def main():
                                      description='DECaLS simulations.')
     parser.add_argument('-b', '--brick', type=str, default='2428p117', metavar='', 
                         help='process this brick (required input)')
-    parser.add_argument('--no-qaplots', action='store_true',
-                        help='do not generate QAplots')
 
     args = parser.parse_args()
     if args.brick is None:
@@ -54,6 +52,8 @@ def main():
     m1, m2, d12 = match_radec(trac['ra'],trac['dec'],cat['ra'],cat['dec'],1.0/3600.0)
 
     sns.set(style='white',font_scale=1.5)
+
+    # Plot fraction detected
     fig = plt.figure(figsize=(8,6))
     rminmax = np.array([18.0,24.0]) # get this from the priors table!
     binsz = 0.2
@@ -68,6 +68,10 @@ def main():
     plt.ylim([0.0,1.1])
     fig.subplots_adjust(bottom=0.15)
     plt.savefig(os.path.join(fake_decals_dir,'qa_'+brickname+'_frac.png'))
+
+    # Residual plots
+    
+
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
 import os
+import seaborn as sns
 from astrometry.libkd.spherematch import match_radec
 
 indir = '/global/work/decam/scratch'
@@ -16,52 +17,61 @@ magnitude_difference = -2.5*np.log10(tractor_flux)+22.5-true_flux
 
 def flux_graph():
     plt.plot(true_flux,magnitude_difference,'ko',markersize=3)
-    plt.title('True Flux')
-    plt.xlabel('Flux')
-
+    #plt.title('True Flux')
+    plt.xlabel('r (AB mag)')
+    plt.ylabel('$\Delta$m (AB mag)')
+    plt.ylim([-4,4])
     
 def size_graph():
     size = true_table['DISK_R50'][m2]
     plt.plot(size,magnitude_difference,'bo',markersize=3)
-    plt.title('Size')
-    plt.xlabel('r50')
+    #plt.title('Size')
+    plt.xlabel('$r_{50}$ (arcsec)')
+    plt.ylim([-4,4])
     
 def ellipticity_graph():
     ellipticity = true_table['DISK_BA'][m2]
     plt.plot(ellipticity,magnitude_difference,'ro',markersize=3)
-    plt.title('Ellipticity')
+    #plt.title('Ellipticity')
     plt.xlabel('b/a')
+    plt.xlim([0.2,1.0])
+    plt.ylim([-4,4])
 
 def ra_position_graph():
     ra_position = true_table['ra'][m2]
     plt.plot(ra_position,magnitude_difference,'co',markersize=3)
-    plt.title('Ra')
+    #plt.title('Ra')
     plt.xlabel('ra')
+    plt.ylim([-4,4])
 
 def dec_position_graph():
     dec_position = true_table['dec'][m2]   
     plt.plot(dec_position,magnitude_difference,'yo',markersize=3)
-    plt.title('Dec')
+    #plt.title('Dec')
     plt.xlabel('dec')
+    plt.ylim([-4,4])
 
+sns.set(style='white',font_scale=1.3)
+fig = plt.figure(figsize=(8,5))
 
-
-plt.subplot(1,5,1)
+plt.subplot(1,3,1)
 flux_graph()
 
-plt.subplot(1,5,2)
+plt.subplot(1,3,2)
 size_graph()
 
-plt.subplot(1,5,3)
+plt.subplot(1,3,3)
 ellipticity_graph()
 
-plt.subplot(1,5,4)
-ra_position_graph()
+#plt.subplot(1,5,4)
+#ra_position_graph()
+#
+#plt.subplot(1,5,5,sharey=True)
+#dec_position_graph()
 
-plt.subplot(1,5,5,sharey=True)
-dec_position_graph()
+#fig,axes = plt.subplots(ncols=3, sharex=False, sharey=True)
 
-fig,axes = plt.subplots(ncols=5, sharex=False, sharey=True)
-
-plt.savefig('/home/desi3/kevin'+'/2428p117_graphs',clobber=True)
-plt.show()
+fig.subplots_adjust(bottom=0.18)
+plt.savefig('qa_2428p117_resid.png',clobber=True)
+#plt.savefig('/home/desi3/kevin'+'/2428p117_graphs',clobber=True)
+#plt.show()

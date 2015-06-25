@@ -34,8 +34,6 @@ def main():
                                      description='DECaLS simulations.')
     parser.add_argument('-b', '--brick', type=str, default='2428p117', metavar='', 
                         help='process this brick (required input)')
-    parser.add_argument('--no-qaplots', action='store_true',
-                        help='do not generate QAplots')
 
     args = parser.parse_args()
     if args.brick is None:
