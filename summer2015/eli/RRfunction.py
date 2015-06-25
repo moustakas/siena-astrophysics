@@ -120,8 +120,6 @@ def RR():
                 
                 perps += R_perp1.tolist()
                 
-                if i%(chunk_size/4)==0:
-                    print i
 
         
         hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))

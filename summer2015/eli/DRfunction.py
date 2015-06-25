@@ -42,8 +42,8 @@ def DR():
     del r
 
     # Randomizing a Sample of SDSS Data
-    ngals_for_calculation = 200000
-    nrands=250000
+    ngals_for_calculation = 50000
+    nrands=200000
     np.random.seed(1)
 
     a=np.arange(0,len(data1))
@@ -193,7 +193,7 @@ def DR():
     print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    np.savetxt('DRtest2d1.txt',tot_freq)
+    np.savetxt('DRtest2d3.txt',tot_freq)
     t1=time.time()
     tottime=t1-t0
     totmin=tottime/60
