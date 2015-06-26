@@ -9,7 +9,7 @@ def galaxy2():
     n = 4.0
     flux = 1e5
     q = 1
-    beta = 0 * galsim.degrees
+    beta = 75 * galsim.degrees
 
     gal = galsim.Sersic(n=n, half_light_radius=half, flux=flux)
     psf = galsim.Gaussian(flux=1.0, sigma=1.0)
@@ -25,4 +25,3 @@ def galaxy2():
 
 if __name__ == "__main__":
     galaxy2()
-
