@@ -12,7 +12,7 @@ RR=np.loadtxt('RRtest2d4.txt',dtype='float')
 DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
-
+'''
 ########## Bin Reduction ##########
 def binred(array):
     import numpy as np
@@ -33,12 +33,13 @@ def binred(array):
         global val
         val=(newbins1[j,:]+newbins1[j+1,:])
         newbins.append(val)
+        return newbins1
     newbins=np.array(newbins)    
                     
 binred(DD)      
 #print newbins        
 #print val    
-    
+   ''' 
 
 
 
@@ -47,9 +48,9 @@ ndata=50000
 nrand=200000
 
 
-#DD /=(ndata**2-ndata)/2.
-#DR /=(nrand*ndata)/1.
-#RR /=(nrand**2-nrand)/2.
+DD /=(ndata**2-ndata)/2.
+DR /=(nrand*ndata)/1.
+RR /=(nrand**2-nrand)/2.
 theta = (DD - 2*DR + RR)/RR
 
 #R^2 WEIGHTING

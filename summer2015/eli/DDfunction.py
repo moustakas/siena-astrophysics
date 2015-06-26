@@ -25,7 +25,7 @@ def DD():
 
     del h1
 
-    ngals_for_calculation = 4000
+    ngals_for_calculation = 50000
     np.random.seed(1)
 
     a=np.arange(0,len(data1))

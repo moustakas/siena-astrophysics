@@ -122,6 +122,8 @@ def main():
     infilename0 = sys.argv[1]
     infilename1 = sys.argv[2]
 
+    outfilename = sys.argv[3]
+
     # Check to see if we are using the same file for both (DD or RR)
     # or if they are different (DR)
     samefile = False
@@ -246,7 +248,7 @@ def main():
     #print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    #np.savetxt('DRtest2d3.txt',tot_freq)
+    np.savetxt(outfilename,tot_freq)
 
 ################################################################################
 if __name__=='__main__':
