@@ -4,9 +4,9 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DDtest2d5.txt',dtype='float')
-DR=np.loadtxt('DRtest2d3.txt',dtype='float')
-RR=np.loadtxt('RRtest2d4.txt',dtype='float')
+DD=np.loadtxt('DD_refactored.dat',dtype='float')
+DR=np.loadtxt('DR_refactored.dat',dtype='float')
+RR=np.loadtxt('RR_refactored.dat',dtype='float')
 
 
 DD = DD.transpose()
@@ -44,8 +44,8 @@ binred(DD)
 
 
 
-ndata=50000
-nrand=200000
+ndata=100000
+nrand=100000
 
 
 DD /=(ndata**2-ndata)/2.

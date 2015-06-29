@@ -9,6 +9,7 @@ import scipy.spatial
 import matplotlib.pylab as plt
 from astropy.cosmology import FlatLambdaCDM
 import time
+import argparse
 
 ################################################################################
 # Get magnitude of a vector
@@ -119,10 +120,35 @@ def get_coordinates(infilename,maxgals=0):
 ################################################################################
 def main():
 
-    infilename0 = sys.argv[1]
-    infilename1 = sys.argv[2]
+    parser= argparse.ArgumentParser()
+    parser.add_argument("infile1", help="Cmass data or mock data")
+    parser.add_argument("infile2", help="Cmass data or mock data")
+    parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
+    parser.add_argument("--range1", default=None, type=str, help="First Stopping Point")
+    parser.add_argument("--range2", default=None, type=str, help="Second Stopping Point")
 
-    outfilename = sys.argv[3]
+    args=parser.parse_args()
+
+    infilename0 = args.infile1
+    infilename1 = args.infile2
+
+    outfilename = args.outfilename
+
+    range1lo = None
+    range1hi = None
+    if args.range1 is not None:
+        range1lo = int(args.range1.split('-')[0])
+        range1hi = int(args.range1.split('-')[1])
+
+    range2lo = None
+    range2hi = None
+    if args.range2 is not None:
+        range2lo = int(args.range2.split('-')[0])
+        range2hi = int(args.range2.split('-')[1])
+
+    do_diagonal = False
+    if range2lo>range1lo:
+        do_diagonal = True
 
     # Check to see if we are using the same file for both (DD or RR)
     # or if they are different (DR)
@@ -131,8 +157,8 @@ def main():
         samefile = True
 
     # Randomizing a Sample of SDSS Data
-    ngals_for_calculation = 100000
-    nrands=100000
+    ngals_for_calculation = 0
+    nrands=0
     np.random.seed(1)
 
     coords0 = get_coordinates(infilename0,ngals_for_calculation)
@@ -146,14 +172,26 @@ def main():
     ngals0 = len(coords0)
     ngals1 = len(coords1)
 
+    coords0cut = None
+    if range1lo is not None and range1hi is not None:
+        coords0cut = coords0[range1lo:range1hi]
+    else:
+        coords0cut = coords0
+
+    coords1cut = None
+    if range2lo is not None and range2hi is not None:
+        coords1cut = coords1[range2lo:range2hi]
+    else:
+        coords1cut = coords1
+
     chunk_size = 50
-    nchunks = ngals_for_calculation/chunk_size
+    nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
     nbins=200
-    rangeval=30000
+    rangeval=300
 
     tot_freq = np.zeros((nbins,nbins)) 
 
-    ncalcs_per_chunk = chunk_size*ngals1
+    ncalcs_per_chunk = chunk_size*len(coords1cut) #chunk_size*ngals1
 
     paras = np.zeros(ncalcs_per_chunk)
     perps = np.zeros(ncalcs_per_chunk)
@@ -170,7 +208,7 @@ def main():
 
         #for i,r0 in enumerate(coords0[lo:hi]):
         for i in range(lo,hi):
-            r0 = coords0[i]
+            r0 = coords0cut[i]
             #print i,lo,hi
             #print lo+i
             #print r0
@@ -178,14 +216,16 @@ def main():
             #'''
             lo1 = 0
             if samefile:
-                lo1 = i+1
+                lo1 = i
+                if do_diagonal==False:
+                    lo1 += 1
 
-            indexhi += len(coords1[lo1:])
+            indexhi += len(coords1cut[lo1:])
             #'''
 
             # First compute R_LOS and dR
-            R_LOS = (r0 + coords1[lo1:])/2
-            dR = coords1[lo1:] - r0
+            R_LOS = (r0 + coords1cut[lo1:])/2
+            dR = coords1cut[lo1:] - r0
             R_LOS_mag = mag(R_LOS)
 
             # Dot product
@@ -240,13 +280,13 @@ def main():
         #tot_freq[(nbins/2),(nbins/2)]=0
         print tot_freq.sum()
         
-    tot_freq[(nbins/2),(nbins/2)]=0
+    #tot_freq[(nbins/2),(nbins/2)]=0
     print 'Final Plot'    
-    #extent = [-rangeval,rangeval, -rangeval,rangeval]
-    #fig = plt.figure()
-    #axes = fig.add_subplot(1,1,1)
-    #print 'Imshow'
-    #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+    extent = [-rangeval,rangeval, -rangeval,rangeval]
+    fig = plt.figure()
+    axes = fig.add_subplot(1,1,1)
+    print 'Imshow'
+    ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
     np.savetxt(outfilename,tot_freq)
 
