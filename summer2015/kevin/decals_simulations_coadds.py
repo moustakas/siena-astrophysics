@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 import seaborn as sns
 
-import Image, ImageDraw
+from PIL import Image, ImageDraw
 import pyregion
 import matplotlib.pyplot as plt
 
@@ -22,7 +22,8 @@ from astropy.io import fits
 from astrometry.libkd.spherematch import match_radec
 
 # Global variables.
-scratch_dir = '/global/work/decam/scratch/'
+scratch_dir = '/Users/ioannis/research/projects/decals/decals_dir/scratch/'
+#scratch_dir = '/global/work/decam/scratch/'
 fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
 
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
@@ -51,16 +52,18 @@ def main():
     cat = fits.getdata(priorsfile,1)
     nobj = len(cat)
 
-    xy = brickwcs.radec2pixelxy(cat['ra'],cat['dec'])
-    rad = cat['disk_r50']/0.262 # half-light radius [pixels]
+    #rad = cat['disk_r50']/0.262 # half-light radius [pixels]
+    rad = np.ones(nobj)*15.0
 
     imfile = os.path.join(scratch_dir,'coadd',brickname[:3],brickname,'decals-'+brickname+'-image.jpg')
     im = Image.open(imfile)
     draw = ImageDraw.Draw(im)
     for ii in range(nobj):
-        draw.ellipse(((3600-xy[1][ii])-rad[ii], xy[2][ii]-rad[ii],
-                      (3600-xy[1][ii])+rad[ii], xy[2][ii]+rad[ii]))
-    im.save('junk.png')
+        draw.ellipse(((3600-cat['Y'][ii])-rad[ii], (3600-cat['X'][ii])-rad[ii],
+                      (3600-cat['Y'][ii])+rad[ii], (3600-cat['X'][ii])+rad[ii]))
+    im.save(os.path.join(scratch_dir,'qa_'+brickname+'_coadd.png'))
+    im.close()
+    
 
 if __name__ == "__main__":
     main()
