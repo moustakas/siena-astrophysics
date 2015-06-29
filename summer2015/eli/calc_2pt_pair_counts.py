@@ -126,7 +126,8 @@ def main():
     parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
-
+    parser.add_argument('--no-plots', action='store_true', help='do not generate plots')
+  
     args=parser.parse_args()
 
     infilename0 = args.infile1
@@ -288,6 +289,7 @@ def main():
     print 'Imshow'
     ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
+    print('Writing {}'.format(outfilename))
     np.savetxt(outfilename,tot_freq)
 
 ################################################################################
