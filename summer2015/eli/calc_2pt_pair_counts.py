@@ -124,8 +124,8 @@ def main():
     parser.add_argument("infile1", help="Cmass data or mock data")
     parser.add_argument("infile2", help="Cmass data or mock data")
     parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
-    parser.add_argument("--range1", default=None, type=str, help="First Stopping Point")
-    parser.add_argument("--range2", default=None, type=str, help="Second Stopping Point")
+    parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
+    parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
 
     args=parser.parse_args()
 
