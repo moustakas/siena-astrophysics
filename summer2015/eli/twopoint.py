@@ -30,6 +30,29 @@ DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
+print DD.shape
+
+print sum(sum(DD))
+print sum(sum(DR))
+print sum(sum(RR))
+
+# Rebin
+DDnew = np.zeros((100,100))
+DRnew = np.zeros((100,100))
+RRnew = np.zeros((100,100))
+
+'''
+for i in range(0,200,2):
+    for j in range(0,200,2):
+        DDnew[i/2][j/2] = DD[i][j] + DD[i+1][j] + DD[i][j+1] + DD[i+1][j+1]
+        DRnew[i/2][j/2] = DR[i][j] + DR[i+1][j] + DR[i][j+1] + DR[i+1][j+1]
+        RRnew[i/2][j/2] = RR[i][j] + RR[i+1][j] + RR[i][j+1] + RR[i+1][j+1]
+DD = DDnew
+DR = DRnew
+RR = RRnew
+'''
+
+
 ndata=50000
 nrand=50000
 
@@ -55,7 +78,7 @@ for i in range(nbins):
 '''
 
 
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(8,8))
 
 
 #extent=
@@ -81,13 +104,14 @@ plt.ylabel('Rpara (Mpc)')
 plt.title('DR')
 
 ### Mirror Over the X-Axis #### 
+#nbins = 100
 newtheta= np.zeros((nbins,nbins))
 newtheta += theta
 for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.0001,vmax=.2))
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.001,vmax=0.2))
 plt.colorbar(d)
 plt.xlabel('Rperp (Mpc)')
 plt.ylabel('Rpara (Mpc)')
