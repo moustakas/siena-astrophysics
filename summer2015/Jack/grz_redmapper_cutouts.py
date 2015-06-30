@@ -26,9 +26,12 @@ def main():
     in_dir = os.getenv('HOME')+'/redmapper/' # push to a function
     out_dir = in_dir+'cutouts/'
     
-    rmap = fits.getdata(in_dir+'rmap.fits',1)
-    
-    nrich = 10
+    rmapper = fits.getdata(in_dir+'rmap.fits',1)
+    rmapper2 = np.where(rmapper['bcg_spec_z']>0)
+    rmap = rmapper[rmapper2]
+    rmap_fits = fits.writeto(in_dir+'rmap.fits',rmap,clobber=True)
+
+    nrich = 100
     rich = np.argsort(rmap['lambda_chisq'])[::-1][0:nrich]
     print('The top '+str(nrich)+' richest clusters: '+str(rmap['lambda_chisq'][rich]))
 

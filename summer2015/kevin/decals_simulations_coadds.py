@@ -10,19 +10,12 @@ import sys
 import logging
 import argparse
 import numpy as np
-import seaborn as sns
-
-from PIL import Image, ImageDraw
-import pyregion
-import matplotlib.pyplot as plt
-
-from decals_simulations import get_brickinfo
 
 from astropy.io import fits
-from astrometry.libkd.spherematch import match_radec
+from PIL import Image, ImageDraw
 
 # Global variables.
-scratch_dir = '/Users/ioannis/research/projects/decals/decals_dir/scratch/'
+scratch_dir = '/Users/ioannis/research/projects/decals/scratch/'
 #scratch_dir = '/global/work/decam/scratch/'
 fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
 
@@ -44,26 +37,24 @@ def main():
     brickname = args.brick
     log.info('Analyzing brick {}'.format(brickname))
 
-    brickinfo, brickwcs = get_brickinfo(brickname)
-    
     # Read the prior parameters
     priorsfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
     log.info('Reading {}'.format(priorsfile))
     cat = fits.getdata(priorsfile,1)
     nobj = len(cat)
 
-    #rad = cat['disk_r50']/0.262 # half-light radius [pixels]
+    #rad = 3*cat['r50_1']/0.262 # half-light radius [pixels]
     rad = np.ones(nobj)*15.0
 
     imfile = os.path.join(scratch_dir,'coadd',brickname[:3],brickname,'decals-'+brickname+'-image.jpg')
     im = Image.open(imfile)
+    sz = im.size
     draw = ImageDraw.Draw(im)
     for ii in range(nobj):
-        draw.ellipse(((3600-cat['Y'][ii])-rad[ii], (3600-cat['X'][ii])-rad[ii],
-                      (3600-cat['Y'][ii])+rad[ii], (3600-cat['X'][ii])+rad[ii]))
-    im.save(os.path.join(scratch_dir,'qa_'+brickname+'_coadd.png'))
+        draw.ellipse((cat['X'][ii]-rad[ii], sz[1]-cat['Y'][ii]-rad[ii],
+                      cat['X'][ii]+rad[ii], sz[1]-cat['Y'][ii]+rad[ii]))
+    im.save(os.path.join(fake_decals_dir,'qa_'+brickname+'_coadd.png'))
     im.close()
-    
 
 if __name__ == "__main__":
     main()

@@ -126,8 +126,12 @@ def main():
     parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
-
+    parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
+  
     args=parser.parse_args()
+
+    if args.no_plots:
+        plt.switch_backend('Agg')
 
     infilename0 = args.infile1
     infilename1 = args.infile2
@@ -281,13 +285,16 @@ def main():
         print tot_freq.sum()
         
     #tot_freq[(nbins/2),(nbins/2)]=0
-    print 'Final Plot'    
-    extent = [-rangeval,rangeval, -rangeval,rangeval]
-    fig = plt.figure()
-    axes = fig.add_subplot(1,1,1)
-    print 'Imshow'
-    ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
-    #plt.show()
+    if args.no_plots==False:
+        print 'Final Plot'    
+        extent = [-rangeval,rangeval, -rangeval,rangeval]
+        fig = plt.figure()
+        axes = fig.add_subplot(1,1,1)
+        print 'Imshow'
+        ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+        #plt.show()
+
+    print('Writing {}'.format(outfilename))
     np.savetxt(outfilename,tot_freq)
 
 ################################################################################

@@ -32,15 +32,17 @@ def main():
     ax1.set_xlim(13,25)
     ax1.set_ylim(-3,3)
     ax1.axhline(y=0.000,xmin=0,xmax=3,c="black",linewidth=0.5,zorder=0)
-    ax2.scatter(x_rr, y_rr, color="r")
+    ax2.scatter(x_rr, y_rr, c="r")
     ax2.axhline(y=0.000,xmin=0,xmax=3,c="black",linewidth=0.5,zorder=0)
     ax2.set_ylabel('$\Delta$m (AB mag)')
-    ax3.scatter(x_zz, 2*y_zz**2-1,color="b")
+    ax3.scatter(x_zz, 2*y_zz**2-1,c="b")
     ax3.axhline(y=0.000,xmin=0,xmax=3,c="black",linewidth=0.5,zorder=0)
     ax3.set_xlabel('m_sdss (AB mag)')
     f.subplots_adjust(hspace=0)
     plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+    plt.savefig(out_dir+'maggie_phot.png')
     plt.show()
+
     
 if __name__ == '__main__':
     main()
