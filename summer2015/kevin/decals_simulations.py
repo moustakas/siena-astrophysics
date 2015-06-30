@@ -10,10 +10,16 @@ TODO:
 * Model a mixture of object types.
 
 python decals_simulations.py -n 10 --zoom 1750 1850 1750 1850
+runbrick --stage image_coadds --no-write --threads 16 --gpsf --radec 242.845 11.75 --width 500 --height 500
+runbrick --no-sdss --no-wise --threads 8 --zoom 1800 1900 1800 1900
 
-python $TRACTOR_DIR/projects/desi/runbrick.py --stage image_coadds --no-write --threads 16 --gpsf --radec 242.845 11.75 --width 500 --height 500
+decals_simulations -b 2428p117 -n 10 -o STAR --zoom 1800 1900 1800 1900
+runbrick -b 2428p117 --decals-dir /Users/ioannis/research/projects/decals/fake_decals_dir --stage image_coadds --no-write --threads 8 --zoom 1800 1900 1800 1900
 
-runbrick -b 2428p117 --no-sdss --no-wise --threads 8
+decals_simulations -b 2428p117 -n 10 -o STAR --rmag-range 15 18 --zoom 1600 2000 1600 2000 
+
+setenv DECALS_DIR /Users/ioannis/research/projects/decals/fake_decals_dir
+runbrick -b 2428p117 --stage image_coadds --no-write --threads 8 --zoom 1600 2000 1600 2000 
 
 """
 from __future__ import division, print_function
@@ -220,9 +226,11 @@ class build_stamp():
 
         return stamp, varstamp
 
-    def star(self,objinfo):
+    def star(self):
         """Create a PSF source."""
-        stamp = self.localpsf.drawImage(offset=self.offset,wcs=self.localwcs,method='no_pixel')
+        psf = self.localpsf
+        psf = psf.withFlux(self.objflux)
+        stamp = psf.drawImage(offset=self.offset,wcs=self.localwcs,method='no_pixel')
         stamp.setCenter(self.xpos,self.ypos)
         return stamp
     
@@ -315,16 +323,13 @@ class simobj_info():
         psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=pixscale,flux=1.0)
         psf_centroid = psf.centroid()
         psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
-
         return psf
     
     def getobjflux(self,objinfo):
         """Calculate the flux of a given object in ADU."""
         flux = objinfo[self.filter.upper()+'FLUX']
         flux *= 10**(0.4*(self.magzpt-22.5)) # [ADU]
-
         return float(flux)
-
     
 def insert_simobj(objtype,priors,ccdinfo):
     """Simulate objects and place them into individual CCDs."""
@@ -371,7 +376,7 @@ def insert_simobj(objtype,priors,ccdinfo):
                 # get the local coordinate, WCS, and PSF and then build the stamp
                 objstamp.getlocal(objinfo,siminfo)
                 if objtype=='STAR':
-                    stamp = objstamp.star(objinfo)
+                    stamp = objstamp.star()
                 if objtype=='ELG':
                     stamp = objstamp.elg(objinfo,siminfo)
 
@@ -388,10 +393,10 @@ def insert_simobj(objtype,priors,ccdinfo):
                     invvar[overlap] = varstamp
 
             log.info('Writing {}[{}]'.format(siminfo.imfile,siminfo.cpimage_hdu))
-#           fits.update(siminfo.imfile,image.array,ext=siminfo.cpimage_hdu,
-#                       header=fits.Header(imhdr.items()))
-#           fits.update(siminfo.ivarfile,invvar.array,ext=siminfo.cpimage_hdu,
-#                       header=fits.Header(ivarhdr.items()))
+            fits.update(siminfo.imfile,image.array,ext=siminfo.cpimage_hdu,
+                        header=fits.Header(imhdr.items()))
+            fits.update(siminfo.ivarfile,invvar.array,ext=siminfo.cpimage_hdu,
+                        header=fits.Header(ivarhdr.items()))
 
 def qaplots(brickname,brickinfo,ccdinfo,priors):
     """Build some simple QAplots of the simulation inputs."""
