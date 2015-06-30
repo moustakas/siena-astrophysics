@@ -21,13 +21,13 @@ def main():
     """Document me
     
     """
-    in_dir = os.getenv('HOME')+'/redmapper/' # push to a function
+    in_dir = os.getenv('HOME')+'/redmapper/' 
     out_dir = in_dir+'cutouts/'
     
     rmap = fits.getdata(in_dir+'rmap.fits',1)
     
-    nrich = 10
-    rich = np.argsort(rmap['lambda_chisq'])[::-1][0:nrich]
+    nrich = 21
+    rich = np.argsort(rmap['lambda_chisq'])[::-1][11:nrich]
     print('The top '+str(nrich)+' richest clusters: '+str(rmap['lambda_chisq'][rich]))
 
     for ii in range(nrich):
@@ -36,10 +36,10 @@ def main():
         dec = '{:6f}'.format(rmap['dec'][rich[ii]])
         cluster = 'cluster_{:06}'.format(rich[ii])
         stamp = '{:n}'.format(np.floor(get_stamp(rmap['z'])[rich[ii]])/10*10)
-
-        aa = os.system("$TRACTOR_DIR/projects/desi/runbrick.py --radec "+ra+" "+dec+" --width 600 --height 600 --no-wise --no-sdss --threads 16")
-        print(aa)
-
+        cmd = "python $TRACTOR_DIR/projects/desi/runbrick.py --radec "+ra+" "+dec+" --width "+stamp+" --height "+stamp+" --no-wise --no-sdss --threads 16"
+        print(cmd)
+        os.system(cmd)
+        
 if __name__ == '__main__':
     main()
 

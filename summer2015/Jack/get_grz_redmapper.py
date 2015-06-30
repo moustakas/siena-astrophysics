@@ -12,11 +12,12 @@ def main():
     """
     out_dir = os.getenv('HOME')+'/redmapper/'
     redmapper_dir = '/global/work/projects/redmapper/'
-    decals_dir = os.getenv('DECALS_DIR')+'/'
+    dr1_dir = os.getenv('HOME')+'/dr1/'
+    #decals_dir = os.getenv('DECALS_DIR')+'/'
 
     # read bricks summary file and find bricks with grz
-    print('Reading '+decals_dir+'decals-bricks-summary.fits')
-    allbricks = fits.getdata(decals_dir+'decals-bricks-summary.fits',1)
+    print('Reading '+dr1_dir+'decals-bricks-summary.fits')
+    allbricks = fits.getdata(dr1_dir+'decals-bricks-summary.fits',1)
     these = np.where(allbricks['has_image_g'] & allbricks['has_image_r'] & 
                      allbricks['has_image_z'] & allbricks['has_catalog'] & 
                      (allbricks['nobs_g_med']>2)*1 & (allbricks['nobs_r_med']>2)*1 & 
