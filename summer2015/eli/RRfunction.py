@@ -1,49 +1,54 @@
 @profile
-def DD():
-    
-    #### CMASS DATA #####
-    #### Argument = dr10cmassnorth.fits ####
-    import astropy.io 
-    from astropy.io import fits
+def RR():
     import numpy as np
-    import sys
-    import random
     import math
-    import scipy
-    from scipy import spatial
+    import scipy.spatial
     from astropy.cosmology import FlatLambdaCDM
+    import astropy.io
     import matplotlib.pylab as plt
     import time
     t0=time.time()
-    infilename1 = sys.argv[1]
-    hdulist1=fits.open(infilename1)
-    hdulist1.info()
-    h1=hdulist1[1]
-    print 'Reading in Data'
-    data1=h1.data
-    print 'Finished reading in data....'
+    r=np.loadtxt('cmass_dr10_north_randoms_ir4500.v10.1.release.txt')
+    ra=r[:,0]
+    dec=r[:,1]
+    z=r[:,2]
 
-    del h1
 
-    ngals_for_calculation = 50000
+    ##### Z Cut #####
+
+    zcut=z>0.43
+    zcutnew=z[zcut]
+
+    zcut1=z<0.7
+    zcutnew1=z[zcut1]
+    tot=zcut*zcut1
+    totrand=r[tot]
+    del tot
+    del r
+    ########### Distances ################
+
+    nrands_for_calculation = 250000
+
     np.random.seed(1)
 
-    a=np.arange(0,len(data1))
+    a=np.arange(0,len(totrand))
     np.random.shuffle(a)
-    sample=data1[a[0:ngals_for_calculation]]
+    sample=totrand[a[0:nrands_for_calculation]]
+    del a
+    del totrand
     ###### Distances (Para and Perp) ########
-    del data1
+
     print 'Conversions'
     # Comoving Distances
     cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
-    comdist=cosmo.comoving_distance(sample['Z'])
+    comdist=cosmo.comoving_distance(sample[:,2])
 
     # Converting RA and Dec to Radians
 
-    RArad=(sample['PLUG_RA'])*((math.pi)/180)
-    Decrad=((math.pi)/2)-((sample['PLUG_DEC'])*((math.pi)/180))
+    RArad=(sample[:,0])*((math.pi)/180)
+    Decrad=((math.pi)/2)-((sample[:,1])*((math.pi)/180))
 
-    # Coverting to Cartesian Coordinates
+    # Converting to Cartesian Coordinates
 
     x=comdist*np.sin(Decrad)*np.cos(RArad)
     y=comdist*np.sin(Decrad)*np.sin(RArad)
@@ -54,9 +59,12 @@ def DD():
     del x
     del y
     del z
-    del sample
     del comdist
+    del sample
+    # Distances
+
     print 'Finished with conversions! Now to calculate distances...'
+
     def mag(vec):
 
         m = None
@@ -69,10 +77,9 @@ def DD():
 
         return m
     ################################################################################
-
     ngals = len(coordsa)
     chunk_size = 50
-    nchunks = ngals_for_calculation/chunk_size
+    nchunks = nrands_for_calculation/chunk_size
     nbins=200
     rangeval=300
 
@@ -82,15 +89,15 @@ def DD():
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
-        print "Performing calculations for DD %d chunk: %d-%d" % (j,lo,hi)
+        print "Performing calculations for RR %d chunk: %d-%d" % (j,lo,hi)
 
         paras = []
         perps = []
-        
+
         for i in range(lo,hi):
             if i!=ngals-1:
                 # First compute R_LOS and dR
-                
+               
                 r1=coordsa[i]
                 
                 R_LOS1 = (r1 + coordsa[i+1:])/2.
@@ -107,11 +114,12 @@ def DD():
                 # Make use of the Pythagorean theorem
                 
                 R_perp1 = np.sqrt(dR_mag1*dR_mag1 - R_para1*R_para1)
+               
                 
                 paras += R_para1.tolist()
-               
+                
                 perps += R_perp1.tolist()
-
+                
 
         
         hist=plt.hist2d(perps,paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
@@ -121,25 +129,23 @@ def DD():
         # Mirror the negative perps
         hist=plt.hist2d(-1*np.array(perps),paras,bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
         tot_freq += hist[0]
-
+        
         del paras
         del perps
         del hist
         print tot_freq
     #tot_freq[(nbins/2),(nbins/2)]=0
-        
+    print 'Final Plot'    
     #extent = [-rangeval,rangeval, -rangeval,rangeval]
     #fig = plt.figure()
     #axes = fig.add_subplot(1,1,1)
-
+    print 'Imshow'
     #ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
     #plt.show()
-    
-    np.savetxt('DDtest2d2.txt',tot_freq)
+    np.savetxt('RRtest2d2.txt',tot_freq)
     t1=time.time()
     tottime=t1-t0
     totmin=tottime/60
     tothr=totmin/60
     print 'This code took %f hours to run' %tothr
-DD()
-
+RR()

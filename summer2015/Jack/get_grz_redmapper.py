@@ -28,10 +28,10 @@ def main():
 
     # Match the two datasets.
     m1, m2, d12 = match_radec(grz_bricks['ra'],grz_bricks['dec'], 
-                              rmap['ra'],rmap['dec'],0.25/2.0)
+                              rmap['ra'],rmap['dec'],0.25/2.0,nearest=False)
 
     print('Found {} redMaPPer clusters in DECalS footprint!'.format(len(m1)))
-    grz_out = grz_bricks[m1]
+    grz_out = grz_bricks[list(set(m1))]
     rmap_out = rmap[m2]
 
     rmap_fits = fits.writeto(out_dir+'rmap.fits',rmap_out,clobber=True)
