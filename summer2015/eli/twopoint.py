@@ -12,12 +12,12 @@ RR=np.loadtxt('RR_refactored.dat',dtype='float')
 DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
-'''
+
 ########## Bin Reduction ##########
 def binred(array):
     import numpy as np
     binsnow=200
-    binsneeded=10
+    binsneeded=100
     global newbins1
     global newbins
     newbins1=[]
@@ -33,13 +33,13 @@ def binred(array):
         global val
         val=(newbins1[j,:]+newbins1[j+1,:])
         newbins.append(val)
-        return newbins1
+        return newbins
     newbins=np.array(newbins)    
                     
 binred(DD)      
 #print newbins        
 #print val    
-   ''' 
+    
 
 
 
