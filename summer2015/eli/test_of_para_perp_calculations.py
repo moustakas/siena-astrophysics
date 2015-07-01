@@ -6,6 +6,12 @@ import matplotlib.pylab as plt
 import math
 import matplotlib.pylab as plt
 
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from astropy.coordinates import Distance
+
+
+
 ################################################################################
 # Get magnitude of a vector
 ################################################################################
@@ -22,22 +28,40 @@ def mag(vec):
 ################################################################################
 def radecredshift2xyz(ra,dec,redshift):
 
+
     # Comoving Distances In Mpc
     cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
     comdist=cosmo.comoving_distance(redshift).value
 
+    print "comdist: "
+    print cosmo.comoving_distance(redshift)
+
+    c = SkyCoord(ra=ra*u.degree, dec=dec*u.degree, distance=comdist*u.Mpc)
+
     halfpi = math.pi/180.
     # Convert degrees to radians and spherical coordinates
     RArad=np.deg2rad(ra)
-    Decrad=((dec)*((math.pi)/180.))#((math.pi)/2.)-
-    #Decrad=halfpi-np.deg2rad(dec)
+    #Decrad=((dec)*((math.pi)/180.))#((math.pi)/2.)-
+    Decrad=halfpi-np.deg2rad(dec)
+    #Decrad=np.deg2rad(dec)
 
     # Convert spherical to Cartesian Coordinates
     x=comdist*np.sin(Decrad)*np.cos(RArad)
     y=comdist*np.sin(Decrad)*np.sin(RArad)
     z=comdist*np.cos(Decrad)
 
+    print np.sqrt(x*x + y*y + z*z)
+    xc = c.icrs.cartesian.x
+    yc = c.icrs.cartesian.y
+    zc = c.icrs.cartesian.z
+    print np.sqrt(xc*xc + yc*yc + zc*zc)
+
+    print x[0],xc[0]
+    print y[0],yc[0]
+    print z[0],zc[0]
+
     coords=np.column_stack((x,y,z))
+    #coords=np.column_stack((xc.value,yc.value,zc.value))
 
     return coords
 
@@ -78,8 +102,13 @@ for i in range(0,ngals):
         r1=coords[i]     
         r2=coords[j]
 
+        r1mag = mag(r1)
+        r2mag = mag(r2)
+        rat = r1mag/r1mag
+
         # First compute R_LOS (line-of-sight vector) and dR
         R_LOS = (r1 + r2)/2.
+        #R_LOS = r1 + r2*rat
         dR = r2 - r1
         R_LOS_mag = mag(R_LOS)
 
@@ -112,6 +141,9 @@ for i in range(0,ngals):
         z1=coords[i,2]
         z2=coords[j,2]
 
+        #print x1,y1,z1
+        #exit()
+
         d1 = x1-x2
         d2 = y1-y2
         d3 = z1-z2
@@ -130,7 +162,7 @@ for i in range(0,ngals):
         rr = np.sqrt(r2l)
 
         rpar=rr*mu
-        rperp=rr*np.sqrt(1-mu*mu)
+        rperp=rr*np.sqrt(1-(mu*mu))
         
         paras2.append(rpar)
         perps2.append(rperp)    
@@ -150,7 +182,6 @@ plt.plot(paras1,(paras1-paras2)/paras1,'o')
 plt.xlabel('Our Code')
 plt.ylabel("Fractional difference")
 plt.title('Paras')
-plt.show()
 
 
 plt.subplot(1,2,2)
