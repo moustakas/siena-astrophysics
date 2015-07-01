@@ -106,11 +106,18 @@ for i in range(0,ngals):
         r2mag = mag(r2)
         rat = r1mag/r1mag
 
+        #print "mags:",r1mag,r2mag
+
         # First compute R_LOS (line-of-sight vector) and dR
         R_LOS = (r1 + r2)/2.
+        #print "DIFF: ",R_LOS-(r1 + r2*rat)
         #R_LOS = r1 + r2*rat
-        dR = r2 - r1
+        #dR = r2 - r1
+        dR = r1 - r2
         R_LOS_mag = mag(R_LOS)
+
+        #print "dR:", dR
+        #print "R_LOS_mag: ",R_LOS_mag
 
         # Dot product (normalized)        
         R_para = (dR[0]*R_LOS[0] + dR[1]*R_LOS[1] + dR[2]*R_LOS[2])/R_LOS_mag
@@ -134,6 +141,7 @@ perps2=[]
 for i in range(0,ngals):
     for j in range(i+1,ngals):
     
+        #print "----------"
         x1=coords[i,0]
         x2=coords[j,0]
         y1=coords[i,1]
@@ -149,20 +157,28 @@ for i in range(0,ngals):
         d3 = z1-z2
         r2l = d1*d1 + d2*d2 + d3*d3
 
+        #print "dR", d1,d2,d3
+
         gd1 = np.sqrt((x1**2)+(y1**2)+(z1**2))
         gd2 = np.sqrt((x2**2)+(y2**2)+(z2**2))
         rat = gd1/gd2
+
+        #print "mags:",gd1,gd2
 
         xb = x1 + x2*rat
         yb = y1 + y2*rat
         zb = z1 + z2*rat
 
         db2 = xb*xb + yb*yb + zb*zb
+        #print "dbmag: ",np.sqrt(db2)
+
         mu = np.absolute((xb*d1 + yb*d2 + zb*d3)/np.sqrt(r2l)/np.sqrt(db2))
         rr = np.sqrt(r2l)
 
         rpar=rr*mu
         rperp=rr*np.sqrt(1-(mu*mu))
+
+        #print "rpar,rperp:",rpar,rperp
         
         paras2.append(rpar)
         perps2.append(rperp)    
