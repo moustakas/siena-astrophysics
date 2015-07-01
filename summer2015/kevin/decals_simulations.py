@@ -16,7 +16,7 @@ runbrick --no-sdss --no-wise --threads 8 --zoom 1800 1900 1800 1900
 decals_simulations -b 2428p117 -n 10 -o STAR --zoom 1800 1900 1800 1900
 runbrick -b 2428p117 --decals-dir /Users/ioannis/research/projects/decals/fake_decals_dir --stage image_coadds --no-write --threads 8 --zoom 1800 1900 1800 1900
 
-decals_simulations -b 2428p117 -n 10 -o STAR --rmag-range 15 18 --zoom 1600 2000 1600 2000 
+decals_simulations -b 2428p117 -n 500 -o STAR --rmag-range 18 25 --zoom 1600 2000 1600 2000 
 
 setenv DECALS_DIR /Users/ioannis/research/projects/decals/fake_decals_dir
 runbrick -b 2428p117 --stage image_coadds --no-write --threads 8 --zoom 1600 2000 1600 2000 

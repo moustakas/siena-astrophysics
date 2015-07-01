@@ -15,8 +15,8 @@ from astropy.io import fits
 from PIL import Image, ImageDraw
 
 # Global variables.
-scratch_dir = '/Users/ioannis/research/projects/decals/scratch/'
-#scratch_dir = '/global/work/decam/scratch/'
+#scratch_dir = '/Users/ioannis/research/projects/decals/scratch/'
+scratch_dir = '/global/work/decam/scratch/'
 fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
 
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
@@ -54,7 +54,6 @@ def main():
         draw.ellipse((cat['X'][ii]-rad[ii], sz[1]-cat['Y'][ii]-rad[ii],
                       cat['X'][ii]+rad[ii], sz[1]-cat['Y'][ii]+rad[ii]))
     im.save(os.path.join(fake_decals_dir,'qa_'+brickname+'_coadd.png'))
-    im.close()
 
 if __name__ == "__main__":
     main()
