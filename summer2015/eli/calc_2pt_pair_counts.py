@@ -161,8 +161,8 @@ def main():
         samefile = True
 
     # Randomizing a Sample of SDSS Data
-    ngals_for_calculation = 0
-    nrands=0
+    ngals_for_calculation = 200000
+    nrands=200000
     np.random.seed(1)
 
     coords0 = get_coordinates(infilename0,ngals_for_calculation)
@@ -187,7 +187,7 @@ def main():
         coords1cut = coords1[range2lo:range2hi]
     else:
         coords1cut = coords1
-
+   
     chunk_size = 50
     nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
     nbins=200
@@ -202,6 +202,112 @@ def main():
 
     indexlo = 0
     indexhi = 0
+##############################KEEP EVERYTHING ABOVE THIS LINE ##################
+        #################### LADO'S CODE ############################
+
+    for j in xrange(nchunks):
+        lo = j*chunk_size
+        hi = (j+1)*chunk_size
+        #print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
+        print j
+        paras *= 0.
+        perps *= 0.
+
+        #for i,r0 in enumerate(coords0[lo:hi]):
+        for i in range(lo,hi):
+            x0=coords0cut[i,0]
+            y0=coords0cut[i,1]
+            z0=coords0cut[i,2]
+            lo1 = 0
+            if samefile:
+                lo1 = i
+                if do_diagonal==False:
+                    lo1 += 1
+
+            indexhi += len(coords1cut[lo1:])
+    
+            
+            #x1=coords1cut[lo1:,0]
+            #y1=(coords1cut[lo1:,1])
+            #z1=(coords1cut[lo1:,2])
+
+            #x1=coords1cut[lo1:,0]
+            #y1=coords1cut[lo1:,1]
+            #z1=coords1cut[lo1:,2]
+            
+
+            d1 = x0-(coords1cut[lo1:,0])
+            #print len(d1)#(coords1cut[lo1:,0])
+            d2 = y0-(coords1cut[lo1:,1]) #(coords1cut[lo1:,1])
+            d3 = z0-(coords1cut[lo1:,2]) #(coords1cut[lo1:,2])
+            
+            r2l = d1*d1 + d2*d2 + d3*d3
+            gd1 = np.sqrt((x0**2)+(y0**2)+(z0**2))
+            gd2 = np.sqrt(((coords1cut[lo1:,0])**2)+((coords1cut[lo1:,1])**2)+((coords1cut[lo1:,2])**2))
+            rat = gd1/gd2
+
+            xb = x0 + (coords1cut[lo1:,0])*rat
+            yb = y0 + (coords1cut[lo1:,1])*rat
+            zb = z0 + (coords1cut[lo1:,2])*rat
+
+            db2 = xb*xb + yb*yb + zb*zb
+
+            mu = np.absolute(((xb*d1 + yb*d2 + zb*d3)/np.sqrt(r2l)/np.sqrt(db2)))
+            rr = np.sqrt(r2l)
+             
+            rpar=rr*mu
+            rperp=rr*np.sqrt(1-(mu*mu))
+            #print indexlo,indexhi,type(rpar)
+            
+            paras[indexlo:indexhi] = rpar
+            perps[indexlo:indexhi] = rperp    
+
+            indexlo = indexhi
+
+        hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        tot_freq += hist[0]
+        
+        # Mirror the negative perps
+        #hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        #tot_freq += hist[0]
+        #hist=plt.hist2d(perps[0:indexhi],-1*paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        #tot_freq += hist[0]
+        #hist=plt.hist2d(-1*perps[0:indexhi],-1*paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        #tot_freq += hist[0]
+        #print type(hist1[0])
+        #frequ1=hist1[0]
+        #plt.close()
+
+        indexlo=0
+        indexhi=0
+        #del paras
+        #del perps
+        del hist
+
+        #print tot_freq
+        #tot_freq[(nbins/2),(nbins/2)]=0
+        print tot_freq.sum()
+
+    if args.no_plots==False:
+        print 'Final Plot'    
+        extent = [-rangeval,rangeval, -rangeval,rangeval]
+        fig = plt.figure()
+        axes = fig.add_subplot(1,1,1)
+        print 'Imshow'
+        print tot_freq
+        ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+        plt.show()
+
+    print('Writing {}'.format(outfilename))
+    np.savetxt(outfilename,tot_freq)
+
+################################################################################
+if __name__=='__main__':
+    main()
+
+####################################KEEP EVERYTHING BELOW THIS LINE############################
+
+'''        
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
@@ -217,7 +323,7 @@ def main():
             #print lo+i
             #print r0
 
-            #'''
+            
             lo1 = 0
             if samefile:
                 lo1 = i
@@ -225,7 +331,7 @@ def main():
                     lo1 += 1
 
             indexhi += len(coords1cut[lo1:])
-            #'''
+            
 
             # First compute R_LOS and dR
             R_LOS = (r0 + coords1cut[lo1:])/2
@@ -249,10 +355,10 @@ def main():
             #print len(paras[paras!=0])
 
             indexlo = indexhi
-
             #nperps1 += negR_perp1.tolist()
             #if i%(chunk_size/4)==0:
                 #print i
+        
 
         #print len(paras)
         #print len(perps)
@@ -283,7 +389,7 @@ def main():
         #print tot_freq
         #tot_freq[(nbins/2),(nbins/2)]=0
         print tot_freq.sum()
-        
+   
     #tot_freq[(nbins/2),(nbins/2)]=0
     if args.no_plots==False:
         print 'Final Plot'    
@@ -292,11 +398,11 @@ def main():
         axes = fig.add_subplot(1,1,1)
         print 'Imshow'
         ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
-        #plt.show()
+        plt.show()
 
     print('Writing {}'.format(outfilename))
     np.savetxt(outfilename,tot_freq)
-
+'''
 ################################################################################
-if __name__=='__main__':
-    main()
+#if __name__=='__main__':
+ #   main()

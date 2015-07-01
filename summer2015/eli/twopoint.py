@@ -4,15 +4,32 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DD_refactored.dat',dtype='float')
-DR=np.loadtxt('DR_refactored.dat',dtype='float')
-RR=np.loadtxt('RR_refactored.dat',dtype='float')
+DD=np.loadtxt('ladoDD.dat',dtype='float')
+DR=np.loadtxt('ladoDR.dat',dtype='float')
+RR=np.loadtxt('ladoRR.dat',dtype='float')
 
 
 DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
 
+DD+=np.flipud(DD)
+DR+=np.flipud(DR)
+RR+=np.flipud(RR)
+
+DDnew1=np.rot90(DD)
+DRnew1=np.rot90(DR)
+RRnew1=np.rot90(RR)
+DDnew2=np.rot90(DDnew1)
+DRnew2=np.rot90(DRnew1)
+RRnew2=np.rot90(RRnew1)
+
+DD+=DDnew2
+DR+=DRnew2
+RR+=RRnew2
+
+
+'''
 ########## Bin Reduction ##########
 def binred(array):
     import numpy as np
@@ -39,7 +56,7 @@ def binred(array):
 binred(DD)      
 #print newbins        
 #print val    
-    
+''' 
 
 
 
@@ -47,16 +64,16 @@ binred(DD)
 ndata=100000
 nrand=100000
 
-print DD.shape
+#print DD.shape
 
-print sum(sum(DD))
-print sum(sum(DR))
-print sum(sum(RR))
+#print sum(sum(DD))
+#print sum(sum(DR))
+#print sum(sum(RR))
 
 # Rebin
-DDnew = np.zeros((100,100))
-DRnew = np.zeros((100,100))
-RRnew = np.zeros((100,100))
+#DDnew = np.zeros((100,100))
+#DRnew = np.zeros((100,100))
+#RRnew = np.zeros((100,100))
 
 '''
 for i in range(0,200,2):
@@ -125,7 +142,7 @@ for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.001,vmax=0.2))
+d=plt.imshow(theta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.12,vmax=1))
 plt.colorbar(d)
 plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
 plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
