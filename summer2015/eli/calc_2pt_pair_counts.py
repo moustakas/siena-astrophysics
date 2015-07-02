@@ -128,6 +128,7 @@ def main():
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
     parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
+    #parser.add_argument('--oned', dest='1d' ,default=False,action='store_true',help='One dimensional Function')
     args=parser.parse_args()
 
     if args.no_plots:
@@ -202,8 +203,29 @@ def main():
 
     indexlo = 0
     indexhi = 0
-##############################KEEP EVERYTHING ABOVE THIS LINE ##################
-        #################### LADO'S CODE ############################
+    ################################ ONE DIMENSION ##########################################
+
+    #if args.1d:
+     #   x0=coords0cut[:,0]
+      ## y0=coords0cut[:,1]
+        #y1=coords1cut[:,1]
+        #z0=coords0cut[:,2]
+        #z1=coords1cut[:,2]
+        #lo1=0
+        #if samefile:
+            
+        #for j in xrange(nchunks):
+         #   lo = j*chunk_size
+          #  hi = (j+1)*chunk_size
+           # for i in range(lo,hi):
+            #    val=[np.sqrt(((x0[i]-x1[i+1:]**2)+(y1[i]-
+                
+                
+                
+            
+        
+            
+    ################################## LADO'S CODE ############################
     if args.lado:
         
         for j in xrange(nchunks):
@@ -303,11 +325,9 @@ def main():
         print 'LADO'
         np.savetxt(outfilename,tot_freq)
 
-################################################################################
-#if __name__=='__main__':
-#    main()
 
-####################################KEEP EVERYTHING BELOW THIS LINE############################
+
+####################################OUR CODE############################
 
     else:        
         for j in xrange(nchunks):
