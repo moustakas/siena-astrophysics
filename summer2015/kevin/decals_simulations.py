@@ -26,23 +26,67 @@ from __future__ import division, print_function
 
 import os
 import sys
+import shutil
 import logging
 import argparse
+import subprocess
 import numpy as np
 
 import galsim
 from astropy.io import fits
 
-from projects.desi.common import *
+from projects.desi.common import Decals, wcs_for_brick, ccds_touching_wcs
 
-# Global variables.
-decals_dir = os.getenv('DECALS_DIR')
-fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
-
+# Set up logging and our global directories.
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
 log = logging.getLogger('decals_simulations')
 
-def get_brickinfo(brickname=None):
+def get_simdir(brickname=None,objtype=None):
+    """Get the simulation directory."""
+
+    # Check for the environment variables we need.
+    tractor_dir = 'TRACTOR_DIR'
+    if tractor_dir not in os.environ:
+        log.error('Missing ${} environment variable'.format(tractor_dir))
+        sys.exit(1)
+    else:
+        tractor_dir = os.getenv('TRACTOR_DIR')
+
+    decals_dir = 'DECALS_DIR'
+    if decals_dir not in os.environ:
+        log.error('Missing ${} environment variable'.format(decals_dir))
+        sys.exit(1)
+    else:
+        decals_dir = os.getenv('DECALS_DIR')
+
+    if 'DECALS_SIM_DIR' in os.environ:
+        decals_sim_dir = os.getenv('DECALS_SIM_DIR')
+    else:
+        log.error('Missing $DECALS_SIM_DIR environment variable')
+        sys.exit(1)
+
+    log.info('DECALS_DIR {}'.format(decals_dir))
+    log.info('DECALS_SIM_DIR {}'.format(decals_sim_dir))
+    simdir = os.path.join(decals_sim_dir,objtype.lower())
+
+    log.info('Creating directories...')
+    if not os.path.isdir(simdir):
+        log.info('  {}'.format(simdir))
+        os.makedirs(simdir)
+        
+    simdir = os.path.join(simdir,brickname)
+    if not os.path.isdir(simdir):
+        log.info('  {}'.format(simdir))
+        os.makedirs(simdir)
+    
+    #qadir = os.path.join(simdir,'qaplots')
+    #if not os.path.isdir(qadir):
+    #    log.info('  {}'.format(qadir))
+    #    os.makedirs(qadir)
+    
+    return tractor_dir, decals_dir, simdir
+
+def get_brickinfo(brickname=None,decals_dir=None):
     """Get info on this brick.
 
     """
@@ -54,7 +98,7 @@ def get_brickinfo(brickname=None):
 
     return brickinfo, wcs
 
-def get_ccdinfo(brickwcs=None):
+def get_ccdinfo(brickwcs=None,decals_dir=None):
     """Get info on this brick and on the CCDs touching it.
 
     """
@@ -69,12 +113,17 @@ def get_ccdinfo(brickwcs=None):
     log.info('Got {} CCDs'.format(len(ccdinfo)))
     return ccdinfo
 
-def build_priors(nobj=20,brickname=None,brickwcs=None,objtype='ELG',
+def build_simcat(nobj=None,brickname=None,brickwcs=None,objtype=None,
                  raminmax=None,decminmax=None,rmag_range=None,
-                 seed=None):
-    """Choose priors according to the type of object.  Will eventually generalize
-       this so that a mixture of object types can be simulated."""
+                 decals_sim_dir=None,seed=None):
+    """Build the simulated object catalog, which depends on the type of object.
+       Will eventually generalize this so that a mixture of object types can be
+       simulated.
 
+    TODO (@moustakas): Remove simulated sources which are too near to one
+    another.
+
+    """
     from astropy.table import Table, Column
     rand = np.random.RandomState(seed=seed)
 
@@ -83,12 +132,13 @@ def build_priors(nobj=20,brickname=None,brickwcs=None,objtype='ELG',
     dec = rand.uniform(decminmax[0],decminmax[1],nobj)
     xxyy = brickwcs.radec2pixelxy(ra,dec)
 
-    priors = Table()
-    priors['ID'] = Column(np.arange(nobj,dtype='i4'))
-    priors['X'] = Column(xxyy[1][:],dtype='f4')
-    priors['Y'] = Column(xxyy[2][:],dtype='f4')
-    priors['RA'] = Column(ra,dtype='f8')
-    priors['DEC'] = Column(dec,dtype='f8')
+    cat = Table()
+    cat['ID'] = Column(np.arange(nobj,dtype='i4'))
+    cat['OBJTYPE'] = Column(np.repeat(objtype,nobj),dtype='S10')
+    cat['X'] = Column(xxyy[1][:],dtype='f4')
+    cat['Y'] = Column(xxyy[2][:],dtype='f4')
+    cat['RA'] = Column(ra,dtype='f8')
+    cat['DEC'] = Column(dec,dtype='f8')
 
     if objtype.upper()=='ELG':
         sersicn_1_range = [1.0,1.0]
@@ -100,10 +150,10 @@ def build_priors(nobj=20,brickname=None,brickwcs=None,objtype='ELG',
         ba_1 = rand.uniform(ba_1_range[0],ba_1_range[1],nobj)
         phi_1 = rand.uniform(0,180,nobj)
 
-        priors['SERSICN_1'] = Column(sersicn_1,dtype='f4')
-        priors['R50_1'] = Column(r50_1,dtype='f4')
-        priors['BA_1'] = Column(ba_1,dtype='f4')
-        priors['PHI_1'] = Column(phi_1,dtype='f4')
+        cat['SERSICN_1'] = Column(sersicn_1,dtype='f4')
+        cat['R50_1'] = Column(r50_1,dtype='f4')
+        cat['BA_1'] = Column(ba_1,dtype='f4')
+        cat['PHI_1'] = Column(phi_1,dtype='f4')
 
         ## Bulge parameters
         #bulge_r50_range = [0.1,1.0]
@@ -128,44 +178,61 @@ def build_priors(nobj=20,brickname=None,brickwcs=None,objtype='ELG',
     zflux = 1E9*10**(-0.4*(rmag-rz))
 
     # Pack into a Table.
-    priors['R'] = Column(rmag,dtype='f4')
-    priors['GR'] = Column(gr,dtype='f4')
-    priors['RZ'] = Column(rz,dtype='f4')
-    priors['GFLUX'] = Column(gflux,dtype='f4')
-    priors['RFLUX'] = Column(rflux,dtype='f4')
-    priors['ZFLUX'] = Column(zflux,dtype='f4')
+    cat['R'] = Column(rmag,dtype='f4')
+    cat['GR'] = Column(gr,dtype='f4')
+    cat['RZ'] = Column(rz,dtype='f4')
+    cat['GFLUX'] = Column(gflux,dtype='f4')
+    cat['RFLUX'] = Column(rflux,dtype='f4')
+    cat['ZFLUX'] = Column(zflux,dtype='f4')
 
     # Write out.
-    outfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
+    outfile = os.path.join(decals_sim_dir,'simcat-'+brickname+'-'+objtype.lower()+'.fits')
     log.info('Writing {}'.format(outfile))
     if os.path.isfile(outfile):
         os.remove(outfile)
-    priors.write(outfile)
+    cat.write(outfile)
 
-    return priors
+    return cat
 
-def copyfiles(ccdinfo=None):
+def copy_cpdata(ccdinfo=None,decals_dir=None,decals_sim_dir=None):
     """Copy the CP-processed images, inverse variance maps, and bad-pixel masks we
-    need from DECALS_DIR to FAKE_DECALS_DIR, creating directories as necessary.
+    need from DECALS_DIR to DECALS_SIM_DIR, creating directories as necessary.
+    Also construct the requisite soft links pointing back to DECALS_DIR.
 
     """
     from distutils.file_util import copy_file
 
     allcpimage = ccdinfo['CPIMAGE']
     allcpdir = set([cpim.split('/')[1] for cpim in allcpimage])
+
+    log.info('Creating symbolic links...')
+    linkfiles = ['calib','decals-ccds.fits','decals-bricks.fits',
+                 'decals-ccds-zeropoints.fits']
+    for lfile in linkfiles:
+        log.info('  {}'.format(os.path.join(decals_sim_dir,lfile)))
+        os.symlink(os.path.join(decals_dir,lfile),os.path.join(decals_sim_dir,lfile))
     
     log.info('Creating directories...')
+    outdir = os.path.join(decals_sim_dir,'images')
+    if not os.path.isdir(outdir):
+        log.info('  {}'.format(outdir))
+        os.makedirs(outdir)
+    outdir = os.path.join(decals_sim_dir,'images','decam')
+    if not os.path.isdir(outdir):
+        log.info('  {}'.format(outdir))
+        os.makedirs(outdir)
+
     for cpdir in list(allcpdir):
-        outdir = os.path.join(fake_decals_dir,'images','decam',cpdir)
+        outdir = os.path.join(decals_sim_dir,'images','decam',cpdir)
         if not os.path.isdir(outdir):
-            log.info('   {}'.format(outdir))
+            log.info('  {}'.format(outdir))
             os.makedirs(outdir)
     
     log.info('Copying files...')
     for cpimage in list(set(allcpimage)):
         cpdir = cpimage.split('/')[1]
         indir = os.path.join(decals_dir,'images','decam',cpdir)
-        outdir = os.path.join(fake_decals_dir,'images','decam',cpdir)
+        outdir = os.path.join(decals_sim_dir,'images','decam',cpdir)
 
         imfile = cpimage.split('/')[2].split()[0]
         log.info('  {}'.format(imfile))
@@ -255,21 +322,26 @@ class build_stamp():
         return stamp
 
 class simobj_info():
-    from tractor import psfex
-    def __init__(self,ccdinfo,gsparams):
+    def __init__(self,ccdinfo,gsparams,decals_sim_dir):
         """Access everything we need about an individual CCD.
         
         """        
+        from tractor.psfex import PsfEx
+        from tractor.basics import GaussianMixtureEllipsePSF
+
+        self.PsfEx = PsfEx
+        self.GaussianMixtureEllipsePSF = GaussianMixtureEllipsePSF
         self.gsparams = gsparams
         self.cpimage = ccdinfo['CPIMAGE']
         self.cpimage_hdu = ccdinfo['CPIMAGE_HDU']
         self.calname = ccdinfo['CALNAME']
         self.filter = ccdinfo['FILTER']
-        self.imfile = os.path.join(fake_decals_dir,'images',self.cpimage)
+        self.imfile = os.path.join(decals_sim_dir,'images',self.cpimage)
+        self.imfile_root = self.cpimage.replace('decam/','')
         self.ivarfile = self.imfile.replace('ooi','oow')
-        self.wcsfile = os.path.join(decals_dir,'calib','decam',
+        self.wcsfile = os.path.join(decals_sim_dir,'calib','decam',
                                     'astrom-pv',self.calname+'.wcs.fits')
-        self.psffile = os.path.join(decals_dir,'calib','decam',
+        self.psffile = os.path.join(decals_sim_dir,'calib','decam',
                                     'psfex',self.calname+'.fits')
         self.magzpt = float(ccdinfo['CCDZPT'] + 2.5*np.log10(ccdinfo['EXPTIME']))
         self.gain = float(ccdinfo['ARAWGAIN']) # [electron/ADU]
@@ -300,9 +372,8 @@ class simobj_info():
     
     def getpsf(self):
         """Read the PSF for this CCD."""
-        from tractor.basics import GaussianMixtureEllipsePSF
-        psf = psfex.PsfEx(self.psffile,self.width,self.height,ny=13,nx=7,
-                          psfClass=GaussianMixtureEllipsePSF,K=2)
+        psf = self.PsfEx(self.psffile,self.width,self.height,ny=13,nx=7,
+                          psfClass=self.GaussianMixtureEllipsePSF,K=2)
         self.psf = psf
 
         return psf
@@ -319,7 +390,7 @@ class simobj_info():
         PSFeX PSF."""
         xpos = int(image_pos.x)
         ypos = int(image_pos.y)
-        psfim = PsfEx.instantiateAt(self.psf,xpos,ypos)[5:-5,5:-5] # trim
+        psfim = self.PsfEx.instantiateAt(self.psf,xpos,ypos)[5:-5,5:-5] # trim
         psf = galsim.InterpolatedImage(galsim.Image(psfim),scale=pixscale,flux=1.0)
         psf_centroid = psf.centroid()
         psf = psf.shift(-psf_centroid.x,-psf_centroid.y)
@@ -331,26 +402,31 @@ class simobj_info():
         flux *= 10**(0.4*(self.magzpt-22.5)) # [ADU]
         return float(flux)
     
-def insert_simobj(objtype,priors,ccdinfo):
+def insert_simobj(simcat,ccdinfo,decals_sim_dir):
     """Simulate objects and place them into individual CCDs."""
+
     gsparams = galsim.GSParams(maximum_fft_size=2L**30L)
+
+    width = int(ccdinfo['WIDTH'][0])
+    height = int(ccdinfo['HEIGHT'][0])
 
     stampwidth = 45 # postage stamp width [pixels, roughly 14 arcsec]
     stampbounds = galsim.BoundsI(-stampwidth,stampwidth,-stampwidth,stampwidth)
-    imagebounds = galsim.BoundsI(0,2046,0,4094)
+    imagebounds = galsim.BoundsI(0,width,0,height)
 
+    objtype = simcat['OBJTYPE'][0].upper()
     objstamp = build_stamp(objtype)
     
     for ccd in ccdinfo:
         # Gather some basic info on this CCD and then read the data, the WCS
         # info, and initialize the PSF.
-        siminfo = simobj_info(ccd,gsparams)
+        siminfo = simobj_info(ccd,gsparams,decals_sim_dir)
         wcs = siminfo.getwcs()
 
         # Loop on each object and figure out which, if any, objects will be
         # placed on this CCD.
         onccd = []
-        for iobj, objinfo in enumerate(priors):
+        for iobj, objinfo in enumerate(simcat):
             pos = wcs.toImage(galsim.CelestialCoord(objinfo['RA']*galsim.degrees,
                 objinfo['DEC']*galsim.degrees))
             stampbounds1 = stampbounds.shift(galsim.PositionI(int(pos.x),int(pos.y)))
@@ -371,7 +447,7 @@ def insert_simobj(objtype,priors,ccdinfo):
             
             for iobj in range(nobj):
                 #print(iobj)
-                objinfo = priors[onccd[iobj]]
+                objinfo = simcat[onccd[iobj]]
 
                 # get the local coordinate, WCS, and PSF and then build the stamp
                 objstamp.getlocal(objinfo,siminfo)
@@ -381,7 +457,8 @@ def insert_simobj(objtype,priors,ccdinfo):
                     stamp = objstamp.elg(objinfo,siminfo)
 
                 overlap = stamp.bounds & image.bounds
-                if (overlap.xmax>=0 and overlap.ymax>=0 and overlap.xmin<=image.bounds.xmax and
+                if (overlap.xmax>=0 and overlap.ymax>=0 and
+                    overlap.xmin<=image.bounds.xmax and
                     overlap.ymin<=image.bounds.ymax and overlap.area()>0):
 
                     # Add Poisson noise
@@ -392,24 +469,25 @@ def insert_simobj(objtype,priors,ccdinfo):
                     image[overlap] += stamp
                     invvar[overlap] = varstamp
 
-            log.info('Writing {}[{}]'.format(siminfo.imfile,siminfo.cpimage_hdu))
+            log.info('Writing {}[{}]'.format(siminfo.imfile_root,siminfo.cpimage_hdu))
             fits.update(siminfo.imfile,image.array,ext=siminfo.cpimage_hdu,
                         header=fits.Header(imhdr.items()))
             fits.update(siminfo.ivarfile,invvar.array,ext=siminfo.cpimage_hdu,
                         header=fits.Header(ivarhdr.items()))
 
-def qaplots(brickname,brickinfo,ccdinfo,priors):
+def qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir=None):
     """Build some simple QAplots of the simulation inputs."""
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
     from matplotlib.patches import Rectangle
 
+    brickname = brickinfo['BRICKNAME'][0]
     color = iter(cm.rainbow(np.linspace(0,1,len(ccdinfo))))
 
     fig = plt.figure()
     ax = fig.gca()
     ax.get_xaxis().get_major_formatter().set_useOffset(False) 
-    ax.plot(priors['RA'],priors['DEC'],'gs',markersize=3)
+    ax.plot(simcat['RA'],simcat['DEC'],'gs',markersize=3)
     for ii, ccd in enumerate(ccdinfo):
         dy = ccd['WIDTH']*0.262/3600.0
         dx = ccd['HEIGHT']*0.262/3600.0
@@ -422,20 +500,20 @@ def qaplots(brickname,brickinfo,ccdinfo,priors):
                              brickinfo['DEC2']-brickinfo['DEC1'],fill=False,lw=3,
                              color='b')
         ax.add_patch(rect)
-        #ax.set_xlim(np.array([brickinfo['RA1'][0],brickinfo['RA2'][0]])*[0.9999,1.0001])
-        ax.set_xlim(np.array([brickinfo['RA2'][0],brickinfo['RA1'][0]])*[1.0001,0.9999])
-        ax.set_ylim(np.array([brickinfo['DEC1'][0],brickinfo['DEC2'][0]])*[0.99,1.01])
+        ax.set_xlim(np.array([brickinfo['RA2'][0],brickinfo['RA1'][0]])*[1.0002,0.9998])
+        ax.set_ylim(np.array([brickinfo['DEC1'][0],brickinfo['DEC2'][0]])*[0.985,1.015])
         ax.set_xlabel('$RA\ (deg)$',fontsize=18)
         ax.set_ylabel('$Dec\ (deg)$',fontsize=18)
 
-    qafile = os.path.join(fake_decals_dir,'qa_'+brickname+'.pdf')
-
+    qafile = os.path.join(decals_sim_dir,'qa_'+brickname+'_ccds.png')
+    #qafile = os.path.join(decals_sim_dir,'qaplots','qa_'+brickname+'_ccds.png')
     log.info('Writing QAplot {}'.format(qafile))
     fig.savefig(qafile)
 
 def main():
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    parser = argparse.ArgumentParser(formatter_class=argparse.
+                                     ArgumentDefaultsHelpFormatter,
                                      description='DECaLS simulations.')
     parser.add_argument('-n', '--nobj', type=long, default=None, metavar='', 
                         help='number of objects to simulate (required input)')
@@ -443,12 +521,16 @@ def main():
                         help='simulate objects in this brick')
     parser.add_argument('-o', '--objtype', type=str, default='ELG', metavar='', 
                         help='object type (STAR, ELG, LRG, BGS)') 
+    parser.add_argument('-t', '--threads', type=int, default=8, metavar='', 
+                        help='number of threads to use when calling The Tractor')
     parser.add_argument('-s', '--seed', type=long, default=None, metavar='', 
                         help='random number seed')
     parser.add_argument('--zoom', nargs=4, type=int, metavar='', 
                         help='see runbrick.py (default is to populate the full brick)')
-    parser.add_argument('--rmag-range', nargs=2, type=float, default=(18,24), metavar='', 
+    parser.add_argument('--rmag-range', nargs=2, type=float, default=(18,25), metavar='', 
                         help='r-band magnitude range')
+    parser.add_argument('--do-tractor', action='store_true',
+                        help='run the Tractor')
     parser.add_argument('--no-qaplots', action='store_true',
                         help='do not generate QAplots')
 
@@ -457,17 +539,25 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    objtype = args.objtype.upper()
     nobj = args.nobj
     brickname = args.brick
+    objtype = args.objtype.upper()
 
-    #if objtype!='ELG' and objtype!='STAR':
+    if objtype=='LRG':
+        log.warning('{} objtype not yet supported!'.format(objtype))
+        sys.exit(1)
+    elif objtype=='BGS':
+        log.warning('{} objtype not yet supported!'.format(objtype))
+        sys.exit(1)
 
-    log.info('Working on brick {}'.format(brickname))
-    log.info('Simulating {} objects of objtype={}'.format(nobj,objtype))
-        
-    # Get the brick info and corresponding WCS
-    brickinfo, brickwcs = get_brickinfo(brickname)
+    log.info('Simulating {} objects of objtype {} in brick {}'.
+             format(nobj,objtype,brickname))
+
+    # Build the output directory names.
+    tractor_dir, decals_dir, decals_sim_dir = get_simdir(brickname,objtype)
+
+    # Get the brick info and corresponding WCS object.
+    brickinfo, brickwcs = get_brickinfo(brickname,decals_dir)
 
     if args.zoom is None:
         raminmax = [brickinfo['ra1'],brickinfo['ra2']]
@@ -484,27 +574,72 @@ def main():
 
         brickwcs = brickwcs.get_subimage(zoom[0],zoom[2],dx,dy)
 
-    # Get the CCDs in the region of interest.
-    ccdinfo = get_ccdinfo(brickwcs)
+    # Identify the CCDs in the region of interest.
+    ccdinfo = get_ccdinfo(brickwcs,decals_dir)
 
-    log.info('RA range: {:.6f} to {:.6f}'.format(float(raminmax[0]),float(raminmax[1])))
-    log.info('DEC range: {:.6f} to {:.6f}'.format(float(decminmax[0]),float(decminmax[1])))
+    log.info('RA range: {:.6f} to {:.6f}'.format(float(raminmax[0]),
+                                                 float(raminmax[1])))
+    log.info('DEC range: {:.6f} to {:.6f}'.format(float(decminmax[0]),
+                                                  float(decminmax[1])))
         
-    # Build the prior parameters and make some QAplots.
-    log.info('Building the PRIORS table.')
-    priors = build_priors(nobj,brickname,brickwcs,objtype,raminmax,
+    # Build the simulated object catalog and optionally make some QAplots.
+    log.info('Building the simulated object catalog')
+    simcat = build_simcat(nobj,brickname,brickwcs,objtype,raminmax,
                           decminmax,rmag_range=args.rmag_range,
-                          seed=args.seed)
-
-    # Make some QAplots.
+                          decals_sim_dir=decals_sim_dir,seed=args.seed)
     if args.no_qaplots is False:
-        qaplots(brickname,brickinfo,ccdinfo,priors)
+        qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir)
         
-    # Copy the files we need.
-    copyfiles(ccdinfo)
+    # Copy the CP-processed data we need to DECALS_SIM_DIR.
+    copy_cpdata(ccdinfo,decals_dir,decals_sim_dir)
 
     # Do the simulation!
-    insert_simobj(objtype,priors,ccdinfo)
+    insert_simobj(simcat,ccdinfo,decals_sim_dir)
+
+    # Call The Tractor
+    if args.do_tractor:
+        env = os.environ.copy()
+        env['DECALS_DIR'] = decals_sim_dir
+        runbrick = 'python {}/projects/desi/runbrick.py'.format(tractor_dir)
+        if args.zoom is None:
+            cmd = '{} -b {} --threads {} --no-sdss --no-wise'.format(
+                runbrick,brickname,args.threads).split()
+        else:
+            cmd = '{} -b {} --threads {} --no-sdss --no-wise --zoom {} {} {} {}'.format(
+                runbrick,brickname,args.threads,zoom[0],zoom[1],zoom[2],zoom[3]).split()
+        log.info(cmd)
+        ok = subprocess.check_call(cmd,cwd=decals_sim_dir,env=env)
+
+        # Copy the tractor catalogs and coadded images
+        if ok==0:
+            linkfiles = ['calib','decals-ccds.fits','decals-bricks.fits',
+                         'decals-ccds-zeropoints.fits']
+            for lfile in linkfiles:
+                os.unlink(os.path.join(decals_sim_dir,lfile))
+
+            shutil.move(os.path.join(decals_sim_dir,'tractor',brickname[:3],'tractor-'+brickname+'.fits'),
+                        os.path.join(decals_sim_dir,'tractor-'+brickname+'.fits'))
+            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
+                                     'decals-'+brickname+'-image.jpg'),
+                        os.path.join(decals_sim_dir,'decals-'+brickname+'-image.jpg'))
+            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
+                                     'decals-'+brickname+'-resid.jpg'),
+                        os.path.join(decals_sim_dir,'decals-'+brickname+'-resid.jpg'))
+            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
+                                     'decals-'+brickname+'-model.jpg'),
+                        os.path.join(decals_sim_dir,'decals-'+brickname+'-model.jpg'))
+
+            # Clean up files, symbolic links, and directories
+            shutil.rmtree(os.path.join(decals_sim_dir,'images'))
+            shutil.rmtree(os.path.join(decals_sim_dir,'coadd'))
+            shutil.rmtree(os.path.join(decals_sim_dir,'metrics'))
+            shutil.rmtree(os.path.join(decals_sim_dir,'pickles'))
+            shutil.rmtree(os.path.join(decals_sim_dir,'tractor'))
+
+            # Write a log file!
+
+            # Analyze the outputs.
+
 
 if __name__ == "__main__":
     main()

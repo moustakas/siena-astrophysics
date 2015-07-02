@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 # Global variables.
 #scratch_dir = '/Users/ioannis/research/projects/decals/scratch/'
 scratch_dir = '/global/work/decam/scratch/'
-fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
+decals_sim_dir = os.getenv('DECALS_SIM_DIR')
 
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
 log = logging.getLogger('decals_simulations')
@@ -38,7 +38,7 @@ def main():
     log.info('Analyzing brick {}'.format(brickname))
 
     # Read the prior parameters
-    priorsfile = os.path.join(fake_decals_dir,'priors_'+brickname+'.fits')
+    priorsfile = os.path.join(decals_sim_dir,'priors_'+brickname+'.fits')
     log.info('Reading {}'.format(priorsfile))
     cat = fits.getdata(priorsfile,1)
     nobj = len(cat)
@@ -53,7 +53,16 @@ def main():
     for ii in range(nobj):
         draw.ellipse((cat['X'][ii]-rad[ii], sz[1]-cat['Y'][ii]-rad[ii],
                       cat['X'][ii]+rad[ii], sz[1]-cat['Y'][ii]+rad[ii]))
-    im.save(os.path.join(fake_decals_dir,'qa_'+brickname+'_coadd.png'))
+    im.save(os.path.join(decals_sim_dir,'qa_'+brickname+'_coadd.png'))
+
+    residfile = os.path.join(scratch_dir,'coadd',brickname[:3],brickname,'decals-'+brickname+'-resid.jpg')
+    resid = Image.open(residfile)
+    sz = resid.size
+    draw = ImageDraw.Draw(resid)
+    for ii in range(nobj):
+        draw.ellipse((cat['X'][ii]-rad[ii], sz[1]-cat['Y'][ii]-rad[ii],
+                      cat['X'][ii]+rad[ii], sz[1]-cat['Y'][ii]+rad[ii]))
+    resid.save(os.path.join(decals_sim_dir,'qa_'+brickname+'_coadd_resid.png'))
 
 if __name__ == "__main__":
     main()
