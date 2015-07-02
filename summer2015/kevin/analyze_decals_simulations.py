@@ -26,37 +26,6 @@ fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
 log = logging.getLogger('decals_simulations')
 
-def flux_graph():
-    plt.plot(true_flux,magnitude_difference,'ko',markersize=3)
-    plt.xlabel('r (AB mag)')
-    plt.ylabel('$\Delta$m (Tractor minus Input, AB mag)')
-    plt.ylim([-4,4])
-
-def size_graph():
-    size = cat['DISK_R50'][m2]
-    plt.plot(size,magnitude_difference,'bo',markersize=3)
-    plt.xlabel('$r_{50}$ (arcsec)')
-    plt.ylim([-4,4])
-
-def ellipticity_graph():
-    ellipticity = cat['DISK_BA'][m2]
-    plt.plot(ellipticity,magnitude_difference,'ro',markersize=3)
-    plt.xlabel('b/a')
-    plt.xlim([0.2,1.0])
-    plt.ylim([-4,4])
-
-def ra_position_graph():
-    ra_position = cat['ra'][m2]
-    plt.plot(ra_position,magnitude_difference,'co',markersize=3)
-    plt.xlabel('ra')
-    plt.ylim([-4,4])
-
-def dec_position_graph():
-    dec_position = cat['dec'][m2]   
-    plt.plot(dec_position,magnitude_difference,'yo',markersize=3)
-    plt.xlabel('dec')
-    plt.ylim([-4,4])
-
 def main():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -104,26 +73,42 @@ def main():
     plt.savefig(os.path.join(fake_decals_dir,'qa_'+brickname+'_frac.png'))
 
     # Residual plots
-    tractor_flux = trac['decam_flux'][m1,2]
-    true_flux = cat['r'][m2]
-    magnitude_difference = -2.5*np.log10(tractor_flux)+22.5-true_flux
+    rmag_tractor = trac['decam_flux'][m1,2]
+    rmag = cat['r'][m2]
+    deltam = -2.5*np.log10(rmag_tractor)+22.5-rmag
 
-    fig = plt.figure(figsize=(8,5))
+    fig = plt.figure(figsize=(8,4))
 
     plt.subplot(1,3,1)
-    flux_graph()
+    plt.plot(rmag,deltam,'ko',markersize=3)
+    plt.xlabel('r (AB mag)')
+    plt.ylabel('$\Delta$m (Tractor minus Input, AB mag)')
+    plt.ylim([-4,4])
 
-    plt.subplot(1,3,2)
-    size_graph()
-
-    plt.subplot(1,3,3)
-    ellipticity_graph()
+#   plt.subplot(1,3,2)
+#   size = cat['R50_1'][m2]
+#   plt.plot(size,deltam,'bo',markersize=3)
+#   plt.xlabel('$r_{50}$ (arcsec)')
+#   plt.ylim([-4,4])
+#
+#   plt.subplot(1,3,3)
+#   ellipticity = cat['BA_1'][m2]
+#   plt.plot(ellipticity,deltam,'ro',markersize=3)
+#   plt.xlabel('b/a')
+#   plt.xlim([0.2,1.0])
+#   plt.ylim([-4,4])
 
     #plt.subplot(1,5,4)
-    #ra_position_graph()
+    #ra_position = cat['ra'][m2]
+    #plt.plot(ra_position,deltam,'co',markersize=3)
+    #plt.xlabel('ra')
+    #plt.ylim([-4,4])
    
     #plt.subplot(1,5,5,sharey=True)
-    #dec_position_graph()
+    #dec_position = cat['dec'][m2]   
+    #plt.plot(dec_position,deltam,'yo',markersize=3)
+    #plt.xlabel('dec')
+    #plt.ylim([-4,4])
 
     #fig,axes = plt.subplots(ncols=3, sharex=False, sharey=True)
 
