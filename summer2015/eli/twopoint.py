@@ -4,9 +4,9 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('ladoDD.dat',dtype='float')
-DR=np.loadtxt('ladoDR.dat',dtype='float')
-RR=np.loadtxt('ladoRR.dat',dtype='float')
+DD=np.loadtxt('ladoDD2.dat',dtype='float')
+DR=np.loadtxt('ladoDR2.dat',dtype='float')
+RR=np.loadtxt('ladoRR2.dat',dtype='float')
 
 
 DD = DD.transpose()
@@ -61,8 +61,8 @@ binred(DD)
 
 
 
-ndata=100000
-nrand=100000
+ndata=200000
+nrand=200000
 
 #print DD.shape
 
