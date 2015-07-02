@@ -127,7 +127,7 @@ def main():
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
-  
+    parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
     args=parser.parse_args()
 
     if args.no_plots:
@@ -187,7 +187,7 @@ def main():
         coords1cut = coords1[range2lo:range2hi]
     else:
         coords1cut = coords1
-
+   
     chunk_size = 50
     nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
     nbins=200
@@ -202,100 +202,209 @@ def main():
 
     indexlo = 0
     indexhi = 0
-    for j in xrange(nchunks):
-        lo = j*chunk_size
-        hi = (j+1)*chunk_size
-        #print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
-
-        paras *= 0.
-        perps *= 0.
-
-        #for i,r0 in enumerate(coords0[lo:hi]):
-        for i in range(lo,hi):
-            r0 = coords0cut[i]
-            #print i,lo,hi
-            #print lo+i
-            #print r0
-
-            #'''
-            lo1 = 0
-            if samefile:
-                lo1 = i
-                if do_diagonal==False:
-                    lo1 += 1
-
-            indexhi += len(coords1cut[lo1:])
-            #'''
-
-            # First compute R_LOS and dR
-            R_LOS = (r0 + coords1cut[lo1:])/2
-            dR = coords1cut[lo1:] - r0
-            R_LOS_mag = mag(R_LOS)
-
-            # Dot product
-            
-            R_para = (dR[:,0]*R_LOS[:,0] + dR[:,1]*R_LOS[:,1] + dR[:,2]*R_LOS[:,2])/R_LOS_mag
-            
-            dR_mag = mag(dR)
-            
-            # Make use of the Pythagorean theorem
-            R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
-            
-            #print i,lo1,indexlo,indexhi,len(R_para),len(paras)
-
-            paras[indexlo:indexhi] = R_para
-            perps[indexlo:indexhi] = R_perp
-
-            #print len(paras[paras!=0])
-
-            indexlo = indexhi
-
-            #nperps1 += negR_perp1.tolist()
-            #if i%(chunk_size/4)==0:
-                #print i
-
-        #print len(paras)
-        #print len(perps)
-        #newperps1=np.concatenate((perps1,nperps1))
-        #newparas1len=np.concatenate((paras1,paras1))
-
-        #print 'Histogram1'
-
-        #print paras[0:10]
-        #print indexhi
-        hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
-        tot_freq += hist[0]
+##############################KEEP EVERYTHING ABOVE THIS LINE ##################
+        #################### LADO'S CODE ############################
+    if args.lado:
         
-        # Mirror the negative perps
-        hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
-        tot_freq += hist[0]
+        for j in xrange(nchunks):
+            lo = j*chunk_size
+            hi = (j+1)*chunk_size
+            #print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
+            print j
+            paras *= 0.
+            perps *= 0.
 
-        #print type(hist1[0])
-        #frequ1=hist1[0]
-        #plt.close()
+            #for i,r0 in enumerate(coords0[lo:hi]):
+            for i in range(lo,hi):
+                x0=coords0cut[i,0]
+                y0=coords0cut[i,1]
+                z0=coords0cut[i,2]
+                lo1 = 0
+                if samefile:
+                    lo1 = i
+                    if do_diagonal==False:
+                        lo1 += 1
 
-        indexlo=0
-        indexhi=0
-        #del paras
-        #del perps
-        del hist
+                indexhi += len(coords1cut[lo1:])
+        
+                
+                #x1=coords1cut[lo1:,0]
+                #y1=(coords1cut[lo1:,1])
+                #z1=(coords1cut[lo1:,2])
 
-        #print tot_freq
+                #x1=coords1cut[lo1:,0]
+                #y1=coords1cut[lo1:,1]
+                #z1=coords1cut[lo1:,2]
+                
+
+                d1 = x0-(coords1cut[lo1:,0])
+                #print len(d1)#(coords1cut[lo1:,0])
+                d2 = y0-(coords1cut[lo1:,1]) #(coords1cut[lo1:,1])
+                d3 = z0-(coords1cut[lo1:,2]) #(coords1cut[lo1:,2])
+                
+                r2l = d1*d1 + d2*d2 + d3*d3
+                gd1 = np.sqrt((x0**2)+(y0**2)+(z0**2))
+                gd2 = np.sqrt(((coords1cut[lo1:,0])**2)+((coords1cut[lo1:,1])**2)+((coords1cut[lo1:,2])**2))
+                rat = gd1/gd2
+
+                xb = x0 + (coords1cut[lo1:,0])*rat
+                yb = y0 + (coords1cut[lo1:,1])*rat
+                zb = z0 + (coords1cut[lo1:,2])*rat
+
+                db2 = xb*xb + yb*yb + zb*zb
+
+                mu = np.absolute(((xb*d1 + yb*d2 + zb*d3)/np.sqrt(r2l)/np.sqrt(db2)))
+                rr = np.sqrt(r2l)
+                 
+                rpar=rr*mu
+                rperp=rr*np.sqrt(1-(mu*mu))
+                #print indexlo,indexhi,type(rpar)
+                
+                paras[indexlo:indexhi] = rpar
+                perps[indexlo:indexhi] = rperp    
+
+                indexlo = indexhi
+
+            hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            tot_freq += hist[0]
+            
+            # Mirror the negative perps
+            #hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            #tot_freq += hist[0]
+            #hist=plt.hist2d(perps[0:indexhi],-1*paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            #tot_freq += hist[0]
+            #hist=plt.hist2d(-1*perps[0:indexhi],-1*paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            #tot_freq += hist[0]
+            #print type(hist1[0])
+            #frequ1=hist1[0]
+            #plt.close()
+
+            indexlo=0
+            indexhi=0
+            #del paras
+            #del perps
+            del hist
+
+            #print tot_freq
+            #tot_freq[(nbins/2),(nbins/2)]=0
+            print tot_freq.sum()
+
+        if args.no_plots==False:
+            print 'Final Plot'    
+            extent = [-rangeval,rangeval, -rangeval,rangeval]
+            fig = plt.figure()
+            axes = fig.add_subplot(1,1,1)
+            print 'Imshow'
+            print tot_freq
+            ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+            plt.show()
+
+        print('Writing {}'.format(outfilename))
+        print 'LADO'
+        np.savetxt(outfilename,tot_freq)
+
+################################################################################
+#if __name__=='__main__':
+#    main()
+
+####################################KEEP EVERYTHING BELOW THIS LINE############################
+
+    else:        
+        for j in xrange(nchunks):
+            lo = j*chunk_size
+            hi = (j+1)*chunk_size
+            #print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
+
+            paras *= 0.
+            perps *= 0.
+
+            #for i,r0 in enumerate(coords0[lo:hi]):
+            for i in range(lo,hi):
+                r0 = coords0cut[i]
+                #print i,lo,hi
+                #print lo+i
+                #print r0
+
+                
+                lo1 = 0
+                if samefile:
+                    lo1 = i
+                    if do_diagonal==False:
+                        lo1 += 1
+
+                indexhi += len(coords1cut[lo1:])
+                
+
+                # First compute R_LOS and dR
+                R_LOS = (r0 + coords1cut[lo1:])/2
+                dR = coords1cut[lo1:] - r0
+                R_LOS_mag = mag(R_LOS)
+
+                # Dot product
+                
+                R_para = (dR[:,0]*R_LOS[:,0] + dR[:,1]*R_LOS[:,1] + dR[:,2]*R_LOS[:,2])/R_LOS_mag
+                
+                dR_mag = mag(dR)
+                
+                # Make use of the Pythagorean theorem
+                R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
+                
+                #print i,lo1,indexlo,indexhi,len(R_para),len(paras)
+
+                paras[indexlo:indexhi] = R_para
+                perps[indexlo:indexhi] = R_perp
+
+                #print len(paras[paras!=0])
+
+                indexlo = indexhi
+                #nperps1 += negR_perp1.tolist()
+                #if i%(chunk_size/4)==0:
+                    #print i
+            
+
+            #print len(paras)
+            #print len(perps)
+            #newperps1=np.concatenate((perps1,nperps1))
+            #newparas1len=np.concatenate((paras1,paras1))
+
+            #print 'Histogram1'
+
+            #print paras[0:10]
+            #print indexhi
+            hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            tot_freq += hist[0]
+            
+            # Mirror the negative perps
+            hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+            tot_freq += hist[0]
+
+            #print type(hist1[0])
+            #frequ1=hist1[0]
+            #plt.close()
+
+            indexlo=0
+            indexhi=0
+            #del paras
+            #del perps
+            del hist
+
+            #print tot_freq
+            #tot_freq[(nbins/2),(nbins/2)]=0
+            print tot_freq.sum()
+       
         #tot_freq[(nbins/2),(nbins/2)]=0
-        print tot_freq.sum()
-        
-    #tot_freq[(nbins/2),(nbins/2)]=0
-    if args.no_plots==False:
-        print 'Final Plot'    
-        extent = [-rangeval,rangeval, -rangeval,rangeval]
-        fig = plt.figure()
-        axes = fig.add_subplot(1,1,1)
-        print 'Imshow'
-        ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
-        #plt.show()
+        if args.no_plots==False:
+            print 'Final Plot'    
+            extent = [-rangeval,rangeval, -rangeval,rangeval]
+            fig = plt.figure()
+            axes = fig.add_subplot(1,1,1)
+            print 'Imshow'
+            ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+            plt.show()
 
-    print('Writing {}'.format(outfilename))
-    np.savetxt(outfilename,tot_freq)
+        print('Writing {}'.format(outfilename))
+        print 'OUR VERSION'
+        np.savetxt(outfilename,tot_freq)
 
 ################################################################################
 if __name__=='__main__':

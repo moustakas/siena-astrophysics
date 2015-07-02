@@ -100,9 +100,9 @@ def RR():
                
                 r1=coordsa[i]
                 
-                R_LOS1 = (r1 + coordsa[i+1:])/2.
+                R_LOS1 = (r1 + coordsa[i+1:])
                 
-                dR1 = coordsa[i+1:] - r1
+                dR1 = (coordsa[i+1:] - r1)/2
                 
                 R_LOS_mag1 = mag(R_LOS1)
 
