@@ -15,7 +15,7 @@ from astropy.io import fits
 from PIL import Image, ImageDraw
 
 # Global variables.
-scratch_dir = '/Users/ioannis/research/projects/decals/scratch/'
+scratch_dir = '/home/desi3/scratch/'
 #scratch_dir = '/global/work/decam/scratch/'
 fake_decals_dir = os.getenv('FAKE_DECALS_DIR')
 
