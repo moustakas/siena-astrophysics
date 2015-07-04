@@ -87,6 +87,8 @@ def get_coordinates(infilename,maxgals=0):
         dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
         redshift=r[:,2]
 
+	del r
+
     # Made some common cuts
     index0 = redshift<0.7
     index1 = redshift>0.43
