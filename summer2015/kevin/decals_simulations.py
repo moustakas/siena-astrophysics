@@ -6,20 +6,7 @@ through The Tractor.
 Questions/issues:
 * Should the flux be drawn from a uniform or power-law distribution? 
 
-TODO:
-* Model a mixture of object types.
-
-python decals_simulations.py -n 10 --zoom 1750 1850 1750 1850
-runbrick --stage image_coadds --no-write --threads 16 --gpsf --radec 242.845 11.75 --width 500 --height 500
-runbrick --no-sdss --no-wise --threads 8 --zoom 1800 1900 1800 1900
-
-decals_simulations -b 2428p117 -n 10 -o STAR --zoom 1800 1900 1800 1900
-runbrick -b 2428p117 --decals-dir /Users/ioannis/research/projects/decals/fake_decals_dir --stage image_coadds --no-write --threads 8 --zoom 1800 1900 1800 1900
-
-decals_simulations -b 2428p117 -n 500 -o STAR --rmag-range 18 25 --zoom 1600 2000 1600 2000 
-
-setenv DECALS_DIR /Users/ioannis/research/projects/decals/fake_decals_dir
-runbrick -b 2428p117 --stage image_coadds --no-write --threads 8 --zoom 1600 2000 1600 2000 
+nohup python ~/repos/git/siena-astrophysics/summer2015/kevin/decals_simulations.py -n 500 -b 2449p077 -o elg -s 123 --do-tractor > & elg.log &
 
 """
 from __future__ import division, print_function
@@ -40,6 +27,10 @@ from projects.desi.common import Decals, wcs_for_brick, ccds_touching_wcs
 # Set up logging and our global directories.
 logging.basicConfig(format='%(message)s',level=logging.INFO,stream=sys.stdout)
 log = logging.getLogger('decals_simulations')
+
+def get_linkfiles():
+    return ['calib','decals-ccds.fits','decals-bricks.fits',
+            'decals-ccds-zeropoints.fits']
 
 def get_simdir(brickname=None,objtype=None):
     """Get the simulation directory."""
@@ -69,7 +60,7 @@ def get_simdir(brickname=None,objtype=None):
     log.info('DECALS_SIM_DIR {}'.format(decals_sim_dir))
     simdir = os.path.join(decals_sim_dir,objtype.lower())
 
-    log.info('Creating directories...')
+    log.info('Creating top-level directories...')
     if not os.path.isdir(simdir):
         log.info('  {}'.format(simdir))
         os.makedirs(simdir)
@@ -83,6 +74,13 @@ def get_simdir(brickname=None,objtype=None):
     #if not os.path.isdir(qadir):
     #    log.info('  {}'.format(qadir))
     #    os.makedirs(qadir)
+
+    log.info('Creating symbolic links...')
+    linkfiles = get_linkfiles()
+    for lfile in linkfiles:
+        if os.path.islink(os.path.join(simdir,lfile)) is False:
+            log.info('  {}'.format(os.path.join(simdir,lfile)))
+            os.symlink(os.path.join(decals_dir,lfile),os.path.join(simdir,lfile))
     
     return tractor_dir, decals_dir, simdir
 
@@ -124,17 +122,27 @@ def build_simcat(nobj=None,brickname=None,brickwcs=None,objtype=None,
     another.
 
     """
+    from astropy import units as u
+    from astropy.coordinates import SkyCoord
     from astropy.table import Table, Column
+
     rand = np.random.RandomState(seed=seed)
 
     # Assign central coordinates uniformly
     ra = rand.uniform(raminmax[0],raminmax[1],nobj)
     dec = rand.uniform(decminmax[0],decminmax[1],nobj)
+
+    ## Remove simulated sources which are too near to one another.
+    #rad = 15.0 # [arcsec]
+    #skycat = SkyCoord(ra=ra*u.degree,dec=dec*u.degree)
+    #indx1, indx2, d2d, _ = skycat.search_around_sky(skycat,rad*u.arcsec)
+
     xxyy = brickwcs.radec2pixelxy(ra,dec)
 
     cat = Table()
-    cat['ID'] = Column(np.arange(nobj,dtype='i4'))
+    cat['BRICKNAME'] = Column(np.repeat(brickname,nobj),dtype='S10')
     cat['OBJTYPE'] = Column(np.repeat(objtype,nobj),dtype='S10')
+    cat['ID'] = Column(np.arange(nobj,dtype='i4'))
     cat['X'] = Column(xxyy[1][:],dtype='f4')
     cat['Y'] = Column(xxyy[2][:],dtype='f4')
     cat['RA'] = Column(ra,dtype='f8')
@@ -185,6 +193,9 @@ def build_simcat(nobj=None,brickname=None,brickwcs=None,objtype=None,
     cat['RFLUX'] = Column(rflux,dtype='f4')
     cat['ZFLUX'] = Column(zflux,dtype='f4')
 
+    # Pack in the prior parameter ranges
+    cat['RMAG_RANGE'] = Column(np.repeat([rmag_range],nobj,axis=0),dtype='f4')
+
     # Write out.
     outfile = os.path.join(decals_sim_dir,'simcat-'+brickname+'-'+objtype.lower()+'.fits')
     log.info('Writing {}'.format(outfile))
@@ -205,14 +216,7 @@ def copy_cpdata(ccdinfo=None,decals_dir=None,decals_sim_dir=None):
     allcpimage = ccdinfo['CPIMAGE']
     allcpdir = set([cpim.split('/')[1] for cpim in allcpimage])
 
-    log.info('Creating symbolic links...')
-    linkfiles = ['calib','decals-ccds.fits','decals-bricks.fits',
-                 'decals-ccds-zeropoints.fits']
-    for lfile in linkfiles:
-        log.info('  {}'.format(os.path.join(decals_sim_dir,lfile)))
-        os.symlink(os.path.join(decals_dir,lfile),os.path.join(decals_sim_dir,lfile))
-    
-    log.info('Creating directories...')
+    log.info('Creating image directories...')
     outdir = os.path.join(decals_sim_dir,'images')
     if not os.path.isdir(outdir):
         log.info('  {}'.format(outdir))
@@ -481,6 +485,7 @@ def qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir=None):
     import matplotlib.cm as cm
     from matplotlib.patches import Rectangle
 
+    objtype = simcat['OBJTYPE'][0].upper()
     brickname = brickinfo['BRICKNAME'][0]
     color = iter(cm.rainbow(np.linspace(0,1,len(ccdinfo))))
 
@@ -505,7 +510,7 @@ def qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir=None):
         ax.set_xlabel('$RA\ (deg)$',fontsize=18)
         ax.set_ylabel('$Dec\ (deg)$',fontsize=18)
 
-    qafile = os.path.join(decals_sim_dir,'qa_'+brickname+'_ccds.png')
+    qafile = os.path.join(decals_sim_dir,'qa-'+brickname+'-'+objtype.lower()+'-ccds.jpg')
     #qafile = os.path.join(decals_sim_dir,'qaplots','qa_'+brickname+'_ccds.png')
     log.info('Writing QAplot {}'.format(qafile))
     fig.savefig(qafile)
@@ -542,6 +547,7 @@ def main():
     nobj = args.nobj
     brickname = args.brick
     objtype = args.objtype.upper()
+    lobjtype = objtype.lower()
 
     if objtype=='LRG':
         log.warning('{} objtype not yet supported!'.format(objtype))
@@ -591,10 +597,10 @@ def main():
         qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir)
         
     # Copy the CP-processed data we need to DECALS_SIM_DIR.
-    copy_cpdata(ccdinfo,decals_dir,decals_sim_dir)
+#    copy_cpdata(ccdinfo,decals_dir,decals_sim_dir)
 
     # Do the simulation!
-    insert_simobj(simcat,ccdinfo,decals_sim_dir)
+#    insert_simobj(simcat,ccdinfo,decals_sim_dir)
 
     # Call The Tractor
     if args.do_tractor:
@@ -612,24 +618,24 @@ def main():
 
         # Copy the tractor catalogs and coadded images
         if ok==0:
-            linkfiles = ['calib','decals-ccds.fits','decals-bricks.fits',
-                         'decals-ccds-zeropoints.fits']
-            for lfile in linkfiles:
-                os.unlink(os.path.join(decals_sim_dir,lfile))
+            # Clean up files, symbolic links, and directories
+            log.info('Cleaning up...')
+            linkfiles = get_linkfiles()
+            [os.unlink(os.path.join(decals_sim_dir,lfile)) for lfile in linkfiles]
 
-            shutil.move(os.path.join(decals_sim_dir,'tractor',brickname[:3],'tractor-'+brickname+'.fits'),
-                        os.path.join(decals_sim_dir,'tractor-'+brickname+'.fits'))
+            shutil.move(os.path.join(decals_sim_dir,'tractor',brickname[:3],
+                                     'tractor-'+brickname+'.fits'),
+                        os.path.join(decals_sim_dir,'tractor-'+brickname+'-'+
+                                     lobjtype+'.fits'))
             shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
                                      'decals-'+brickname+'-image.jpg'),
-                        os.path.join(decals_sim_dir,'decals-'+brickname+'-image.jpg'))
+                        os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
+                                     '-image.jpg'))
             shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
                                      'decals-'+brickname+'-resid.jpg'),
-                        os.path.join(decals_sim_dir,'decals-'+brickname+'-resid.jpg'))
-            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
-                                     'decals-'+brickname+'-model.jpg'),
-                        os.path.join(decals_sim_dir,'decals-'+brickname+'-model.jpg'))
+                        os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
+                                     '-resid.jpg'))
 
-            # Clean up files, symbolic links, and directories
             shutil.rmtree(os.path.join(decals_sim_dir,'images'))
             shutil.rmtree(os.path.join(decals_sim_dir,'coadd'))
             shutil.rmtree(os.path.join(decals_sim_dir,'metrics'))
@@ -638,7 +644,20 @@ def main():
 
             # Write a log file!
 
-            # Analyze the outputs.
+            # Modify the coadd image and residual files so the simulated sources
+            # are labeled.
+            from PIL import Image, ImageDraw
+            rad = 15
+            imfile = os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+'-image.jpg')
+            imfile = [imfile,imfile.replace('-image','-resid')]
+            for ifile in imfile:
+                im = Image.open(ifile)
+                sz = im.size
+                draw = ImageDraw.Draw(im)
+                for cat in simcat:
+                    draw.ellipse((cat['X']-rad, sz[1]-cat['Y']-rad,
+                      cat['X']+rad, sz[1]-cat['Y']+rad))
+                im.save(ifile)
 
 
 if __name__ == "__main__":

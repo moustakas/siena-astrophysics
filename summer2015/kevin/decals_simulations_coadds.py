@@ -46,7 +46,8 @@ def main():
     #rad = 3*cat['r50_1']/0.262 # half-light radius [pixels]
     rad = np.ones(nobj)*15.0
 
-    imfile = os.path.join(scratch_dir,'coadd',brickname[:3],brickname,'decals-'+brickname+'-image.jpg')
+    imfile = os.path.join(scratch_dir,'coadd',brickname[:3],brickname,
+                          'decals-'+brickname+'-image.jpg')
     im = Image.open(imfile)
     sz = im.size
     draw = ImageDraw.Draw(im)
