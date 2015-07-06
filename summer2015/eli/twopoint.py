@@ -4,15 +4,15 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('ladoDD2.dat',dtype='float')
-DR=np.loadtxt('ladoDR2.dat',dtype='float')
-RR=np.loadtxt('ladoRR2.dat',dtype='float')
+DD=np.loadtxt('DD_us_tot.dat',dtype='float')
+DR=np.loadtxt('DR_us_tot.dat',dtype='float')
+RR=np.loadtxt('RR_us_tot.dat',dtype='float')
 
 
 DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
-
+'''
 DD+=np.flipud(DD)
 DR+=np.flipud(DR)
 RR+=np.flipud(RR)
@@ -27,7 +27,7 @@ RRnew2=np.rot90(RRnew1)
 DD+=DDnew2
 DR+=DRnew2
 RR+=RRnew2
-
+'''
 
 '''
 ########## Bin Reduction ##########
@@ -61,8 +61,8 @@ binred(DD)
 
 
 
-ndata=200000
-nrand=200000
+ndata=400000
+nrand=1000000
 
 #print DD.shape
 
@@ -101,13 +101,12 @@ rangeval=300
 rangeval *= 0.7
 
 #R Values
-'''
+
 for i in range(nbins):
     for j in range(nbins):
         r2=((nbins/2)-i)**2 + (j-(nbins/2))**2
         theta[i][j] *= r2
 
-'''
 
 plt.figure(figsize=(8,8))
 
@@ -142,7 +141,7 @@ for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(theta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.12,vmax=1))
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=30,vmax=500))
 plt.colorbar(d)
 plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
 plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
