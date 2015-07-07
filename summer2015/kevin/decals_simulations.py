@@ -21,7 +21,9 @@ import numpy as np
 
 import galsim
 from astropy.io import fits
+from PIL import Image, ImageDraw
 
+from projects.desi.runbrick import run_brick
 from projects.desi.common import Decals, wcs_for_brick, ccds_touching_wcs
 
 # Set up logging and our global directories.
@@ -522,6 +524,8 @@ def main():
                                      description='DECaLS simulations.')
     parser.add_argument('-n', '--nobj', type=long, default=None, metavar='', 
                         help='number of objects to simulate (required input)')
+    parser.add_argument('-c', '--chunksize', type=long, default=500, metavar='', 
+                        help='divide NOBJ into CHUNKSIZE chunks')
     parser.add_argument('-b', '--brick', type=str, default='2428p117', metavar='', 
                         help='simulate objects in this brick')
     parser.add_argument('-o', '--objtype', type=str, default='ELG', metavar='', 
@@ -544,7 +548,6 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    nobj = args.nobj
     brickname = args.brick
     objtype = args.objtype.upper()
     lobjtype = objtype.lower()
@@ -556,8 +559,14 @@ def main():
         log.warning('{} objtype not yet supported!'.format(objtype))
         sys.exit(1)
 
+    nobj = args.nobj
+    chunksize = args.chunksize
+    nchunk = np.ceil(nobj/chunksize)
+
     log.info('Simulating {} objects of objtype {} in brick {}'.
              format(nobj,objtype,brickname))
+    log.info('Chunksize = {}'.format(chunksize))
+    log.info('Nchunk = {}'.format(nchunk))
 
     # Build the output directory names.
     tractor_dir, decals_dir, decals_sim_dir = get_simdir(brickname,objtype)
@@ -587,78 +596,77 @@ def main():
                                                  float(raminmax[1])))
     log.info('DEC range: {:.6f} to {:.6f}'.format(float(decminmax[0]),
                                                   float(decminmax[1])))
-        
+
+    # Work in chunks
+    for ichunk in range(nchunk):
+    
     # Build the simulated object catalog and optionally make some QAplots.
-    log.info('Building the simulated object catalog')
-    simcat = build_simcat(nobj,brickname,brickwcs,objtype,raminmax,
-                          decminmax,rmag_range=args.rmag_range,
-                          decals_sim_dir=decals_sim_dir,seed=args.seed)
-    if args.no_qaplots is False:
-        qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir)
+        log.info('Building the simulated object catalog')
+        simcat = build_simcat(nobj,brickname,brickwcs,objtype,raminmax,
+                              decminmax,rmag_range=args.rmag_range,
+                              decals_sim_dir=decals_sim_dir,seed=args.seed)
+        if args.no_qaplots is False:
+            qaplots(brickinfo,ccdinfo,simcat,decals_sim_dir)
         
-    # Copy the CP-processed data we need to DECALS_SIM_DIR.
-#    copy_cpdata(ccdinfo,decals_dir,decals_sim_dir)
+        # Copy the CP-processed data we need to DECALS_SIM_DIR.
+        copy_cpdata(ccdinfo,decals_dir,decals_sim_dir)
 
-    # Do the simulation!
-#    insert_simobj(simcat,ccdinfo,decals_sim_dir)
+        # Insert the simulated objects
+        insert_simobj(simcat,ccdinfo,decals_sim_dir)
 
-    # Call The Tractor
-    if args.do_tractor:
-        env = os.environ.copy()
-        env['DECALS_DIR'] = decals_sim_dir
-        runbrick = 'python {}/projects/desi/runbrick.py'.format(tractor_dir)
-        if args.zoom is None:
-            cmd = '{} -b {} --threads {} --no-sdss --no-wise'.format(
-                runbrick,brickname,args.threads).split()
-        else:
-            cmd = '{} -b {} --threads {} --no-sdss --no-wise --zoom {} {} {} {}'.format(
-                runbrick,brickname,args.threads,zoom[0],zoom[1],zoom[2],zoom[3]).split()
-        log.info(cmd)
-        ok = subprocess.check_call(cmd,cwd=decals_sim_dir,env=env)
+        run_brick(brickname,decals_dir=decals_sim_dir,outdir=decals_sim_dir,
+                  threads=args.threads,zoom=args.zoom,wise=False,sdssInit=False,
+                  forceAll=True,writePickles=False)
 
-        # Copy the tractor catalogs and coadded images
-        if ok==0:
-            # Clean up files, symbolic links, and directories
-            log.info('Cleaning up...')
-            linkfiles = get_linkfiles()
-            [os.unlink(os.path.join(decals_sim_dir,lfile)) for lfile in linkfiles]
+        #env = os.environ.copy()
+        #env['DECALS_DIR'] = decals_sim_dir
+        #runbrick = 'python {}/projects/desi/runbrick.py'.format(tractor_dir)
+        #if args.zoom is None:
+        #    cmd = '{} -b {} --threads {} --no-sdss --no-wise'.format(
+        #        runbrick,brickname,args.threads).split()
+        #else:
+        #    cmd = '{} -b {} --threads {} --no-sdss --no-wise --zoom {} {} {} {}'.format(
+        #        runbrick,brickname,args.threads,zoom[0],zoom[1],zoom[2],zoom[3]).split()
+        #log.info(cmd)
+        #ok = subprocess.check_call(cmd,cwd=decals_sim_dir,env=env)
 
-            shutil.move(os.path.join(decals_sim_dir,'tractor',brickname[:3],
-                                     'tractor-'+brickname+'.fits'),
-                        os.path.join(decals_sim_dir,'tractor-'+brickname+'-'+
-                                     lobjtype+'.fits'))
-            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
-                                     'decals-'+brickname+'-image.jpg'),
-                        os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
-                                     '-image.jpg'))
-            shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
-                                     'decals-'+brickname+'-resid.jpg'),
-                        os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
-                                     '-resid.jpg'))
+        # Clean up files, symbolic links, and directories
+        log.info('Cleaning up...')
+        linkfiles = get_linkfiles()
+        [os.unlink(os.path.join(decals_sim_dir,lfile)) for lfile in linkfiles]
 
-            shutil.rmtree(os.path.join(decals_sim_dir,'images'))
-            shutil.rmtree(os.path.join(decals_sim_dir,'coadd'))
-            shutil.rmtree(os.path.join(decals_sim_dir,'metrics'))
-            shutil.rmtree(os.path.join(decals_sim_dir,'pickles'))
-            shutil.rmtree(os.path.join(decals_sim_dir,'tractor'))
+        shutil.move(os.path.join(decals_sim_dir,'tractor',brickname[:3],
+                                 'tractor-'+brickname+'.fits'),
+                    os.path.join(decals_sim_dir,'tractor-'+brickname+'-'+
+                                 lobjtype+'.fits'))
+        shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
+                                 'decals-'+brickname+'-image.jpg'),
+                    os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
+                                 '-image.jpg'))
+        shutil.move(os.path.join(decals_sim_dir,'coadd',brickname[:3],brickname,
+                                 'decals-'+brickname+'-resid.jpg'),
+                    os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+
+                                 '-resid.jpg'))
 
-            # Write a log file!
+        shutil.rmtree(os.path.join(decals_sim_dir,'images'))
+        shutil.rmtree(os.path.join(decals_sim_dir,'coadd'))
+        shutil.rmtree(os.path.join(decals_sim_dir,'metrics'))
+        #shutil.rmtree(os.path.join(decals_sim_dir,'pickles'))
+        shutil.rmtree(os.path.join(decals_sim_dir,'tractor'))
 
-            # Modify the coadd image and residual files so the simulated sources
-            # are labeled.
-            from PIL import Image, ImageDraw
-            rad = 15
-            imfile = os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+'-image.jpg')
-            imfile = [imfile,imfile.replace('-image','-resid')]
-            for ifile in imfile:
-                im = Image.open(ifile)
-                sz = im.size
-                draw = ImageDraw.Draw(im)
-                for cat in simcat:
-                    draw.ellipse((cat['X']-rad, sz[1]-cat['Y']-rad,
-                      cat['X']+rad, sz[1]-cat['Y']+rad))
-                im.save(ifile)
+        # Write a log file!
 
+        # Modify the coadd image and residual files so the simulated sources
+        # are labeled.
+        rad = 15
+        imfile = os.path.join(decals_sim_dir,'qa-'+brickname+'-'+lobjtype+'-image.jpg')
+        imfile = [imfile,imfile.replace('-image','-resid')]
+        for ifile in imfile:
+            im = Image.open(ifile)
+            sz = im.size
+            draw = ImageDraw.Draw(im)
+            [draw.ellipse((cat['X']-rad, sz[1]-cat['Y']-rad,cat['X']+rad, sz[1]-cat['Y']+rad)) for cat in simcat]
+            im.save(ifile)
 
 if __name__ == "__main__":
     main()
