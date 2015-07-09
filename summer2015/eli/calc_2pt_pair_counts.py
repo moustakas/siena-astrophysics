@@ -10,6 +10,7 @@ import matplotlib.pylab as plt
 from astropy.cosmology import FlatLambdaCDM
 import time
 import argparse
+import location
 
 ################################################################################
 # Get magnitude of a vector
@@ -137,9 +138,30 @@ def one_dimension(r1,r2):
 
     return distances,fake_vals
     
+################################################################################
+# Using PySurvey
+################################################################################
+def pysurvey_distance(r1,r2):
+
+    ra1=r1[0]
+    dec1=r1[1]
+    z1=r1[2]
+
+    ra2=r2[:,0]
+    dec2=r2[:,1]
+    z2=r2[:,2]
+
+    loc1 = location.convert2distance(ra1,dec1,z1,[0.,0.])
+    loc2 = location.convert2distance(ra2,dec2,z2,[0.,0.])
+
+    dist = mag([loc1[0]-loc2[0],loc1[1]-loc2[1],loc1[2]-loc2[2]])
+
+    fake_vals = np.zeros(len(dist))
+
+    return dist,fake_vals
 
 ################################################################################
-def get_coordinates(infilename,maxgals=0):
+def get_coordinates(infilename,maxgals=0,return_radecz=False):
 
     isdatafile = False
     if(infilename.find('fits')>=0):
@@ -193,9 +215,13 @@ def get_coordinates(infilename,maxgals=0):
         redshift=redshift[a[0:maxgals]]
         del a
 
-    coords = radecredshift2xyz(ra,dec,redshift)
 
-    del ra,dec,redshift
+    if return_radecz:
+        coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
+
+    else:
+        coords = radecredshift2xyz(ra,dec,redshift)
+        del ra,dec,redshift
 
     return coords
 
@@ -214,6 +240,7 @@ def main():
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
     parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
+    parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
     args=parser.parse_args()
 
@@ -252,8 +279,8 @@ def main():
     nrands=0
     np.random.seed(1)
 
-    coords0 = get_coordinates(infilename0,ngals_for_calculation)
-    coords1 = get_coordinates(infilename1,nrands)
+    coords0 = get_coordinates(infilename0,ngals_for_calculation,args.pysurvey)
+    coords1 = get_coordinates(infilename1,nrands,args.pysurvey)
     
     print 'Read in data files and coverted to cartesian!'
 
@@ -324,15 +351,19 @@ def main():
             other_gals = coords1cut[lo1:]
 
             # Calc para and perp ``our" way. 
-            if args.lado==False and args.oned==False:
+            if args.lado==False and args.oned==False and args.pysurvey==True:
+                temp_paras,temp_perps = pysurvey_distance(r0,other_gals)
+
+            # Calc para and perp ``our" way. 
+            elif args.lado==False and args.oned==False and args.pysurvey==False:
                 temp_paras,temp_perps = our_para_perp(r0,other_gals)
 
             # Calc Lado's way
-            elif args.lado==True and args.oned==False:
+            elif args.lado==True and args.oned==False and args.pysurvey==False:
                 temp_paras,temp_perps = lado_para_perp(r0,other_gals)
 
             # Calc just the 1D
-            elif args.lado==False and args.oned==True:
+            elif args.lado==False and args.oned==True and args.pysurvey==False:
                 temp_paras,temp_perps = one_dimension(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
@@ -345,7 +376,7 @@ def main():
         tot_freq += hist[0]
         
         # Mirror the negative perps
-        hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        #hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
         tot_freq += hist[0]
 
         indexlo=0
