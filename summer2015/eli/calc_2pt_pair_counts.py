@@ -115,7 +115,7 @@ def lado_para_perp(r1,r2):
 
 
 ################################################################################
-# This is the way we think Lado calculates para and perp.
+# This is for 1D.
 ################################################################################
 def one_dimension(r1,r2):
 
@@ -304,7 +304,7 @@ def main():
    
     # This is for the histogram.
     nbins=200
-    rangeval=300
+    rangeval=200
 
     if args.oned:
         nbins*=2
@@ -387,7 +387,8 @@ def main():
 
         print tot_freq.sum()
    
-            
+    print 'Point:'
+    print tot_freq[199,101]
     if args.no_plots==False:
         print 'Final Plot'    
         extent = [-rangeval,rangeval, -rangeval,rangeval]

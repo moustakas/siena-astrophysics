@@ -4,30 +4,30 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DD_us_tot.dat',dtype='float')
-DR=np.loadtxt('DR_us_tot.dat',dtype='float')
-RR=np.loadtxt('RR_us_tot.dat',dtype='float')
+DD=np.loadtxt('DD_1D_tot.dat',dtype='float')
+DR=np.loadtxt('DR_1D_tot.dat',dtype='float')
+RR=np.loadtxt('RR_1D_tot.dat',dtype='float')
 
 
 DD = DD.transpose()
 RR = RR.transpose()
 DR = DR.transpose()
-'''
-DD+=np.flipud(DD)
-DR+=np.flipud(DR)
-RR+=np.flipud(RR)
 
-DDnew1=np.rot90(DD)
-DRnew1=np.rot90(DR)
-RRnew1=np.rot90(RR)
-DDnew2=np.rot90(DDnew1)
-DRnew2=np.rot90(DRnew1)
-RRnew2=np.rot90(RRnew1)
+#DD+=np.flipud(DD)
+#DR+=np.flipud(DR)
+#RR+=np.flipud(RR)
 
-DD+=DDnew2
-DR+=DRnew2
-RR+=RRnew2
-'''
+#DDnew1=np.rot90(DD)
+#DRnew1=np.rot90(DR)
+#RRnew1=np.rot90(RR)
+#DDnew2=np.rot90(DDnew1)
+#DRnew2=np.rot90(DRnew1)
+#RRnew2=np.rot90(RRnew1)
+
+#DD+=DDnew2
+#DR+=DRnew2
+#RR+=RRnew2
+
 
 '''
 ########## Bin Reduction ##########
@@ -69,13 +69,13 @@ nrand=1000000
 #print sum(sum(DD))
 #print sum(sum(DR))
 #print sum(sum(RR))
-
-# Rebin
-#DDnew = np.zeros((100,100))
-#DRnew = np.zeros((100,100))
-#RRnew = np.zeros((100,100))
-
 '''
+# Rebin
+DDnew = np.zeros((100,100))
+DRnew = np.zeros((100,100))
+RRnew = np.zeros((100,100))
+
+
 for i in range(0,200,2):
     for j in range(0,200,2):
         DDnew[i/2][j/2] = DD[i][j] + DD[i+1][j] + DD[i][j+1] + DD[i+1][j+1]
@@ -84,8 +84,8 @@ for i in range(0,200,2):
 DD = DDnew
 DR = DRnew
 RR = RRnew
-'''
 
+'''
 
 DD /=(ndata**2-ndata)/2.
 DR /=(nrand*ndata)/1.
@@ -94,19 +94,19 @@ theta = (DD - 2*DR + RR)/RR
 
 #R^2 WEIGHTING
 
-nbins=200
+nbins=400
 rangeval=300
 
 # Correct for little h
 rangeval *= 0.7
 
 #R Values
-
+'''
 for i in range(nbins):
     for j in range(nbins):
         r2=((nbins/2)-i)**2 + (j-(nbins/2))**2
         theta[i][j] *= r2
-
+'''
 
 plt.figure(figsize=(8,8))
 
@@ -141,7 +141,7 @@ for i in range(0,nbins):
     newtheta[i] += theta[(nbins-1)-i]
 
 plt.subplot(2,2,4)
-d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=30,vmax=500))
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.03,vmax=0.2))
 plt.colorbar(d)
 plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
 plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
@@ -157,4 +157,19 @@ plt.tight_layout()
 
 plt.show()
 
+if 1:
+    w1D = theta.transpose()[200]
+    w1D2= w1D[200:]
+    xvals = np.linspace(-rangeval,rangeval,nbins/2)
+    print w1D,xvals
+    plt.figure()
+    plt.plot(xvals,w1D2,'o')
+    plt.xlim(0,200)
+    plt.ylim(0,500)
+    plt.xlabel('r')
+    plt.ylabel('r^2 Xi')
+    plt.title('1D Correlation Function (With r^2)')
+plt.show()
+
+#np.savetxt('ourxi.dat',newtheta)
 
