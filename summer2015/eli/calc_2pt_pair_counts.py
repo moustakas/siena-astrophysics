@@ -350,9 +350,10 @@ def main():
 
             other_gals = coords1cut[lo1:]
 
-            # Calc para and perp ``our" way. 
+            # Calc 1D using the pysurvey distance calc.
             if args.lado==False and args.oned==False and args.pysurvey==True:
-                temp_paras,temp_perps = pysurvey_distance(r0,other_gals)
+                if len(other_gals)>0:
+                    temp_paras,temp_perps = pysurvey_distance(r0,other_gals)
 
             # Calc para and perp ``our" way. 
             elif args.lado==False and args.oned==False and args.pysurvey==False:
