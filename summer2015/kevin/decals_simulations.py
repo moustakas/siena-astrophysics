@@ -15,6 +15,7 @@ TODO (@moustakas)
 * Make the simulated catalogs stackable
 * How to keep the seed?
 * Write out the log file.
+* Occasionally get a divide-by-zero error when adding noise in insert_simobj().
 
 """
 from __future__ import division, print_function
@@ -24,7 +25,6 @@ import sys
 import shutil
 import logging
 import argparse
-import subprocess
 import numpy as np
 
 import galsim
@@ -612,7 +612,7 @@ def main():
     
         # Build the simulated object catalog and optionally make some QAplots.
         log.info('Building the simulated object catalog')
-        simcat = build_simcat(nobj,brickname,brickwcs,objtype,raminmax,
+        simcat = build_simcat(nchunk,brickname,brickwcs,objtype,raminmax,
                               decminmax,rmag_range=args.rmag_range,
                               decals_sim_dir=decals_sim_dir,seed=args.seed,
                               chunksuffix=chunksuffix)
