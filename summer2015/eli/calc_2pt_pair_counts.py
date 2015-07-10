@@ -10,7 +10,7 @@ import matplotlib.pylab as plt
 from astropy.cosmology import FlatLambdaCDM
 import time
 import argparse
-import location
+#import location
 
 ################################################################################
 # Get magnitude of a vector
@@ -151,14 +151,14 @@ def pysurvey_distance(r1,r2):
     dec2=r2[:,1]
     z2=r2[:,2]
 
-    loc1 = location.convert2distance(ra1,dec1,z1,[0.,0.])
-    loc2 = location.convert2distance(ra2,dec2,z2,[0.,0.])
+    #loc1 = location.convert2distance(ra1,dec1,z1,[0.,0.])
+    #loc2 = location.convert2distance(ra2,dec2,z2,[0.,0.])
 
-    dist = mag([loc1[0]-loc2[0],loc1[1]-loc2[1],loc1[2]-loc2[2]])
+    #dist = mag([loc1[0]-loc2[0],loc1[1]-loc2[1],loc1[2]-loc2[2]])
 
-    fake_vals = np.zeros(len(dist))
+    #fake_vals = np.zeros(len(dist))
 
-    return dist,fake_vals
+    return 1 #dist,fake_vals
 
 ################################################################################
 def get_coordinates(infilename,maxgals=0,return_radecz=False):
