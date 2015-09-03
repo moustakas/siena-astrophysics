@@ -1,0 +1,29 @@
+## Redshift z>9 candidates in several clusters.
+# 1  NAME
+# 2  BPZ
+# 3  RA
+# 4  DEC
+# 5  f160w_flux     
+# 6  f160w_fluxerr  
+# 7  f140w_flux     
+# 8  f140w_fluxerr  
+# 9  f125w_flux     
+# 10 f125w_fluxerr 
+# 11 f105w_flux     
+# 12 f105w_fluxerr 
+# 13 f814w_flux     
+# 14 f814w_fluxerr  
+# 15 f606w_flux     
+# 16 f606w_fluxerr  
+# 17 f435w_flux     
+# 18 f435w_fluxerr
+# 19 ks_flux
+# 20 ks_fluxerr
+# 21 irac_ch1_flux    
+# 22 irac_ch1_fluxerr 
+# 23 irac_ch2_flux    
+# 24 irac_ch2_fluxerr 
+# 25 mu
+# 26 mu_err
+A2744_JD1A 10.0 3.59251 -30.40149 35.4 1.4 21.8 1.7 12.7 1.4 1.2 1.1 4.3 2.2 -9.7 5.1 -10.7 6.1 -999.0 -999.0 0.0 91.0 0.0 80.0 1.0 0.1
+A2744_JD1B 10.0 3.59502 -30.40075 43.8 2.9 24.3 2.5 14.4 2.0 2.0 1.3 2.1 3.7 13.2 6.2 -13.0 5.6 -999.0 -999.0 0.0 82.0 0.0 67.0 1.0 0.1
