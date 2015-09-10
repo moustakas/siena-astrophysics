@@ -1,8 +1,5 @@
 ALL = \
-	dayone_handout.pdf \
-	physics_bs_schedule.pdf \
-	template_schedule_conceptual_astro.pdf
-#	template_schedule_conceptual.pdf \
+	physics_bs_schedule.pdf
 
 LATEX = xelatex
 
