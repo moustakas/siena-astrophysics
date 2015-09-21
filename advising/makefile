@@ -1,4 +1,5 @@
 ALL = \
+	physics_computational_schedule.pdf \
 	physics_education_schedule.pdf \
 	physics_threetwo_schedule.pdf \
 	physics_astrominor_schedule.pdf \
