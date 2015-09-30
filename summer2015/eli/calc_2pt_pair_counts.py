@@ -12,10 +12,16 @@ import time
 import argparse
 #import location
 
-################################################################################
-# Get magnitude of a vector
-################################################################################
 def mag(vec):
+    """Get magnitude of a vector.
+
+    Args:
+      vec (numpy.ndarray): xyz ...
+
+    Returns:
+      m (numpy.ndarray): magnitude  ...
+
+    """
 
     m = None
     if type(vec)==np.ndarray:
@@ -28,11 +34,11 @@ def mag(vec):
 
     return m
 
-################################################################################
 
-################################################################################
+
+
 # Converting RA and Dec and redshift to Cartesian
-################################################################################
+
 def radecredshift2xyz(ra,dec,redshift):
 
     # Comoving Distances In Mpc
@@ -48,9 +54,9 @@ def radecredshift2xyz(ra,dec,redshift):
 
     return coords
 
-################################################################################
+
 # This is the way we think we should calculate para and perp.
-################################################################################
+
 def our_para_perp(r0,r1):
 
     # First compute R_LOS and dR
@@ -72,9 +78,9 @@ def our_para_perp(r0,r1):
 
     return R_para,R_perp
 
-################################################################################
+
 # This is the way we think Lado calculates para and perp.
-################################################################################
+
 def lado_para_perp(r1,r2):
 
     #x1=r1[:,0]
@@ -114,9 +120,9 @@ def lado_para_perp(r1,r2):
     return rpar,rperp
 
 
-################################################################################
+
 # This is for 1D.
-################################################################################
+
 def one_dimension(r1,r2):
 
     x1=r1[0]
@@ -138,9 +144,9 @@ def one_dimension(r1,r2):
 
     return distances,fake_vals
     
-################################################################################
+
 # Using PySurvey
-################################################################################
+
 def pysurvey_distance(r1,r2):
 
     ra1=r1[0]
@@ -160,7 +166,7 @@ def pysurvey_distance(r1,r2):
 
     return 1 #dist,fake_vals
 
-################################################################################
+
 def get_coordinates(infilename,maxgals=0,return_radecz=False):
 
     isdatafile = False
@@ -225,11 +231,11 @@ def get_coordinates(infilename,maxgals=0,return_radecz=False):
 
     return coords
 
-################################################################################
 
 
 
-################################################################################
+
+
 def main():
 
     parser= argparse.ArgumentParser()
@@ -284,8 +290,6 @@ def main():
     
     print 'Read in data files and coverted to cartesian!'
 
-    ################################################################################
-
 
     ngals0 = len(coords0)
     ngals1 = len(coords1)
@@ -311,9 +315,9 @@ def main():
 
     tot_freq = np.zeros((nbins,nbins)) 
 
-    ############################################################################
+    
     # Figure out the chunking.
-    ############################################################################
+    
 
     chunk_size = 50
     nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
@@ -404,6 +408,5 @@ def main():
 
 
 
-################################################################################
 if __name__=='__main__':
     main()
