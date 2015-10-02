@@ -16,10 +16,10 @@ def mag(vec):
     """Get magnitude of a vector.
 
     Args:
-      vec (numpy.ndarray): xyz ...
+      vec (numpy.ndarray): X,Y, and Z components of a vector
 
     Returns:
-      m (numpy.ndarray): magnitude  ...
+      m (numpy.ndarray): The magnitude of the vector.
 
     """
 
@@ -40,6 +40,19 @@ def mag(vec):
 # Converting RA and Dec and redshift to Cartesian
 
 def radecredshift2xyz(ra,dec,redshift):
+    """Convert arrays of Right Ascension, Declination, and
+                        Redshift to Cartesian Coordinates.
+
+    Args:
+        ra (numpy.ndarray): Right Ascension Values
+        dec (numpy.ndarray): Declination Values
+        redshift (numpy.ndarray): Redshift Values
+
+    Returns:
+        coords (numpy.ndarray): A three column array with
+                                correspoding values of X,Y,
+                                and Z
+    """
 
     # Comoving Distances In Mpc
     cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
@@ -58,6 +71,19 @@ def radecredshift2xyz(ra,dec,redshift):
 # This is the way we think we should calculate para and perp.
 
 def our_para_perp(r0,r1):
+    """Calculate r_parallel and r_perpendicular distances
+                                    between two galaxies.
+
+    Args:
+        r0 (numpy.ndarray): A three dimensional vector to
+                            galaxy 1
+        r1 (numpy.ndarray): A three dimensional vector to
+                            galaxy 2
+
+    Returns:
+        R_para () : The magnitude of the r_parallel distance
+        R_perp () : The magnitude of the r_perpendicular distance
+    """
 
     # First compute R_LOS and dR
     R_LOS = (r0 + r1)/2
@@ -82,6 +108,19 @@ def our_para_perp(r0,r1):
 # This is the way we think Lado calculates para and perp.
 
 def lado_para_perp(r1,r2):
+    """Calculate r_parallel and r_perpendicular distances
+                        between two galaxies, Lado's way.
+
+    Args:
+        r1 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 1
+        r2 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 2
+
+    Returns:
+        rpar () : The magnitude of the r_parallel distance
+        rperp () : The magnitude of the r_perpendicular distance
+    """
 
     #x1=r1[:,0]
     #y1=r1[:,1]
@@ -124,7 +163,20 @@ def lado_para_perp(r1,r2):
 # This is for 1D.
 
 def one_dimension(r1,r2):
+    """Calculates standard distance between two galaxies 
 
+    Args:
+        r1 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 1
+        r2 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 2
+
+    Returns:
+        distances (): The standard distance between two galaxies
+        fake_vals (numpy.ndarray): An array of zeros, this
+                                   is needed to build an array
+                                   shape.  
+    """
     x1=r1[0]
     y1=r1[1]
     z1=r1[2]
@@ -148,7 +200,22 @@ def one_dimension(r1,r2):
 # Using PySurvey
 
 def pysurvey_distance(r1,r2):
+    """Calculates standard distance between two
+                        galaxies using pysurvey
 
+    Args:
+        r1 (numpy.ndarray): A three dimensional
+                            vector to galaxy 1
+        r2 (numpy.ndarray): A three dimensional
+                            vector to galaxy 2
+
+    Returns:
+        dist (): The standard distance between
+                                  two galaxies
+        fake_vals (numpy.ndarray): An array of zeros,
+                                   this is needed to
+                                   build an array shape.  
+    """
     ra1=r1[0]
     dec1=r1[1]
     z1=r1[2]
@@ -157,18 +224,32 @@ def pysurvey_distance(r1,r2):
     dec2=r2[:,1]
     z2=r2[:,2]
 
-    #loc1 = location.convert2distance(ra1,dec1,z1,[0.,0.])
-    #loc2 = location.convert2distance(ra2,dec2,z2,[0.,0.])
+    loc1 = location.convert2distance(ra1,dec1,z1,[0.,0.])
+    loc2 = location.convert2distance(ra2,dec2,z2,[0.,0.])
 
-    #dist = mag([loc1[0]-loc2[0],loc1[1]-loc2[1],loc1[2]-loc2[2]])
+    dist = mag([loc1[0]-loc2[0],loc1[1]-loc2[1],loc1[2]-loc2[2]])
 
-    #fake_vals = np.zeros(len(dist))
+    fake_vals = np.zeros(len(dist))
 
-    return 1 #dist,fake_vals
+    return  dist,fake_vals
 
 
 def get_coordinates(infilename,maxgals=0,return_radecz=False):
+    """Grabs either X.Y,Z coordinates or RA,DEC,Z values
+                                          of a data set.
 
+    Args:
+        infilename: The name of the data file.
+        maxgals (int): The number of galaxies to be
+                       calculated, if 0, then all 
+                       galaxies will be calculated.
+        return_radecz (): If true, Right Ascension,
+                          Declination, and Redshift
+                          will be returned.
+    Returns:
+        coords (numpy.ndarray): Either an array of
+                                   XYZ or RA,DEC,Z
+    """
     isdatafile = False
     if(infilename.find('fits')>=0):
         isdatafile = True
@@ -237,7 +318,15 @@ def get_coordinates(infilename,maxgals=0,return_radecz=False):
 
 
 def main():
+    """Given command-line arguments, will return
+        frequency arrays for galactic distances.
 
+    Args:
+        See Below
+
+    Returns:
+        Dependant on command-line arguments.
+    """
     parser= argparse.ArgumentParser()
     parser.add_argument("infile1", help="Cmass data or mock data")
     parser.add_argument("infile2", help="Cmass data or mock data")
@@ -331,7 +420,7 @@ def main():
     indexlo = 0
     indexhi = 0
 
-    ################################ Do all the calcs!!!!! ##########################################
+    #Calculation Loop
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
@@ -410,3 +499,177 @@ def main():
 
 if __name__=='__main__':
     main()
+
+# Two-Point Correlation Function
+"""
+DD=np.loadtxt('DD_1D_tot.dat',dtype='float')
+DR=np.loadtxt('DR_1D_tot.dat',dtype='float')
+RR=np.loadtxt('RR_1D_tot.dat',dtype='float')
+
+
+DD = DD.transpose()
+RR = RR.transpose()
+DR = DR.transpose()
+
+#DD+=np.flipud(DD)
+#DR+=np.flipud(DR)
+#RR+=np.flipud(RR)
+
+#DDnew1=np.rot90(DD)
+#DRnew1=np.rot90(DR)
+#RRnew1=np.rot90(RR)
+#DDnew2=np.rot90(DDnew1)
+#DRnew2=np.rot90(DRnew1)
+#RRnew2=np.rot90(RRnew1)
+
+#DD+=DDnew2
+#DR+=DRnew2
+#RR+=RRnew2
+
+
+'''
+########## Bin Reduction ##########
+def binred(array):
+    import numpy as np
+    binsnow=200
+    binsneeded=100
+    global newbins1
+    global newbins
+    newbins1=[]
+    newbins=[]
+    for i in range(0,200,2):
+        #Adding columns
+        global val1
+        val1=(array[:,i]+array[:,i+1])
+        newbins1.append(val1)
+    newbins1=np.array(newbins1)
+    return newbins1
+    for j in range(0,200,2):
+        global val
+        val=(newbins1[j,:]+newbins1[j+1,:])
+        newbins.append(val)
+        return newbins
+    newbins=np.array(newbins)    
+                    
+binred(DD)      
+#print newbins        
+#print val    
+''' 
+
+
+
+
+ndata=400000
+nrand=1000000
+
+#print DD.shape
+
+#print sum(sum(DD))
+#print sum(sum(DR))
+#print sum(sum(RR))
+'''
+# Rebin
+DDnew = np.zeros((100,100))
+DRnew = np.zeros((100,100))
+RRnew = np.zeros((100,100))
+
+
+for i in range(0,200,2):
+    for j in range(0,200,2):
+        DDnew[i/2][j/2] = DD[i][j] + DD[i+1][j] + DD[i][j+1] + DD[i+1][j+1]
+        DRnew[i/2][j/2] = DR[i][j] + DR[i+1][j] + DR[i][j+1] + DR[i+1][j+1]
+        RRnew[i/2][j/2] = RR[i][j] + RR[i+1][j] + RR[i][j+1] + RR[i+1][j+1]
+DD = DDnew
+DR = DRnew
+RR = RRnew
+
+'''
+
+DD /=(ndata**2-ndata)/2.
+DR /=(nrand*ndata)/1.
+RR /=(nrand**2-nrand)/2.
+theta = (DD - 2*DR + RR)/RR
+
+#R^2 WEIGHTING
+
+nbins=400
+rangeval=300
+
+# Correct for little h
+rangeval *= 0.7
+
+#R Values
+'''
+for i in range(nbins):
+    for j in range(nbins):
+        r2=((nbins/2)-i)**2 + (j-(nbins/2))**2
+        theta[i][j] *= r2
+'''
+
+plt.figure(figsize=(8,8))
+
+
+#extent=
+#plot=plt.imshow(theta)
+extent=[-rangeval,rangeval,-rangeval,rangeval]
+
+plt.subplot(2,2,1)
+a=plt.imshow(DD,extent=extent)
+plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
+plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
+plt.title('DD')
+
+plt.subplot(2,2,2)
+b=plt.imshow(RR,extent=extent)
+plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
+plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
+plt.title('RR')
+
+plt.subplot(2,2,3)
+c=plt.imshow(DR,extent=extent)
+plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
+plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
+plt.title('DR')
+
+### Mirror Over the X-Axis #### 
+#nbins = 100
+newtheta= np.zeros((nbins,nbins))
+newtheta += theta
+for i in range(0,nbins):
+    newtheta[i] += theta[(nbins-1)-i]
+
+plt.subplot(2,2,4)
+d=plt.imshow(newtheta,extent=extent,norm=mpl.colors.LogNorm(vmin=0.03,vmax=0.2))
+plt.colorbar(d)
+plt.xlabel(r'$r_\perp (h^{-1}$Mpc)')
+plt.ylabel(r'$r_\parallel (h^{-1}$Mpc)')
+plt.title(r'$\xi$')
+
+#plt.ylim(0,1)
+#plt.xlim(0,30)
+#plt.xlabel('Distance (Mpc)')
+#plt.ylabel('Theta')
+#plt.title('DR10 Correlation Estimator with 20000 Galaxies')
+
+plt.tight_layout()
+
+plt.show()
+
+if 1:
+    w1D = theta.transpose()[200]
+    w1D2= w1D[200:]
+    xvals = np.linspace(-rangeval,rangeval,nbins/2)
+    print w1D,xvals
+    plt.figure()
+    plt.plot(xvals,w1D2,'o')
+    plt.xlim(0,200)
+    plt.ylim(0,500)
+    plt.xlabel('r')
+    plt.ylabel('r^2 Xi')
+    plt.title('1D Correlation Function (With r^2)')
+plt.show()
+
+#np.savetxt('ourxi.dat',newtheta)
+"""
+
+
