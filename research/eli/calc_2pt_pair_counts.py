@@ -12,6 +12,8 @@ import time
 import argparse
 #import location
 
+# Test of repo
+
 def mag(vec):
     """Get magnitude of a vector.
 
