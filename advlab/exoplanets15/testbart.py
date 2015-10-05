@@ -4,20 +4,32 @@
 Try out BART.  See http://dan.iel.fm/bart/current for details.
 
 """
+#!/usr/bin/python
 
 import bart
+import transit
+from kplr.ld import get_quad_coeffs
 import numpy as np
+import matplotlib.pyplot as pl
 
-# Set up a star with limb darkening.
-star = bart.Star(ldp=bart.ld.QuadraticLimbDarkening(0.3, 0.1, 100))
+##Set the Quadractic Limb Darkening
 
-# Set up a planet somewhat like the Earth.
-planet = bart.Planet(r=0.01, period=365.0)
+mu1,mu2 = get_quad_coeffs(5647.0, logg=4.236, feh = 0.34)
 
-# Put it all together.
-solar_system = bart.PlanetarySystem(star)
-solar_system.add_planet(planet)
+##Creates Stars and Planets
 
-# "Observe" the light curve.
-t = np.arange(364.0, 366.0, 0.02)
-lc = solar_system.light_curve(t)
+star = bart.Star(mass = 1.209, radius = 1.391, mu1 = mu1, mu2 = mu2)
+planet = bart.Planet(r = 0.09829 * star.radius, period = 3.234723, b = 0.398)
+
+##Creates Solar System
+
+kepler6 = bart.PlanetarySystem(star)
+kepler6.add_planet(planet)
+
+##Try to plot the light curve(This is where it fails)
+
+t = np.arange(120.0, 210.0, 0.5/ 24.)
+lc = kepler6.light_curve(t)
+
+pl.plot(t, lc, ".k")
+
