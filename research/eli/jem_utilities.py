@@ -273,7 +273,7 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         dec=((math.pi)/2)-((data['PLUG_DEC'])*((math.pi)/180))
         redshift = data['Z']
 
-        del data
+        #del data
     else:
         # Opening txt file (Mocks) 'b'
         print 'Reading in Text File'
@@ -284,7 +284,7 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
         redshift=r[:,2]
 
-        del r
+        #del r
 
     # Made some common cuts
     index0 = redshift<0.7
@@ -307,7 +307,9 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         del a
 
     if xyz:
+        r=np.loadtxt(infilename)
         coords = np.column_stack(r[:,0],r[:,1],r[:,2])
+        del r,h1
     if return_radecz:
         coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
 
