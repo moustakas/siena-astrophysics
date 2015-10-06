@@ -273,18 +273,23 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         dec=((math.pi)/2)-((data['PLUG_DEC'])*((math.pi)/180))
         redshift = data['Z']
 
-        #del data
+        del data
     else:
         # Opening txt file (Mocks) 'b'
         print 'Reading in Text File'
         r=np.loadtxt(infilename)
+        if xyz:
+            coords = np.column_stack((r[:,0],r[:,1],r[:,2]))
+            del r
+            return coords
+            exit()
+        else:    
+            # Radians
+            ra=(r[:,0])*((math.pi)/180)
+            dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
+            redshift=r[:,2]
 
-        # Radians
-        ra=(r[:,0])*((math.pi)/180)
-        dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
-        redshift=r[:,2]
-
-        #del r
+            del r
 
     # Made some common cuts
     index0 = redshift<0.7
