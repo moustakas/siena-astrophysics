@@ -236,12 +236,14 @@ def pysurvey_distance(r1,r2):
     return  dist,fake_vals
 
 
-def get_coordinates(infilename,maxgals=0,return_radecz=False):
+def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     """Grabs either X.Y,Z coordinates or RA,DEC,Z values
                                           of a data set.
 
     Args:
         infilename: The name of the data file.
+        xyz (Boolean): If true, the input file is one
+                         with xyz coordinates already 
         maxgals (int): The number of galaxies to be
                        calculated, if 0, then all 
                        galaxies will be calculated.
@@ -257,7 +259,7 @@ def get_coordinates(infilename,maxgals=0,return_radecz=False):
         isdatafile = True
 
     if isdatafile:
-        # Opening FITS file (SDSS Data) 'a' Argument = dr10cmassnorth.fits
+        # Opening FITS file (SDSS Data) 'a' 
         print 'Reading in FITS Data'
         hdulist1=fits.open(infilename)
         hdulist1.info()

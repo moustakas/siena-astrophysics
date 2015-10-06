@@ -73,9 +73,10 @@ def main():
     nrands=0
     np.random.seed(1)
 
-    coords0 = jem.get_coordinates(infilename0,ngals_for_calculation,args.pysurvey)
-    coords1 = jem.get_coordinates(infilename1,nrands,args.pysurvey)
-    
+    coords0 = jem.get_coordinates(infilename0,True,ngals_for_calculation,args.pysurvey)
+    coords1 = jem.get_coordinates(infilename1,True,nrands,args.pysurvey)
+    print len(coords1)
+    print len(coords0)
     print 'Read in data files and coverted to cartesian!'
 
 
