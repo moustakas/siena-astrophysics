@@ -309,7 +309,7 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     if xyz:
         r=np.loadtxt(infilename)
         coords = np.column_stack((r[:,0],r[:,1],r[:,2]))
-        del r,h1
+        del r
     if return_radecz:
         coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
 
