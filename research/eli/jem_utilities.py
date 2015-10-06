@@ -306,7 +306,8 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         redshift=redshift[a[0:maxgals]]
         del a
 
-
+    if xyz:
+        coords = np.column_stack(r[:,0],r[:,1],r[:,2])
     if return_radecz:
         coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
 
