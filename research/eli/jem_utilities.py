@@ -325,6 +325,47 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     return coords
 
 
+def corr_est(DD,DR,RR,ngals,nrands):
+    """Calculates the Landy-Szalay Correlation Function Estimator,
+                                     given three frequency arrays
 
+        Args:
+            DD (numpy.ndarray or ASCII file) : The frequency array
+                                               of data-data distances
+            DR (numpy.ndarray or ASCII file) : The frequency array of
+                                                data-random distances
+            RR (numpy.ndarray or ASCII file) : The frequency array of
+                                               random-random distances
+                                                          
+        Returns:
+            Xi (numpy.ndarray) : The frequency array of the Correlation
+                                                              Estimator
+    """
+    
+    if type(DD)==str:
+        D_D=np.loadtxt('DD',dtype='float')
+    else:
+        D_D=DD
+
+    if type(DR)==str:
+        D_R=np.loadtxt('DR',dtype='float')
+    else:
+        D_R=DR
+
+    if type(RR)==str:
+        R_R=np.loadtxt('RR',dtype='float')
+    else:
+        R_R=RR
+
+    D_D = D_D.transpose()
+    R_R = R_R.transpose()
+    D_R = D_R.transpose()
+
+    D_D /=(ngals**2-ngals)/2.
+    D_R /=(nrands*ngals)/1.
+    R_R /=(nrands**2-nrands)/2.
+    Xi = (D_D - 2*D_R + R_R)/R_R
+
+    return Xi
 
 
