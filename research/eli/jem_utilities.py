@@ -324,7 +324,7 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
 
     return coords
 
-
+                                                                                
 def corr_est(DD,DR,RR,ngals,nrands):
     """Calculates the Landy-Szalay Correlation Function Estimator,
                                      given three frequency arrays
@@ -336,7 +336,10 @@ def corr_est(DD,DR,RR,ngals,nrands):
                                                 data-random distances
             RR (numpy.ndarray or ASCII file) : The frequency array of
                                                random-random distances
-                                                          
+            ngals (int) : The number of data points originally
+                                                     utilized
+            nrands (int) : The number of random points originally
+                                                         utilized
         Returns:
             Xi (numpy.ndarray) : The frequency array of the Correlation
                                                               Estimator
@@ -368,4 +371,24 @@ def corr_est(DD,DR,RR,ngals,nrands):
 
     return Xi
 
+def corr_plot(infile,x0,x1,y0,y1):
+    """Provides histogram and scatter plots for a number of different
+                                                             infiles.
+        Args:
+            infile (numpy.ndarry) : The data to be plotted
+            x0 (int) : Lower x bound
+            x1 (int) : Upper x bound
+            y0 (int) : Lower y bound
+            y1 (int) : Upper y bound
+            
+        Returns:
+            A plot of the data
+
+    """
+    import numpy as np
+    import matplotlib.pylab as plt
+    
+    dat=np.loadtxt(infile)
+    fig=plt.figure(figsize=(8,8))
+    extent=[x1,x2,y1,y2]
 
