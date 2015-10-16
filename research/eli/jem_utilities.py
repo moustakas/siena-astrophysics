@@ -390,23 +390,25 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
     """
     import numpy as np
     import matplotlib.pylab as plt
-    if oneD==True:
+    if oned==True:
         dat=np.loadtxt(infile)
         xvals = np.linspace(0,x1)
-        plt.figure
+        fig= plt.figure()
         plt.plot(xvals,dat,'o')
         plt.xlabel(xlab)
         plt.ylabel(ylab)
         plt.title(title)
-        return figure
+        plt.show()
+        return fig
     else:
         dat=np.loadtxt(infile)
         fig=plt.figure(figsize=(8,8))
-        extent=[x1,x2,y1,y2]
+        extent=[x0,x1,y0,y1]
         plot=plt.imshow(dat,extent=extent)
         plt.xlabel(xlab)
         plt.ylabel(ylab)
         plt.title(title)
-        return figure
+        plt.show()
+        return fig
 
 
