@@ -371,7 +371,7 @@ def corr_est(DD,DR,RR,ngals,nrands):
 
     return Xi
 
-def corr_plot(infile,x0,x1,y0,y1):
+def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,1D=False):
     """Provides histogram and scatter plots for a number of different
                                                              infiles.
         Args:
@@ -380,15 +380,32 @@ def corr_plot(infile,x0,x1,y0,y1):
             x1 (int) : Upper x bound
             y0 (int) : Lower y bound
             y1 (int) : Upper y bound
-            
+            title (str) : The title of the plot
+            xlab (str) : Label for the x-axis
+            ylab (str) : Label for the y axis
+            1D (Boolean) : Set to true if 1D Correlation plot is desired
         Returns:
             A plot of the data
 
     """
     import numpy as np
     import matplotlib.pylab as plt
-    
-    dat=np.loadtxt(infile)
-    fig=plt.figure(figsize=(8,8))
-    extent=[x1,x2,y1,y2]
+    if 1D==True:
+        dat=np.loadtxt(infile)
+        xvals = np.linspace(0,x1)
+        plt.figure
+        plt.plot(xvals,dat,'o')
+        plt.xlabel(xlab)
+        plt.ylabel(ylab)
+        plt.title(title)
+        return figure
+    else:
+        dat=np.loadtxt(infile)
+        fig=plt.figure(figsize=(8,8))
+        extent=[x1,x2,y1,y2]
+        plot=plt.imshow(dat,extent=extent)
+        plt.xlabel(xlab)
+        plt.ylabel(ylab)
+        plt.title(title)
+        return figure
 
