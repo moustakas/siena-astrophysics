@@ -10,7 +10,7 @@ The authors are Eli, Matt, and John.
 
 HOW TO USE THIS CODE
 Run the name_pending code with the following command line arguments...
-- your real data file
+- your SDSS fits file
 - your mock data file
 - "--outfilename" followed by your desired outfile name
 
