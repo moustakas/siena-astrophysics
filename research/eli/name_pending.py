@@ -4,8 +4,7 @@
     parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
-    parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
-    parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
+        parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
     args=parser.parse_args()
@@ -26,14 +25,10 @@
     parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
-    parser.add_argument('--no-plots', dest='no_plots', default=False,action='store_true', help='do not generate plots')
     parser.add_argument('--lado', dest='lado',default=False,action='store_true',help='Use Lado\'s calculations')
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
     args=parser.parse_args()
-
-    if args.no_plots:
-        plt.switch_backend('Agg')
 
     infilename0 = args.infile1
     infilename1 = args.infile2
@@ -169,19 +164,7 @@
         indexhi=0
 
         del hist
-
-        print tot_freq.sum()
    
-    print 'Point:'
-    if args.no_plots==False:
-        print 'Final Plot'    
-        extent = [-rangeval,rangeval, -rangeval,rangeval]
-        fig = plt.figure()
-        axes = fig.add_subplot(1,1,1)
-        print 'Imshow'
-        print tot_freq
-        ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
-        plt.show()
 
     print('Writing {}'.format(outfilename))
     np.savetxt(outfilename,tot_freq)
