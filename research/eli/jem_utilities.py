@@ -371,7 +371,7 @@ def corr_est(DD,DR,RR,ngals,nrands):
 
     return Xi
 
-def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,1D=False):
+def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
     """Provides histogram and scatter plots for a number of different
                                                              infiles.
         Args:
@@ -390,7 +390,7 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,1D=False):
     """
     import numpy as np
     import matplotlib.pylab as plt
-    if 1D==True:
+    if oneD==True:
         dat=np.loadtxt(infile)
         xvals = np.linspace(0,x1)
         plt.figure
@@ -408,4 +408,5 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,1D=False):
         plt.ylabel(ylab)
         plt.title(title)
         return figure
+
 
