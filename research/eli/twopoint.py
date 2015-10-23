@@ -4,9 +4,9 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DD_1D_tot.dat',dtype='float')
-DR=np.loadtxt('DR_1D_tot.dat',dtype='float')
-RR=np.loadtxt('RR_1D_tot.dat',dtype='float')
+DD=np.loadtxt('onedddcalctest.dat',dtype='float')
+DR=np.loadtxt('oneddrcalctest.dat',dtype='float')
+RR=np.loadtxt('onedrrcalctest.dat',dtype='float')
 
 
 DD = DD.transpose()
@@ -61,8 +61,8 @@ binred(DD)
 
 
 
-ndata=400000
-nrand=1000000
+ndata=100000
+nrand=100000
 
 #print DD.shape
 
@@ -160,15 +160,15 @@ plt.show()
 if 1:
     w1D = theta.transpose()[200]
     w1D2= w1D[200:]
-    xvals = np.linspace(-rangeval,rangeval,nbins/2)
+    xvals = np.linspace(0,200,nbins/2)
     print w1D,xvals
     plt.figure()
     plt.plot(xvals,w1D2,'o')
-    plt.xlim(0,200)
-    plt.ylim(0,500)
+    #plt.xlim(0,200)
+    #plt.ylim(0,0.04)
     plt.xlabel('r')
-    plt.ylabel('r^2 Xi')
-    plt.title('1D Correlation Function (With r^2)')
+    plt.ylabel('Xi')
+    plt.title('1D Correlation Function (Grid)')
 plt.show()
 
 #np.savetxt('ourxi.dat',newtheta)
