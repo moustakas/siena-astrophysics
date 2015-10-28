@@ -410,15 +410,15 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
         plt.title(title)
         plt.show()
         return fig
-def twopoint_hist(infile1,infile2,oufilename='default.dat',range1=None,range2=None):
-        """Given command-line arguments, will return
+
+def twopoint_hist(infile1,infile2,outfilename='default.dat',range1=None,range2=None):
+    """Given command-line arguments, will return
         frequency arrays for galactic distances.
     Args:
         See Below
     Returns:
         Dependant on command-line arguments.
     """
-    
     infilename0 = infile1
     infilename1 = infile2
 
@@ -449,8 +449,8 @@ def twopoint_hist(infile1,infile2,oufilename='default.dat',range1=None,range2=No
     nrands=0
     np.random.seed(1)
 
-    coords0 = jem.get_coordinates(infilename0,ngals_for_calculation,args.pysurvey)
-    coords1 = jem.get_coordinates(infilename1,nrands,args.pysurvey)
+    coords0 = get_coordinates(infilename0,ngals_for_calculation)
+    coords1 = get_coordinates(infilename1,nrands)
     print 'Read in data files and coverted to cartesian!'
 
 
@@ -489,12 +489,19 @@ def twopoint_hist(infile1,infile2,oufilename='default.dat',range1=None,range2=No
 
     indexlo = 0
     indexhi = 0
-
+    
+    if samefile and (infilename0.find('fits')>=0):
+        calc = "DD"
+    elif samefile and (infilename0.find('fits')==-1):
+        calc = "RR"
+    else:
+        calc = "DR"
+        outfilename1 = outfilename + 'DR.dat'
     #Calculation Loop
     for j in xrange(nchunks):
         lo = j*chunk_size
         hi = (j+1)*chunk_size
-        print "Performing calculations for DD %d chunk: %d-%d" % (j,lo,hi)
+        print "Performing calculations for %s %d chunk: %d-%d" % (calc,j,lo,hi)
 
         paras *= 0.
         perps *= 0.
@@ -513,7 +520,7 @@ def twopoint_hist(infile1,infile2,oufilename='default.dat',range1=None,range2=No
 
             other_gals = coords1cut[lo1:]
 
-            temp_paras,temp_perps = jem.our_para_perp(r0,other_gals)
+            temp_paras,temp_perps = our_para_perp(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
             perps[indexlo:indexhi] = temp_perps
