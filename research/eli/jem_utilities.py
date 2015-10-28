@@ -346,17 +346,17 @@ def corr_est(DD,DR,RR,ngals,nrands):
     """
     
     if type(DD)==str:
-        D_D=np.loadtxt('DD',dtype='float')
+        D_D=np.loadtxt(DD,dtype='float')
     else:
         D_D=DD
 
     if type(DR)==str:
-        D_R=np.loadtxt('DR',dtype='float')
+        D_R=np.loadtxt(DR,dtype='float')
     else:
         D_R=DR
 
     if type(RR)==str:
-        R_R=np.loadtxt('RR',dtype='float')
+        R_R=np.loadtxt(RR,dtype='float')
     else:
         R_R=RR
 
@@ -410,5 +410,139 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
         plt.title(title)
         plt.show()
         return fig
+def twopoint_hist(infile1,infile2,oufilename='default.dat',range1=None,range2=None):
+        """Given command-line arguments, will return
+        frequency arrays for galactic distances.
+    Args:
+        See Below
+    Returns:
+        Dependant on command-line arguments.
+    """
+    
+    infilename0 = infile1
+    infilename1 = infile2
+
+    range1lo = None
+    range1hi = None
+    if range1 is not None:
+        range1lo = int(range1.split('-')[0])
+        range1hi = int(range1.split('-')[1])
+
+    range2lo = None
+    range2hi = None
+    if range2 is not None:
+        range2lo = int(range2.split('-')[0])
+        range2hi = int(range2.split('-')[1])
+
+    do_diagonal = False
+    if range2lo>range1lo:
+        do_diagonal = True
+
+    # Check to see if we are using the same file for both (DD or RR)
+    # or if they are different (DR)
+    samefile = False
+    if (infilename0==infilename1):
+        samefile = True
+
+    # Randomizing a Sample of SDSS Data
+    ngals_for_calculation = 0
+    nrands=0
+    np.random.seed(1)
+
+    coords0 = jem.get_coordinates(infilename0,ngals_for_calculation,args.pysurvey)
+    coords1 = jem.get_coordinates(infilename1,nrands,args.pysurvey)
+    print 'Read in data files and coverted to cartesian!'
+
+
+    ngals0 = len(coords0)
+    ngals1 = len(coords1)
+
+    coords0cut = None
+    if range1lo is not None and range1hi is not None:
+        coords0cut = coords0[range1lo:range1hi]
+    else:
+        coords0cut = coords0
+
+    coords1cut = None
+    if range2lo is not None and range2hi is not None:
+        coords1cut = coords1[range2lo:range2hi]
+    else:
+        coords1cut = coords1
+   
+    # This is for the histogram.
+    nbins=200
+    rangeval=200
+
+    tot_freq = np.zeros((nbins,nbins)) 
+
+    # Figure out the chunking.
+    
+
+    chunk_size = 50
+    nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
+
+    ncalcs_per_chunk = chunk_size*len(coords1cut) #chunk_size*ngals1
+
+    # These will store the calculations.
+    paras = np.zeros(ncalcs_per_chunk)
+    perps = np.zeros(ncalcs_per_chunk)
+
+    indexlo = 0
+    indexhi = 0
+
+    #Calculation Loop
+    for j in xrange(nchunks):
+        lo = j*chunk_size
+        hi = (j+1)*chunk_size
+        print "Performing calculations for DD %d chunk: %d-%d" % (j,lo,hi)
+
+        paras *= 0.
+        perps *= 0.
+
+        #for i,r0 in enumerate(coords0[lo:hi]):
+        for i in range(lo,hi):
+            r0 = coords0cut[i]
+
+            lo1 = 0
+            if samefile:
+                lo1 = i
+                if do_diagonal==False:
+                    lo1 += 1
+
+            indexhi += len(coords1cut[lo1:])
+
+            other_gals = coords1cut[lo1:]
+
+            temp_paras,temp_perps = jem.our_para_perp(r0,other_gals)
+
+            paras[indexlo:indexhi] = temp_paras
+            perps[indexlo:indexhi] = temp_perps
+
+            indexlo = indexhi
+        
+        # Histogram the values.
+        hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        tot_freq += hist[0]
+
+        tot_freq += hist[0]
+
+        indexlo=0
+        indexhi=0
+
+        del hist
+
+    # Saving the Outfile
+    
+    if samefile and (infilename0.find('fits')>=0):
+        outfilename1 = outfilename + '_DD.dat'
+    elif samefile and (infilename0.find('fits')==-1):
+        outfilename1 = outfilename + 'RR.dat'
+    else:
+        outfilename1 = outfilename + 'DR.dat'
+        
+        
+    print('Writing {}'.format(outfilename1))
+    np.savetxt(outfilename1,tot_freq)
+    
 
 
