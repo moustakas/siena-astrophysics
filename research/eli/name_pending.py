@@ -48,16 +48,17 @@ def main():
 
     range1=args.range1
     range2=args.range2
-
     DD_calc=jem.twopoint_hist(infilename1,infilename1,outfilename,range1,range2)
     RR_calc=jem.twopoint_hist(infilename2,infilename2,outfilename,range1,range2)
     DR_calc=jem.twopoint_hist(infilename1,infilename2,outfilename,range1,range2)
 
-end_time=timeit.timeit()
-sec=start_time-end_time
-min=sec/60
+    end_time=timeit.timeit()
+    sec=end_time-start_time
+    hour=sec/360
+    remmin=sec%hour
+    remsec=sec%remmin
 
-print "This code took %f minutes to run" %min
+    print "This code took %f hours, %f minutes, and %f seconds to run" % (hour, remmin, remsec)
 
 if __name__ == "__main__":
     main()
