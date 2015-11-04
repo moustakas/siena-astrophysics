@@ -27,6 +27,8 @@ def main():
     parser.add_argument('--ndisk', type=int, default=2000, help='number of (collisionless) disk particles')
     parser.add_argument('--ngas', type=int, default=2000, help='number of gas particles')
     parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
+    parser.add_argument('--time-max', type=float, default=1.0, help='maximum time step')
+    parser.add_argument('--time-resolution', type=float, default=0.1, help='time resolution')
 
     args = parser.parse_args()
     if args.prefix is None:
@@ -60,7 +62,6 @@ def main():
     param['GasFraction'] = 0.5         # relative content of gas in the disk, the rest is stars
     param['DiskHeight'] = 0.2          # thickness of stellar disk in units of radial scale length 
     param['BulgeSize'] = 0.1           # bulge scale length in units of disk scale length 
-    param['GasScaleLength'] = 1.0      # scale length of the gas
 
     param['HI_GasMassFraction'] = 0.0     # mass of extended HI disk in terms of the total gass mass
     param['HI_GasDiskScaleLength'] = 1.0  # scale length of extended gas disk in terms of scale length of the disk
@@ -77,12 +78,14 @@ def main():
     param['FactorEVP'] = 3000             # A_0, evaporation parameter (multi-phase model)
     param['TempSupernova'] = 3.0e8        # T_SN, effective "supernova temperature"; sets feedback energy (multi-phase model)
     param['TempClouds'] = 1000            # temperature of cold clouds (multi-phase model)
-    param['CritPhysDensity'] = 10000      
 
     param['REDSHIFT'] = 0.0               # redshift to scale galaxy properties to
     param['Omega_m0'] = 0.3               # Omega_m
     param['Omega_L0'] = 0.7               # Omega_L
-    param['HubbleParam'] = 0.7            # Hubble constant
+
+    #param['GasScaleLength'] = 1.0      # scale length of the gas
+    #param['CritPhysDensity'] = 10000      
+    #param['HubbleParam'] = 0.7            # Hubble constant
 
     print('Writing parameter file {}'.format(makediskparamfile))
     outfile = open(makediskparamfile,'w')
@@ -97,6 +100,9 @@ def main():
 
     # Write out the Gadget2 parameter file.
     param = dict()
+
+    param['TimeMax'] = args.time_max # End of the simulation
+    param['TimeBetSnapshot'] = args.time_resolution
 
     #  Relevant files
     param['InitCondFile']       = ICfile      # initial conditions file (e.g. test_IC.dat)
@@ -117,7 +123,7 @@ def main():
 
     # Code options
     param['ICFormat']              = 1 # ASCII??
-    param['SnapFormat']            = 3 # HDF5??
+    param['SnapFormat']            = 1 # HDF5??
 
     param['ComovingIntegrationOn']   = 0
     param['TypeOfTimestepCriterion'] = 0
@@ -127,7 +133,7 @@ def main():
 
     #  Characteristics of run
     param['TimeBegin'] = 0.0 # Begin of the simulation
-    param['TimeMax']   = 1.0 # End of the simulation
+    param['TimeOfFirstSnapshot'] = 0.0
 
     param['Omega0']      =   0
     param['OmegaLambda'] =   0
@@ -138,8 +144,6 @@ def main():
     param['PeriodicBoundariesOn'] = 0
 
     # Output frequency
-    param['TimeBetSnapshot']           = 0.1
-    param['TimeOfFirstSnapshot']       = 0.0
     param['CpuTimeBetRestartFile']     = 36000.0  # [seconds] 1800.0
     param['TimeBetStatistics']         = 0.05
 
@@ -167,16 +171,14 @@ def main():
 
     # Memory allocation
     param['PartAllocFactor'] = 5.0 # 1.5
-    param['TreeAllocFactor'] = 1.6 # 0.8
-    param['BufferSize']      = 100 # [MB]
+    param['TreeAllocFactor'] = 1.2 # 0.8
+    param['BufferSize']      = 25  # [MB]
 
     # System of units
     param['UnitLength_in_cm']         = 3.085678e21  # 1.0 kpc 
     param['UnitMass_in_g']            = 1.989e43     # 1.0e10 solar masses 
     param['UnitVelocity_in_cm_per_s'] = 1e5          # 1 km/sec 
     param['GravityConstantInternal']  = 0
-
-    param['FactorForSofterEQS'] = 0.25
 
     # Softening lengths
     param['MinGasHsmlFractional']  = 0 # minimum gas smoothing in terms of the gravitational softening length
@@ -196,6 +198,8 @@ def main():
     param['MaxRMSDisplacementFac'] = 0.25
 
     # Star formation and feedback parameters TBD...
+
+    # param['FactorForSofterEQS'] = 0.25
 
     print('Writing parameter file {}'.format(makediskparamfile))
     outfile = open(gadget2paramfile,'w')
@@ -233,7 +237,7 @@ def main():
     outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
     outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
-    outfile.write('#$ -o {}.gadget2.out-$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
     outfile.write('#$ -q physics.q\n')                       # use the physics queue
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
