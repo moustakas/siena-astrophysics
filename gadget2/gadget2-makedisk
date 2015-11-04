@@ -27,8 +27,8 @@ def main():
     parser.add_argument('--ndisk', type=int, default=2000, help='number of (collisionless) disk particles')
     parser.add_argument('--ngas', type=int, default=2000, help='number of gas particles')
     parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
-    parser.add_argument('--time-max', type=float, default=1.0, help='maximum time step')
-    parser.add_argument('--time-resolution', type=float, default=0.1, help='time resolution')
+    parser.add_argument('--time-max', type=float, default=2.0, help='maximum time step')
+    parser.add_argument('--time-resolution', type=float, default=0.05, help='time resolution')
 
     args = parser.parse_args()
     if args.prefix is None:
