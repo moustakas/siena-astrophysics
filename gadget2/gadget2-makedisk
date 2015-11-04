@@ -33,9 +33,9 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    ICfile = args.prefix+'.makedisk.IC'
-    makediskparamfile = args.prefix+'.makedisk.param'
-    makediskscript = args.prefix+'.makedisk.sh'
+    ICfile = args.prefix+'.mkdisk.IC'
+    makediskparamfile = args.prefix+'.mkdisk.param'
+    makediskscript = args.prefix+'.mkdisk.sh'
     gadget2paramfile = args.prefix+'.gadget2.param'
     gadget2script = args.prefix+'.gadget2.sh'
 
@@ -214,9 +214,9 @@ def main():
     outfile.write('#!/bin/bash -l\n')
     outfile.write('#$ -cwd\n')                               # start script from current directory
     outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
-    outfile.write('#$ -N {}.makedisk\n'.format(args.prefix)) # name of the job displayed in qstat
+    outfile.write('#$ -N {}.mkdisk\n'.format(args.prefix))   # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
-    outfile.write('#$ -o {}.makedisk.out-$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -o {}.mkdisk.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
     outfile.write('#$ -q physics.q\n')                       # use the physics queue
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
@@ -255,7 +255,7 @@ def main():
     print('  qsub {}'.format(makediskscript))
 
     print(' ')
-    print('Once the initial conditions file has been generated run your Gadget-2 simulation by typing:)
+    print('Once the initial conditions file has been generated run your Gadget-2 simulation by typing:')
     print('  qsub {}'.format(gadget2script))
 
 if __name__ == "__main__":
