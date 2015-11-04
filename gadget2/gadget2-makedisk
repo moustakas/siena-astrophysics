@@ -1,0 +1,262 @@
+#!/usr/bin/env python
+
+"""
+Write out a MakeNewDisk parameter file.
+"""
+
+import os
+import sys
+import argparse
+
+__author__ = "J. Moustakas"
+__email__ = "jmoustakas@siena.edu"
+
+def main():
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Write out a MakeNewDisk parameter file.')
+
+    # Required arguments
+    parser.add_argument('--prefix', type=str, default=None, help='output prefix (required input)')
+
+    parser.add_argument('--outdir', type=str, default='./', help='output directory')
+    parser.add_argument('--concentration', type=float, dest='cc', default=10.0,
+                        help='halo concentration')
+    parser.add_argument('--v200', type=float, default=220.0, help='circular velocity [km/s]')
+    parser.add_argument('--nhalo', type=int, default=5000, help='number of halo particles')
+    parser.add_argument('--ndisk', type=int, default=2000, help='number of (collisionless) disk particles')
+    parser.add_argument('--ngas', type=int, default=2000, help='number of gas particles')
+    parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
+
+    args = parser.parse_args()
+    if args.prefix is None:
+        parser.print_help()
+        sys.exit(1)
+
+    ICfile = args.prefix+'.makedisk.IC'
+    makediskparamfile = args.prefix+'.makedisk.param'
+    makediskscript = args.prefix+'.makedisk.sh'
+    gadget2paramfile = args.prefix+'.gadget2.param'
+    gadget2script = args.prefix+'.gadget2.sh'
+
+    # Write out the MakeNewDisk parameter file.
+    param = dict()
+    param['OutputFile'] = ICfile       # initial conditions file (e.g. test_IC.dat)
+    param['OutputDir'] = args.outdir   # output directory
+    param['CC'] = args.cc              # halo concentration
+    param['V200'] = args.v200          # circular velocity at rho/rhomean=200
+
+    param['N_HALO'] = args.nhalo       # number of halo particles
+    param['N_DISK'] = args.ndisk       # number of collisionless particles in disk 
+    param['N_GAS'] = args.ngas         # number of gas particles in disk 
+    param['N_BULGE'] = 0               # number of bulge particles 
+
+    param['LAMBDA'] = 0.05             # spin parameter          
+    param['MD'] = 0.05                 # disk mass fraction      
+    param['JD'] = 0.05                 # disk spin fraction (typically=MD)
+    param['MBH'] = 0.0                 # black hole mass fraction
+
+    param['MB'] = 0.0                  # bulge mass fraction     
+    param['GasFraction'] = 0.5         # relative content of gas in the disk, the rest is stars
+    param['DiskHeight'] = 0.2          # thickness of stellar disk in units of radial scale length 
+    param['BulgeSize'] = 0.1           # bulge scale length in units of disk scale length 
+    param['GasScaleLength'] = 1.0      # scale length of the gas
+
+    param['HI_GasMassFraction'] = 0.0     # mass of extended HI disk in terms of the total gass mass
+    param['HI_GasDiskScaleLength'] = 1.0  # scale length of extended gas disk in terms of scale length of the disk
+    param['MaxGasDiskHeight'] = 1.0       # parameter to prevent too big flaring of isothermal outer gas disk
+    param['RadialDispersionFactor'] = 1.0 # radial dispersion of disk in units of the z-dispersion
+    param['MaxSfrTimescale'] = 4.5        # Gas consumption timescale (multi-phase model)
+
+    # Can be used to make the equation of state softer. For 1.0, the multiphase
+    # model is while for 0.0 isothermal at 10^4 K is assumed. Intermediate
+    # values interpolate linearly between the two pressures.
+    param['FactorForSofterEQS'] = 0.25
+
+    param['FactorSN'] = 0.1               # beta, mass fraction of massive stars (multi-phase model)
+    param['FactorEVP'] = 3000             # A_0, evaporation parameter (multi-phase model)
+    param['TempSupernova'] = 3.0e8        # T_SN, effective "supernova temperature"; sets feedback energy (multi-phase model)
+    param['TempClouds'] = 1000            # temperature of cold clouds (multi-phase model)
+    param['CritPhysDensity'] = 10000      
+
+    param['REDSHIFT'] = 0.0               # redshift to scale galaxy properties to
+    param['Omega_m0'] = 0.3               # Omega_m
+    param['Omega_L0'] = 0.7               # Omega_L
+    param['HubbleParam'] = 0.7            # Hubble constant
+
+    print('Writing parameter file {}'.format(makediskparamfile))
+    outfile = open(makediskparamfile,'w')
+    for kk in param.keys():
+        if type(param[kk]==str):
+            fmt = '15s'
+        else:
+            fmt = 'g'
+#       print('{:15s} {:'+fmt+'} \n'.format(kk, param[kk]))
+        outfile.write('{:30s} {} \n'.format(kk, param[kk]))
+    outfile.close()
+
+    # Write out the Gadget2 parameter file.
+    param = dict()
+
+    #  Relevant files
+    param['InitCondFile']       = ICfile      # initial conditions file (e.g. test_IC.dat)
+    param['OutputDir']          = args.outdir # output directory 
+
+    param['EnergyFile']         = 'energy.txt'
+    param['InfoFile']           = 'info.txt'
+    param['TimingsFile']        = 'timings.txt'
+    param['CpuFile']            = 'cpu.txt'
+
+    param['RestartFile']        = 'restart'
+    param['SnapshotFileBase']   = 'snapshot'
+
+    # CPU time -limit
+    param['TimeLimitCPU']    = 3600000  # = 100 hours
+    param['ResubmitOn']      = 0
+    param['ResubmitCommand'] = 'xxx'
+
+    # Code options
+    param['ICFormat']              = 1 # ASCII??
+    param['SnapFormat']            = 3 # HDF5??
+
+    param['ComovingIntegrationOn']   = 0
+    param['TypeOfTimestepCriterion'] = 0
+
+    param['OutputListOn']       = 0
+    param['OutputListFilename'] = 'snaptimes.txt'
+
+    #  Characteristics of run
+    param['TimeBegin'] = 0.0 # Begin of the simulation
+    param['TimeMax']   = 1.0 # End of the simulation
+
+    param['Omega0']      =   0
+    param['OmegaLambda'] =   0
+    param['OmegaBaryon'] =   0
+    param['HubbleParam'] = 0.7
+
+    param['BoxSize']              = 0
+    param['PeriodicBoundariesOn'] = 0
+
+    # Output frequency
+    param['TimeBetSnapshot']           = 0.1
+    param['TimeOfFirstSnapshot']       = 0.0
+    param['CpuTimeBetRestartFile']     = 36000.0  # [seconds] 1800.0
+    param['TimeBetStatistics']         = 0.05
+
+    param['NumFilesPerSnapshot']       = 1
+    param['NumFilesWrittenInParallel'] = 1
+
+    # Accuracy of time integration
+    param['ErrTolIntAccuracy'] = 0.025 
+    param['CourantFac']        = 0.15     
+    param['MaxSizeTimestep']   = 0.1
+    param['MinSizeTimestep']   = 1.0e-7
+
+    # Tree algorithm, force accuracy, domain update frequency
+    param['ErrTolTheta']               = 0.7
+    param['TypeOfOpeningCriterion']    = 1
+    param['ErrTolForceAcc']            = 0.005
+    param['TreeDomainUpdateFrequency'] = 0.05
+
+    # Additional SPH parameters
+    param['DesNumNgb']          = 64
+    param['MaxNumNgbDeviation'] = 2
+    param['ArtBulkViscConst']   = 0.75
+    param['InitGasTemp']        = 10000   # always ignored if set to 0 
+    param['MinGasTemp']         = 5.0
+
+    # Memory allocation
+    param['PartAllocFactor'] = 5.0 # 1.5
+    param['TreeAllocFactor'] = 1.6 # 0.8
+    param['BufferSize']      = 100 # [MB]
+
+    # System of units
+    param['UnitLength_in_cm']         = 3.085678e21  # 1.0 kpc 
+    param['UnitMass_in_g']            = 1.989e43     # 1.0e10 solar masses 
+    param['UnitVelocity_in_cm_per_s'] = 1e5          # 1 km/sec 
+    param['GravityConstantInternal']  = 0
+
+    param['FactorForSofterEQS'] = 0.25
+
+    # Softening lengths
+    param['MinGasHsmlFractional']  = 0 # minimum gas smoothing in terms of the gravitational softening length
+    param['SofteningGas']          = 0.1
+    param['SofteningHalo']         = 0.2
+    param['SofteningDisk']         = 0.1
+    param['SofteningBulge']        = 0.1         
+    param['SofteningStars']        = 0.1
+    param['SofteningBndry']        = 0.1
+
+    param['SofteningGasMaxPhys']   = 0.1
+    param['SofteningHaloMaxPhys']  = 0.2
+    param['SofteningDiskMaxPhys']  = 0.1
+    param['SofteningBulgeMaxPhys'] = 0.1         
+    param['SofteningStarsMaxPhys'] = 0.1
+    param['SofteningBndryMaxPhys'] = 0.1
+    param['MaxRMSDisplacementFac'] = 0.25
+
+    # Star formation and feedback parameters TBD...
+
+    print('Writing parameter file {}'.format(makediskparamfile))
+    outfile = open(gadget2paramfile,'w')
+    for kk in param.keys():
+        if type(param[kk]==str):
+            fmt = '15s'
+        else:
+            fmt = 'g'
+#       print('{:15s} {:'+fmt+'} \n'.format(kk, param[kk]))
+        outfile.write('{:30s} {} \n'.format(kk, param[kk]))
+    outfile.close()
+
+    # Next write out the MakeNewDisk script.
+    print('Writing batch script {}'.format(makediskscript))
+    outfile = open(makediskscript,'w')
+    outfile.write('#!/bin/bash -l\n')
+    outfile.write('#$ -cwd\n')                               # start script from current directory
+    outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
+    outfile.write('#$ -N {}.makedisk\n'.format(args.prefix)) # name of the job displayed in qstat
+    outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
+    outfile.write('#$ -o {}.makedisk.out-$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
+    outfile.write('\n')
+    outfile.write('MakeDiskGalaxy {}\n'.format(makediskparamfile))
+    outfile.write('\n')
+    outfile.write('echo "MakeNewDisk job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.close()
+
+    # Next write out the Gadget2 script.
+    print('Writing batch script {}'.format(gadget2script))
+    outfile = open(gadget2script,'w')
+    outfile.write('#!/bin/bash -l\n')
+    outfile.write('#$ -cwd\n')                               # start script from current directory
+    outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
+    outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
+    outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
+    outfile.write('#$ -o {}.gadget2.out-$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
+    outfile.write('\n')
+    outfile.write('source /etc/profile.d/modules.sh\n')
+    outfile.write('\n')
+    outfile.write('module load tools/fftw-2.1.5-gcc\n')
+    outfile.write('module load tools/hdf5-1.8.9-gcc\n')
+    outfile.write('module load openmpi/1.6.3-enet-gcc\n')
+    outfile.write('\n')
+    outfile.write('export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gsl/gcc/lib\n')
+    outfile.write('\n')
+    outfile.write('mpirun -np {} $HOME/Gadget-2.0.7/Gadget2/Gadget2 {}'.format(args.ncore,gadget2paramfile))
+    outfile.write('\n')
+    outfile.write('echo "Gadget-2 job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.close()
+
+    print('')
+    print('To generate the initial conditions file for your disk galaxy type:')
+    print('  qsub {}'.format(makediskscript))
+
+    print(' ')
+    print('Once the initial conditions file has been generated run your Gadget-2 simulation by typing:)
+    print('  qsub {}'.format(gadget2script))
+
+if __name__ == "__main__":
+    main()

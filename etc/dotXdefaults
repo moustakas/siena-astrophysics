@@ -1,0 +1,43 @@
+! Save this file as ~/.Xdefaults and start a term without any options to
+! see what it does.
+
+! Use ! for comments (if you don't like a certain setting)
+
+! The `Xterm' settings work for most terms like aterm, xterm, wterm and rxvt.
+
+! If changing things in this file doesn't result in changes in your term
+! you should run `xrdb -load ~/.Xdefaults'
+
+!XTerm*cursorColor: LightBlue
+!XTerm*scrollBar:   true
+
+! preferences grabbed from http://crunchbang.org/forums/viewtopic.php?id=9935 that I'm testing 
+
+xterm*title:             xterm
+xterm*faceName:          terminus:pixelsize=14
+!xterm*faceName:          cure:Regular
+!xterm*boldfaceName:      cure:Regular
+!xterm*faceName:          Pragmata
+!xterm*faceSize:          8.7
+!xterm*boldfaceName:      Pragmata
+xterm*geometry:          110x25-2-6
+!xterm*boldMode:          false
+xterm*cutNewline:        false
+xterm*on4Clicks:         group
+xterm*on5Clicks:         page
+xterm*internalBorder:    1
+xterm*background:        #262729
+xterm*foreground:        light grey
+xterm*metaSendsEscape:   true
+xterm*colorBD:           #ffffff
+xterm*colorBDMode:       false
+xterm*cursorBlink:       false
+xterm*cursorColor:       #e2baf1
+!xterm*veryBoldColors:    14
+xterm*dynamiccolors: true
+xterm*utf8: 1
+xterm*loginShell:        true
+xterm*charClass:         33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48,35:48,58:48,63:48,61:48,44:48,38:48,59:48
+xterm*jumpScroll:        true
+xterm*multiScroll:       true
+xterm*saveLines:         4096
