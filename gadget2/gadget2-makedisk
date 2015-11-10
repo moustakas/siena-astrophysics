@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 """
-Write out a MakeNewDisk parameter file.
+Write out the MakeNewDisk and Gadget-2 parameter files we need to run
+a single-disk simulation.
 """
 
 import os
