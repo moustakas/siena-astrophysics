@@ -249,7 +249,7 @@ def main():
     outfile.write('\n')
     outfile.write('export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gsl/gcc/lib\n')
     outfile.write('\n')
-    outfile.write('mpirun -np {} $HOME/Gadget-2.0.7/Gadget2/Gadget2 {}'.format(args.ncore,gadget2paramfile))
+    outfile.write('mpirun -np {} Gadget2 {}'.format(args.ncore,gadget2paramfile))
     outfile.write('\n')
     outfile.write('echo "Gadget-2 job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
     outfile.close()
