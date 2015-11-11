@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-"""
-Write out the MakeNewDisk and Gadget-2 parameter files we need to run
-a single-disk simulation.  Add more...
+"""Write out the CombineGalaxies and Gadget-2 parameter files we need to run a
+dual-disk simulation.  
+
+TODO (@moustakas) - add optional inputs for theta and phi.
+
 """
 
 import os
@@ -15,90 +17,77 @@ __email__ = "jmoustakas@siena.edu"
 def main():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description='Write out a MakeNewDisk parameter file.')
+                                     description='Write out CombineGalaxies and Gadget-2 scripts and parameter files.')
 
     # Required arguments
-    parser.add_argument('--prefix', type=str, default=None, help='output prefix (required input)')
-
+    parser.add_argument('--prefix', type=str, default=None, help='output prefix (required)')
+    parser.add_argument('--disk1ICfile', type=str, default=None, help='IC file for disk 1 (required)')
+    parser.add_argument('--disk2ICfile', type=str, default=None, help='IC file for disk 2 (required)')
+    parser.add_argument('--configtype', type=str, default=None, help='initial orbital configuration: prograde, prograde-retrograde, retrograde, polar1, polar2, tilted1, or tilted2 (required)')
     parser.add_argument('--outdir', type=str, default='./', help='output directory')
-    parser.add_argument('--concentration', type=float, dest='cc', default=10.0,
-                        help='halo concentration')
-    parser.add_argument('--v200', type=float, default=220.0, help='circular velocity [km/s]')
-    parser.add_argument('--nhalo', type=int, default=5000, help='number of halo particles')
-    parser.add_argument('--ndisk', type=int, default=2000, help='number of (collisionless) disk particles')
-    parser.add_argument('--ngas', type=int, default=2000, help='number of gas particles')
+    parser.add_argument('--rmin', type=float, default=5.0, help='pericentric passage distance (kpc)')
+    parser.add_argument('--rstart', type=float, default=100.0, help='initial separation (kpc)')
     parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
     parser.add_argument('--time-max', type=float, default=2.0, help='maximum time step')
     parser.add_argument('--time-resolution', type=float, default=0.05, help='time resolution')
 
     args = parser.parse_args()
-    if args.prefix is None:
+    if args.prefix is None or args.disk1ICfile is None or args.disk2ICfile is None or args.configtype is None:
         parser.print_help()
         sys.exit(1)
 
-    ICfile = args.prefix+'.mkdisk.IC'
-    makediskparamfile = args.prefix+'.mkdisk.param'
-    makediskscript = args.prefix+'.mkdisk.sh'
+    ICfile = args.prefix+'.merger.IC'
+    combinescript = args.prefix+'.combine.sh'
     gadget2paramfile = args.prefix+'.gadget2.param'
     gadget2script = args.prefix+'.gadget2.sh'
 
-    # Write out the MakeNewDisk parameter file.
-    param = dict()
-    param['OutputFile'] = ICfile       # initial conditions file (e.g. test_IC.dat)
-    param['OutputDir'] = args.outdir   # output directory
-    param['CC'] = args.cc              # halo concentration
-    param['V200'] = args.v200          # circular velocity at rho/rhomean=200
-
-    param['N_HALO'] = args.nhalo       # number of halo particles
-    param['N_DISK'] = args.ndisk       # number of collisionless particles in disk 
-    param['N_GAS'] = args.ngas         # number of gas particles in disk 
-    param['N_BULGE'] = 0               # number of bulge particles 
-
-    param['LAMBDA'] = 0.05             # spin parameter          
-    param['MD'] = 0.05                 # disk mass fraction      
-    param['JD'] = 0.05                 # disk spin fraction (typically=MD)
-    param['MBH'] = 0.0                 # black hole mass fraction
-
-    param['MB'] = 0.0                  # bulge mass fraction     
-    param['GasFraction'] = 0.5         # relative content of gas in the disk, the rest is stars
-    param['DiskHeight'] = 0.2          # thickness of stellar disk in units of radial scale length 
-    param['BulgeSize'] = 0.1           # bulge scale length in units of disk scale length 
-
-    param['HI_GasMassFraction'] = 0.0     # mass of extended HI disk in terms of the total gass mass
-    param['HI_GasDiskScaleLength'] = 1.0  # scale length of extended gas disk in terms of scale length of the disk
-    param['MaxGasDiskHeight'] = 1.0       # parameter to prevent too big flaring of isothermal outer gas disk
-    param['RadialDispersionFactor'] = 1.0 # radial dispersion of disk in units of the z-dispersion
-    param['MaxSfrTimescale'] = 4.5        # Gas consumption timescale (multi-phase model)
-
-    # Can be used to make the equation of state softer. For 1.0, the multiphase
-    # model is while for 0.0 isothermal at 10^4 K is assumed. Intermediate
-    # values interpolate linearly between the two pressures.
-    param['FactorForSofterEQS'] = 0.25
-
-    param['FactorSN'] = 0.1               # beta, mass fraction of massive stars (multi-phase model)
-    param['FactorEVP'] = 3000             # A_0, evaporation parameter (multi-phase model)
-    param['TempSupernova'] = 3.0e8        # T_SN, effective "supernova temperature"; sets feedback energy (multi-phase model)
-    param['TempClouds'] = 1000            # temperature of cold clouds (multi-phase model)
-
-    param['REDSHIFT'] = 0.0               # redshift to scale galaxy properties to
-    param['Omega_m0'] = 0.3               # Omega_m
-    param['Omega_L0'] = 0.7               # Omega_L
-
-    #param['GasScaleLength'] = 1.0      # scale length of the gas
-    #param['CritPhysDensity'] = 10000      
-    #param['HubbleParam'] = 0.7            # Hubble constant
-
-    print('Writing parameter file {}'.format(makediskparamfile))
-    outfile = open(makediskparamfile,'w')
-    for kk in param.keys():
-        if type(param[kk]==str):
-            fmt = '15s'
-        else:
-            fmt = 'g'
-#       print('{:15s} {:'+fmt+'} \n'.format(kk, param[kk]))
-        outfile.write('{:30s} {} \n'.format(kk, param[kk]))
-    outfile.close()
-
+    # Parse the various types of orbits (see Table 1 of Cox+06 for details). 
+    if args.configtype=='prograde':
+        theta1 = 0
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='prograde-retrograde':
+        theta1 = 180
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='retrograde':
+        theta1 = 180
+        theta2 = 180
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='polar1':
+        theta1 = 90
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='polar2':
+        theta1 = 60
+        theta2 = 150
+        phi1 = 60
+        phi2 = 0
+    elif args.configtype=='tilted1':
+        theta1 = 30
+        theta2 = -30
+        phi1 = 60
+        phi2 = 45
+    elif args.configtype=='tilted2':
+        theta1 = 150
+        theta2 = 0
+        phi1 = -30
+        phi2 = 45
+    else:
+        print('Unrecognized type {}.  Must be one of the following:'.format(args.configtype))
+        print('  prograde')
+        print('  prograde-retrograde')
+        print('  retrograde')
+        print('  polar1')
+        print('  polar2')
+        print('  tilted1')
+        print('  tilted2')
+        sys.exit(1)
+        
     # Write out the Gadget2 parameter file.
     param = dict()
 
@@ -213,21 +202,23 @@ def main():
         outfile.write('{:30s} {} \n'.format(kk, param[kk]))
     outfile.close()
 
-    # Next write out the MakeNewDisk script.
-    print('Writing batch script {}'.format(makediskscript))
-    outfile = open(makediskscript,'w')
+    # Next write out the CombineGalaxies script.
+    print('Writing batch script {}'.format(combinescript))
+    outfile = open(combinescript,'w')
     outfile.write('#!/bin/bash -l\n')
     outfile.write('#$ -cwd\n')                               # start script from current directory
     outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
-    outfile.write('#$ -N {}.mkdisk\n'.format(args.prefix))   # name of the job displayed in qstat
+    outfile.write('#$ -N {}.combine\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
-    outfile.write('#$ -o {}.mkdisk.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -o {}.combine.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
     outfile.write('#$ -q physics.q\n')                       # use the physics queue
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
-    outfile.write('MakeDiskGalaxy {}\n'.format(makediskparamfile))
+    outfile.write('CombineGalaxies {} {:g} {:g} {} {:g} {:g} {:g} {:g} {} \n'.format(
+        args.disk1ICfile, theta1, phi1, args.disk2ICfile, theta2, phi2, args.rmin,
+        args.rstart, ICfile))
     outfile.write('\n')
-    outfile.write('echo "MakeNewDisk job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.write('echo "CombineGalaxies job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
     outfile.close()
 
     # Next write out the Gadget2 script.
@@ -256,8 +247,8 @@ def main():
     outfile.close()
 
     print('')
-    print('To generate the initial conditions file for your disk galaxy type:')
-    print('  qsub {}'.format(makediskscript))
+    print('To combine your two galaxies into a single initial conditions file type:')
+    print('  qsub {}'.format(combinescript))
 
     print(' ')
     print('Once the initial conditions file has been generated run your Gadget-2 simulation by typing:')
