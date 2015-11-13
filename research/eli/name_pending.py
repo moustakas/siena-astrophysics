@@ -27,7 +27,7 @@ def main():
     parser= argparse.ArgumentParser()
     parser.add_argument("infile1", help="Cmass data or mock data")
     parser.add_argument("infile2", default=None, help="Cmass data or mock data")
-    parser.add_argument("--outfilename", default='default.dat', help="Outfile name")
+    parser.add_argument("--outfilename",default=None, help="Outfile name to save data")
     parser.add_argument("--range1", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
@@ -44,14 +44,40 @@ def main():
     if infilename2 is None:
         infilename2=infilename1
 
-    outfilename=args.outfilename
-
+    
+    
     range1=args.range1
     range2=args.range2
-    DD_calc=jem.twopoint_hist(infilename1,infilename1,outfilename,range1,range2)
-    RR_calc=jem.twopoint_hist(infilename2,infilename2,outfilename,range1,range2)
-    DR_calc=jem.twopoint_hist(infilename1,infilename2,outfilename,range1,range2)
 
+    
+    DD_calc=jem.twopoint_hist(infilename1,infilename1,
+                          range1,range2,oned=args.oned)
+
+    RR_calc=jem.twopoint_hist(infilename2,infilename2,
+                            range1,range2,oned=args.oned)
+
+    DR_calc=jem.twopoint_hist(infilename1,infilename2,
+                            range1,range2,oned=args.oned)
+        
+        
+    
+
+    Xi=jem.corr_est(DD_calc,DR_calc,RR_calc,2000,2000,oned=args.oned)
+    
+
+    jem.corr_plot(Xi,-200,200,-200,200,"Title","Xlabel","Ylabel",oned=args.oned)
+
+    #Saving
+    outfilename=args.outfilename
+    if outfilename:
+        print 'Saving'
+        outfilenameDD = outfilename + 'DD.dat'
+        outfilenameDR = outfilename + 'DR.dat'
+        outfilenameRR = outfilename + 'RR.dat'
+        np.savetxt(outfilenameDD,DD_calc)
+        np.savetxt(outfilenameDR,DR_calc)
+        np.savetxt(outfilenameRR,RR_calc)
+    
     end_time=timeit.timeit()
     sec=end_time-start_time
     hour=sec/360
