@@ -32,6 +32,8 @@ def main():
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
+    parser.add_argument('--maxdist',default=200,help='Maximum Distance,Default=200Mpc' ')
+    parser.add_argument('--distres',default=1,help='Resolution,Default=1Mpc/bin')
     args=parser.parse_args()
 
   
@@ -43,21 +45,26 @@ def main():
 
     if infilename2 is None:
         infilename2=infilename1
-
-    
     
     range1=args.range1
     range2=args.range2
 
+    rangeval=args.maxdist
+    distres=args.distres
+    nbins=rangeval/distres
+                        
     
     DD_calc=jem.twopoint_hist(infilename1,infilename1,
-                          range1,range2,oned=args.oned)
+                         range1,range2,oned=args.oned,
+                                       nbins,rangeval)
 
     RR_calc=jem.twopoint_hist(infilename2,infilename2,
-                            range1,range2,oned=args.oned)
+                        range1,range2,oned=args.oned,
+                                      nbins,rangeval)
 
     DR_calc=jem.twopoint_hist(infilename1,infilename2,
-                            range1,range2,oned=args.oned)
+                         range1,range2,oned=args.oned,
+                                       nbins,rangeval)
         
         
     

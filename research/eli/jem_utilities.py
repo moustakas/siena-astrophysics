@@ -417,7 +417,8 @@ def corr_plot(Xi,x0,x1,y0,y1,title,xlab,ylab,oned=False):
         
 
 def twopoint_hist(infile1,infile2,range1=None,
-                     range2=None,oned=False):
+                  range2=None,oned=False,nbins,
+                                     rangeval):
     """Given command-line arguments, will return
         frequency arrays for galactic distances.
     Args:
@@ -476,8 +477,8 @@ def twopoint_hist(infile1,infile2,range1=None,
         coords1cut = coords1
    
     # This is for the histogram.
-    nbins=200
-    rangeval=200
+    nbins=nbins
+    rangeval=rangeval
 
     tot_freq = np.zeros((nbins,nbins)) 
 
