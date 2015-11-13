@@ -325,7 +325,7 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     return coords
 
                                                                                 
-def corr_est(DD,DR,RR,ngals,nrands):
+def corr_est(DD,DR,RR,ngals,nrands,oned=False):
     """Calculates the Landy-Szalay Correlation Function Estimator,
                                      given three frequency arrays
 
@@ -369,9 +369,13 @@ def corr_est(DD,DR,RR,ngals,nrands):
     R_R /=(nrands**2-nrands)/2.
     Xi = (D_D - 2*D_R + R_R)/R_R
 
+    if oned:
+        Xi1 = Xi.transpose()[100]
+        Xi = Xi1[100:]
+            
     return Xi
 
-def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
+def corr_plot(Xi,x0,x1,y0,y1,title,xlab,ylab,oned=False):
     """Provides histogram and scatter plots for a number of different
                                                              infiles.
         Args:
@@ -391,27 +395,29 @@ def corr_plot(infile,x0,x1,y0,y1,title,xlab,ylab,oned=False):
     import numpy as np
     import matplotlib.pylab as plt
     if oned==True:
-        dat=np.loadtxt(infile)
+        #dat=np.loadtxt(infile)
         xvals = np.linspace(0,x1)
         fig= plt.figure()
-        plt.plot(xvals,dat,'o')
+        plt.plot(xvals,Xi,'o')
         plt.xlabel(xlab)
         plt.ylabel(ylab)
         plt.title(title)
-        plt.show()
-        return fig
+        
+        
     else:
-        dat=np.loadtxt(infile)
+        #dat=np.loadtxt(infile)
+        
         fig=plt.figure(figsize=(8,8))
         extent=[x0,x1,y0,y1]
-        plot=plt.imshow(dat,extent=extent)
+        plot=plt.imshow(Xi,extent=extent)
         plt.xlabel(xlab)
         plt.ylabel(ylab)
         plt.title(title)
         plt.show()
-        return fig
+        
 
-def twopoint_hist(infile1,infile2,outfilename='default.dat',range1=None,range2=None):
+def twopoint_hist(infile1,infile2,range1=None,
+                     range2=None,oned=False):
     """Given command-line arguments, will return
         frequency arrays for galactic distances.
     Args:
@@ -496,7 +502,7 @@ def twopoint_hist(infile1,infile2,outfilename='default.dat',range1=None,range2=N
         calc = "RR"
     else:
         calc = "DR"
-        outfilename1 = outfilename + 'DR.dat'
+        
     #Calculation Loop
     for j in xrange(nchunks):
         lo = j*chunk_size
@@ -520,7 +526,11 @@ def twopoint_hist(infile1,infile2,outfilename='default.dat',range1=None,range2=N
 
             other_gals = coords1cut[lo1:]
 
-            temp_paras,temp_perps = our_para_perp(r0,other_gals)
+            if oned:
+                temp_paras,temp_perps = one_dimension(r0,other_gals)
+            else:
+                
+                temp_paras,temp_perps = our_para_perp(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
             perps[indexlo:indexhi] = temp_perps
@@ -538,18 +548,9 @@ def twopoint_hist(infile1,infile2,outfilename='default.dat',range1=None,range2=N
 
         del hist
 
-    # Saving the Outfile
-    
-    if samefile and (infilename0.find('fits')>=0):
-        outfilename1 = outfilename + '_DD.dat'
-    elif samefile and (infilename0.find('fits')==-1):
-        outfilename1 = outfilename + 'RR.dat'
-    else:
-        outfilename1 = outfilename + 'DR.dat'
-        
-        
-    print('Writing {}'.format(outfilename1))
-    np.savetxt(outfilename1,tot_freq)
+
+    return tot_freq
+
     
 
 
