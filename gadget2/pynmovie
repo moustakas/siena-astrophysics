@@ -25,6 +25,10 @@ if __name__ == "__main__":
 	(opts, args) = parser.parse_args()
 	imgcount = 0
 
+	if len(args)==0:
+		parser.print_help()
+		sys.exit(1)
+	
 	bins = float(opts.nbins)
 	
 	try:

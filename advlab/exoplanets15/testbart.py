@@ -32,4 +32,5 @@ t = np.arange(120.0, 210.0, 0.5/ 24.)
 lc = kepler6.light_curve(t)
 
 pl.plot(t, lc, ".k")
+pl.show()
 

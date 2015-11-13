@@ -1,0 +1,258 @@
+#!/usr/bin/env python
+
+"""Write out the CombineGalaxies and Gadget-2 parameter files we need to run a
+dual-disk simulation.  
+
+TODO (@moustakas) - add optional inputs for theta and phi.
+
+"""
+
+import os
+import sys
+import argparse
+
+__author__ = "J. Moustakas"
+__email__ = "jmoustakas@siena.edu"
+
+def main():
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Write out CombineGalaxies and Gadget-2 scripts and parameter files.')
+
+    # Required arguments
+    parser.add_argument('--prefix', type=str, default=None, help='output prefix (required)')
+    parser.add_argument('--disk1ICfile', type=str, default=None, help='IC file for disk 1 (required)')
+    parser.add_argument('--disk2ICfile', type=str, default=None, help='IC file for disk 2 (required)')
+    parser.add_argument('--configtype', type=str, default=None, help='initial orbital configuration: prograde, prograde-retrograde, retrograde, polar1, polar2, tilted1, or tilted2 (required)')
+    parser.add_argument('--outdir', type=str, default='./', help='output directory')
+    parser.add_argument('--rmin', type=float, default=5.0, help='pericentric passage distance (kpc)')
+    parser.add_argument('--rstart', type=float, default=100.0, help='initial separation (kpc)')
+    parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
+    parser.add_argument('--time-max', type=float, default=1.5, help='maximum time step')
+    parser.add_argument('--time-resolution', type=float, default=0.02, help='time resolution')
+
+    args = parser.parse_args()
+    if args.prefix is None or args.disk1ICfile is None or args.disk2ICfile is None or args.configtype is None:
+        parser.print_help()
+        sys.exit(1)
+
+    ICfile = args.prefix+'.merger.IC'
+    combinescript = args.prefix+'.combine.sh'
+    gadget2paramfile = args.prefix+'.gadget2.param'
+    gadget2script = args.prefix+'.gadget2.sh'
+
+    # Parse the various types of orbits (see Table 1 of Cox+06 for details). 
+    if args.configtype=='prograde':
+        theta1 = 0
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='prograde-retrograde':
+        theta1 = 180
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='retrograde':
+        theta1 = 180
+        theta2 = 180
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='polar1':
+        theta1 = 90
+        theta2 = 0
+        phi1 = 0
+        phi2 = 0
+    elif args.configtype=='polar2':
+        theta1 = 60
+        theta2 = 150
+        phi1 = 60
+        phi2 = 0
+    elif args.configtype=='tilted1':
+        theta1 = 30
+        theta2 = -30
+        phi1 = 60
+        phi2 = 45
+    elif args.configtype=='tilted2':
+        theta1 = 150
+        theta2 = 0
+        phi1 = -30
+        phi2 = 45
+    else:
+        print('Unrecognized type {}.  Must be one of the following:'.format(args.configtype))
+        print('  prograde')
+        print('  prograde-retrograde')
+        print('  retrograde')
+        print('  polar1')
+        print('  polar2')
+        print('  tilted1')
+        print('  tilted2')
+        sys.exit(1)
+        
+    # Write out the Gadget2 parameter file.
+    param = dict()
+
+    param['TimeMax'] = args.time_max # End of the simulation
+    param['TimeBetSnapshot'] = args.time_resolution
+
+    #  Relevant files
+    param['InitCondFile']       = ICfile      # initial conditions file (e.g. test_IC.dat)
+    param['OutputDir']          = args.outdir # output directory 
+
+    param['EnergyFile']         = 'energy.txt'
+    param['InfoFile']           = 'info.txt'
+    param['TimingsFile']        = 'timings.txt'
+    param['CpuFile']            = 'cpu.txt'
+
+    param['RestartFile']        = 'restart'
+    param['SnapshotFileBase']   = 'snapshot'
+
+    # CPU time -limit
+    param['TimeLimitCPU']    = 3600000  # = 100 hours
+    param['ResubmitOn']      = 0
+    param['ResubmitCommand'] = 'xxx'
+
+    # Code options
+    param['ICFormat']              = 1 # ASCII??
+    param['SnapFormat']            = 1 # HDF5??
+
+    param['ComovingIntegrationOn']   = 0
+    param['TypeOfTimestepCriterion'] = 0
+
+    param['OutputListOn']       = 0
+    param['OutputListFilename'] = 'snaptimes.txt'
+
+    #  Characteristics of run
+    param['TimeBegin'] = 0.0 # Begin of the simulation
+    param['TimeOfFirstSnapshot'] = 0.0
+
+    param['Omega0']      =   0
+    param['OmegaLambda'] =   0
+    param['OmegaBaryon'] =   0
+    param['HubbleParam'] = 0.7
+
+    param['BoxSize']              = 0
+    param['PeriodicBoundariesOn'] = 0
+
+    # Output frequency
+    param['CpuTimeBetRestartFile']     = 36000.0  # [seconds] 1800.0
+    param['TimeBetStatistics']         = 0.05
+
+    param['NumFilesPerSnapshot']       = 1
+    param['NumFilesWrittenInParallel'] = 1
+
+    # Accuracy of time integration
+    param['ErrTolIntAccuracy'] = 0.025 
+    param['CourantFac']        = 0.15     
+    param['MaxSizeTimestep']   = 0.1
+    param['MinSizeTimestep']   = 1.0e-7
+
+    # Tree algorithm, force accuracy, domain update frequency
+    param['ErrTolTheta']               = 0.7
+    param['TypeOfOpeningCriterion']    = 1
+    param['ErrTolForceAcc']            = 0.005
+    param['TreeDomainUpdateFrequency'] = 0.05
+
+    # Additional SPH parameters
+    param['DesNumNgb']          = 64
+    param['MaxNumNgbDeviation'] = 2
+    param['ArtBulkViscConst']   = 0.75
+    param['InitGasTemp']        = 10000   # always ignored if set to 0 
+    param['MinGasTemp']         = 5.0
+
+    # Memory allocation
+    param['PartAllocFactor'] = 5.0 # 1.5
+    param['TreeAllocFactor'] = 1.2 # 0.8
+    param['BufferSize']      = 25  # [MB]
+
+    # System of units
+    param['UnitLength_in_cm']         = 3.085678e21  # 1.0 kpc 
+    param['UnitMass_in_g']            = 1.989e43     # 1.0e10 solar masses 
+    param['UnitVelocity_in_cm_per_s'] = 1e5          # 1 km/sec 
+    param['GravityConstantInternal']  = 0
+
+    # Softening lengths
+    param['MinGasHsmlFractional']  = 0 # minimum gas smoothing in terms of the gravitational softening length
+    param['SofteningGas']          = 0.1
+    param['SofteningHalo']         = 0.2
+    param['SofteningDisk']         = 0.1
+    param['SofteningBulge']        = 0.1         
+    param['SofteningStars']        = 0.1
+    param['SofteningBndry']        = 0.1
+
+    param['SofteningGasMaxPhys']   = 0.1
+    param['SofteningHaloMaxPhys']  = 0.2
+    param['SofteningDiskMaxPhys']  = 0.1
+    param['SofteningBulgeMaxPhys'] = 0.1         
+    param['SofteningStarsMaxPhys'] = 0.1
+    param['SofteningBndryMaxPhys'] = 0.1
+    param['MaxRMSDisplacementFac'] = 0.25
+
+    # Star formation and feedback parameters TBD...
+
+    # param['FactorForSofterEQS'] = 0.25
+
+    print('Writing parameter file {}'.format(gadget2paramfile))
+    outfile = open(gadget2paramfile,'w')
+    for kk in param.keys():
+        if type(param[kk]==str):
+            fmt = '15s'
+        else:
+            fmt = 'g'
+#       print('{:15s} {:'+fmt+'} \n'.format(kk, param[kk]))
+        outfile.write('{:30s} {} \n'.format(kk, param[kk]))
+    outfile.close()
+
+    # Next write out the CombineGalaxies script.
+    print('Writing batch script {}'.format(combinescript))
+    outfile = open(combinescript,'w')
+    outfile.write('#!/bin/bash -l\n')
+    outfile.write('#$ -cwd\n')                               # start script from current directory
+    outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
+    outfile.write('#$ -N {}.combine\n'.format(args.prefix))  # name of the job displayed in qstat
+    outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
+    outfile.write('#$ -o {}.combine.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
+    outfile.write('\n')
+    outfile.write('CombineGalaxies {} {:g} {:g} {} {:g} {:g} {:g} {:g} {} \n'.format(
+        args.disk1ICfile, theta1, phi1, args.disk2ICfile, theta2, phi2, args.rmin,
+        args.rstart, ICfile))
+    outfile.write('\n')
+    outfile.write('echo "CombineGalaxies job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.close()
+
+    # Next write out the Gadget2 script.
+    print('Writing batch script {}'.format(gadget2script))
+    outfile = open(gadget2script,'w')
+    outfile.write('#!/bin/bash -l\n')
+    outfile.write('#$ -cwd\n')                               # start script from current directory
+    outfile.write('#$ -V\n')                                 # use current environment variables in SGE job
+    outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
+    outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
+    outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
+    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
+    outfile.write('\n')
+    outfile.write('source /etc/profile.d/modules.sh\n')
+    outfile.write('\n')
+    outfile.write('module load tools/fftw-2.1.5-gcc\n')
+    outfile.write('module load tools/hdf5-1.8.9-gcc\n')
+    outfile.write('module load openmpi/1.6.3-enet-gcc\n')
+    outfile.write('\n')
+    outfile.write('export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gsl/gcc/lib\n')
+    outfile.write('\n')
+    outfile.write('mpirun -np {} Gadget2 {}'.format(args.ncore,gadget2paramfile))
+    outfile.write('\n')
+    outfile.write('echo "Gadget-2 job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.close()
+
+    print('')
+    print('To combine your two galaxies into a single initial conditions file type:')
+    print('  qsub {}'.format(combinescript))
+
+    print(' ')
+    print('Once the initial conditions file has been generated run your Gadget-2 simulation by typing:')
+    print('  qsub {}'.format(gadget2script))
+
+if __name__ == "__main__":
+    main()
