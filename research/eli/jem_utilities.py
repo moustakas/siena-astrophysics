@@ -325,7 +325,8 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     return coords
 
                                                                                 
-def corr_est(DD,DR,RR,ngals,nrands,oned=False):
+def corr_est(DD,DR,RR,ngals,nrands,nbins,
+             oned=False):
     """Calculates the Landy-Szalay Correlation Function Estimator,
                                      given three frequency arrays
 
@@ -364,15 +365,20 @@ def corr_est(DD,DR,RR,ngals,nrands,oned=False):
     R_R = R_R.transpose()
     D_R = D_R.transpose()
 
+    D_D+=np.fliplr(D_D)
+    D_R+=np.fliplr(D_R)
+    R_R+=np.fliplr(R_R)
+    
     D_D /=(ngals**2-ngals)/2.
     D_R /=(nrands*ngals)/1.
     R_R /=(nrands**2-nrands)/2.
-    Xi = (D_D - 2*D_R + R_R)/R_R
+    Xi = ((D_D - 2*D_R + R_R)/(R_R+(R_R==0)))*(R_R!=0)
 
     if oned:
-        Xi1 = Xi.transpose()[100]
-        Xi = Xi1[100:]
-            
+        index=nbins/2
+        Xi1 = Xi.transpose()[index]
+        Xi = Xi1[index:]
+    print Xi, len(Xi)        
     return Xi
 
 def corr_plot(Xi,x0,x1,y0,y1,title,xlab,ylab,oned=False):
@@ -394,19 +400,19 @@ def corr_plot(Xi,x0,x1,y0,y1,title,xlab,ylab,oned=False):
     """
     import numpy as np
     import matplotlib.pylab as plt
+        
     if oned==True:
-        #dat=np.loadtxt(infile)
-        xvals = np.linspace(0,x1)
+        npts=len(Xi)
+        xvals = np.linspace(0,x1,npts)
         fig= plt.figure()
         plt.plot(xvals,Xi,'o')
         plt.xlabel(xlab)
         plt.ylabel(ylab)
         plt.title(title)
-        
+        plt.savefig('onedcorr.png')
         
     else:
-        #dat=np.loadtxt(infile)
-        
+        Xi+=np.fliplr(Xi)
         fig=plt.figure(figsize=(8,8))
         extent=[x0,x1,y0,y1]
         plot=plt.imshow(Xi,extent=extent)
@@ -416,9 +422,9 @@ def corr_plot(Xi,x0,x1,y0,y1,title,xlab,ylab,oned=False):
         plt.show()
         
 
-def twopoint_hist(infile1,infile2,range1=None,
-                  range2=None,oned=False,nbins,
-                                     rangeval):
+def twopoint_hist(infile1,infile2,nbins,rangeval,
+                         range1=None,range2=None,
+                                     oned=False):
     """Given command-line arguments, will return
         frequency arrays for galactic distances.
     Args:
@@ -549,7 +555,7 @@ def twopoint_hist(infile1,infile2,range1=None,
 
         del hist
 
-
+    print tot_freq
     return tot_freq
 
     

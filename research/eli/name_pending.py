@@ -32,8 +32,8 @@ def main():
     parser.add_argument("--range2", default=None, type=str, help="Range for first infile, input as n-n")
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
-    parser.add_argument('--maxdist',default=200,help='Maximum Distance,Default=200Mpc' ')
-    parser.add_argument('--distres',default=1,help='Resolution,Default=1Mpc/bin')
+    parser.add_argument('--maxdist',type=int,default=200,help='Maximum Distance,Default=200Mpc')
+    parser.add_argument('--distres',type=int,default=1,help='Resolution,Default=1Mpc/bin')
     args=parser.parse_args()
 
   
@@ -52,27 +52,31 @@ def main():
     rangeval=args.maxdist
     distres=args.distres
     nbins=rangeval/distres
-                        
-    
+    print rangeval                    
+    print distres
+    print nbins
+
     DD_calc=jem.twopoint_hist(infilename1,infilename1,
-                         range1,range2,oned=args.oned,
-                                       nbins,rangeval)
+                         nbins,rangeval,range1,range2,
+                                       oned=args.oned,)
 
     RR_calc=jem.twopoint_hist(infilename2,infilename2,
-                        range1,range2,oned=args.oned,
-                                      nbins,rangeval)
+                         nbins,rangeval,range1,range2,
+                                      oned=args.oned)
+                                      
 
     DR_calc=jem.twopoint_hist(infilename1,infilename2,
-                         range1,range2,oned=args.oned,
-                                       nbins,rangeval)
+                         nbins,rangeval,range1,range2,
+                                       oned=args.oned)
+                                       
+        
         
         
     
-
-    Xi=jem.corr_est(DD_calc,DR_calc,RR_calc,2000,2000,oned=args.oned)
+    Xi=jem.corr_est(DD_calc,DR_calc,RR_calc,2000,2000,nbins,oned=args.oned)
     
 
-    jem.corr_plot(Xi,-200,200,-200,200,"Title","Xlabel","Ylabel",oned=args.oned)
+    jem.corr_plot(Xi,-rangeval,rangeval,-rangeval,rangeval,"Title","Xlabel","Ylabel",oned=args.oned)
 
     #Saving
     outfilename=args.outfilename
