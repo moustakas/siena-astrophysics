@@ -18,9 +18,14 @@ pro macs0416_fixit
           mag = [cc[jj].(tag_indx(cc[0],tags[ii]))]
           magerr = [cc[jj].(tag_indx(cc[0],errtags[ii]))]
           maggies1 = mag2maggies(mag,magerr=magerr,ivarmaggies=ivar1)
-          out[jj].(tag_indx(out[0],tags[ii])) = maggies1*factor
-          out[jj].(tag_indx(out[0],errtags[ii])) = ivar1/factor^2
-          if magerr gt 0 and mag eq 0 then out[jj].(tag_indx(out[0],errtags[ii])) = mag2maggies(magerr)*factor
+
+          if ivar1 gt 0 then begin
+             out[jj].(tag_indx(out[0],tags[ii])) = maggies1*factor
+             out[jj].(tag_indx(out[0],errtags[ii])) = 1.0/sqrt(ivar1)*factor
+          endif else begin
+;         if magerr gt 0 and mag eq 0 then $
+            out[jj].(tag_indx(out[0],errtags[ii])) = mag2maggies(magerr)*factor
+         endelse
        endfor
     endfor
 
