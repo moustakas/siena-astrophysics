@@ -4,9 +4,15 @@ import matplotlib.pylab as plt
 import math
 from matplotlib.colors import LogNorm
 import matplotlib as mpl
-DD=np.loadtxt('DD.dat',dtype='float',unpack=True,delimiter=',')
-DR=np.loadtxt('DR.dat',dtype='float',unpack=True,delimiter=',')
-RR=np.loadtxt('RR.dat',dtype='float',unpack=True,delimiter=',')
+import sys
+
+tag = ""
+if len(sys.argv)>1:
+    tag = sys.argv[1]
+
+DD=np.loadtxt(tag+'DD.dat',dtype='float',unpack=True,delimiter=',')
+DR=np.loadtxt(tag+'DR.dat',dtype='float',unpack=True,delimiter=',')
+RR=np.loadtxt(tag+'RR.dat',dtype='float',unpack=True,delimiter=',')
 
 ndata=DD[0][0]
 nrand=RR[0][0]

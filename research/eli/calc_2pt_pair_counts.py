@@ -77,11 +77,19 @@ def main():
     #coords1 = jem.get_coordinates(infilename1,True,nrands,args.pysurvey)
 
     # This is for files that do not have XYZ pre-calculated.
-    coords0 = jem.get_coordinates(infilename0,False,ngals_for_calculation,args.pysurvey)
-    coords1 = jem.get_coordinates(infilename1,False,nrands,args.pysurvey)
+    #coords0 = jem.get_coordinates(infilename0,False,ngals_for_calculation,args.pysurvey)
+    #coords1 = jem.get_coordinates(infilename1,False,nrands,args.pysurvey)
+    #print len(coords1)
+    #print len(coords0)
+    #print 'Read in data files and coverted to cartesian!'
+
+    # Trying something based on conversation with Rose. 
+    # Return ra,dec,z in radians.
+    coords0 = jem.get_coordinates(infilename0,False,0,return_radecz=True)
+    coords1 = jem.get_coordinates(infilename1,False,0,return_radecz=True)
     print len(coords1)
     print len(coords0)
-    print 'Read in data files and coverted to cartesian!'
+    print 'Read in data files and left as ra,dec, and redshift!'
 
 
     ngals0 = len(coords0)
@@ -100,7 +108,7 @@ def main():
         coords1cut = coords1
    
     # This is for the histogram.
-    nbins=200
+    nbins=10
     rangeval=200
 
     if args.oned:
@@ -135,6 +143,8 @@ def main():
         paras *= 0.
         perps *= 0.
 
+        print j,nchunks,lo,hi
+
         #for i,r0 in enumerate(coords0[lo:hi]):
         for i in range(lo,hi):
             r0 = coords0cut[i]
@@ -164,7 +174,8 @@ def main():
 
             # Calc just the 1D
             elif args.lado==False and args.oned==True and args.pysurvey==False:
-                temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
+                #temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
+                temp_paras,temp_perps = jem.one_dimension_trial(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
             perps[indexlo:indexhi] = temp_perps

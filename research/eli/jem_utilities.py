@@ -162,6 +162,68 @@ def lado_para_perp(r1,r2):
 
 
 
+################################################################################
+def angular_sep(r1,d1,r2,d2):
+    # Assumes ra and dec are in radians
+    #cos(A) = sin(d1)sin(d2) + cos(d1)cos(d2)cos(ra1-ra2)
+
+    cosA = np.sin(d1)*np.sin(d2) + np.cos(d1)*np.cos(d2)*np.cos(r1-r2)
+
+    A = np.arccos(cosA)
+
+    return A
+
+################################################################################
+# This is for 1D new way of calcing distance. Discussion with Rose?
+################################################################################
+def one_dimension_trial(r1,r2):
+    """Calculates standard distance between two galaxies 
+
+    Args:
+        r1 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 1
+        r2 (numpy.ndarray): A three dimensional vector to
+                                                 galaxy 2
+
+    Returns:
+        distances (): The standard distance between two galaxies
+        fake_vals (numpy.ndarray): An array of zeros, this
+                                   is needed to build an array
+                                   shape.  
+    """
+    cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+
+    ra1=r1[0]
+    dec1=r1[1]
+    z1=r1[2]
+    d1=r1[3]
+
+    # Because we know that r1 is an array.
+    ra2=r2[:,0]
+    dec2=r2[:,1]
+    z2=r2[:,2]
+    d2=r2[:,3]
+
+    asep = angular_sep(ra1,dec1,ra2,dec2)
+    asep_in_min = np.rad2deg(asep)*60.
+
+    x = cosmo.kpc_comoving_per_arcmin(z1).value
+    x *= asep_in_min/1000.0 # Convert to Mpc
+
+    #d1 = cosmo.comoving_distance(z1).value
+    #d2 = cosmo.comoving_distance(z2).value
+
+    y = d2-d1
+
+    distances = np.sqrt(x*x + y*y)
+
+    fake_vals = np.zeros(len(distances))
+
+    return distances,fake_vals
+
+################################################################################
+
+    
 # This is for 1D.
 
 def one_dimension(r1,r2):
@@ -316,7 +378,10 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         coords = np.column_stack((r[:,0],r[:,1],r[:,2]))
         del r
     if return_radecz:
-        coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
+        #coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
+        cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+        d = cosmo.comoving_distance(redshift).value
+        coords = np.column_stack((np.deg2rad(ra),np.deg2rad(dec),redshift,d))
 
     else:
         coords = radecredshift2xyz(ra,dec,redshift)
