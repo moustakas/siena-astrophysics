@@ -122,7 +122,8 @@ def main():
     # Figure out the chunking.
     
 
-    chunk_size = 50
+    #chunk_size = 50
+    chunk_size = 1000
     nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
 
     ncalcs_per_chunk = chunk_size*len(coords1cut) #chunk_size*ngals1

@@ -207,7 +207,10 @@ def one_dimension_trial(r1,r2):
     asep = angular_sep(ra1,dec1,ra2,dec2)
     asep_in_min = np.rad2deg(asep)*60.
 
+    #avgz = (z1+z2)/2.
+
     x = cosmo.kpc_comoving_per_arcmin(z1).value
+    #x = cosmo.kpc_comoving_per_arcmin(avgz).value
     x *= asep_in_min/1000.0 # Convert to Mpc
 
     #d1 = cosmo.comoving_distance(z1).value
@@ -331,8 +334,10 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
 
 
         # Radians
-        ra=(data['PLUG_RA'])*((math.pi)/180)
-        dec=((math.pi)/2)-((data['PLUG_DEC'])*((math.pi)/180))
+        #ra=(data['PLUG_RA'])*((math.pi)/180)
+        #dec=((math.pi)/2)-((data['PLUG_DEC'])*((math.pi)/180))
+        ra=np.deg2rad(data['PLUG_RA'])
+        dec=np.deg2rad(data['PLUG_DEC'])
         redshift = data['Z']
 
         del data
@@ -347,8 +352,10 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
             exit()
         else:    
             # Radians
-            ra=(r[:,0])*((math.pi)/180)
-            dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
+            #ra=(r[:,0])*((math.pi)/180)
+            #dec=((math.pi)/2)-((r[:,1])*((math.pi)/180))
+            ra=np.deg2rad(r[:,0])
+            dec=np.deg2rad(r[:,1])
             redshift=r[:,2]
 
             del r
@@ -381,7 +388,10 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         #coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
         cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
         d = cosmo.comoving_distance(redshift).value
-        coords = np.column_stack((np.deg2rad(ra),np.deg2rad(dec),redshift,d))
+        #coords = np.column_stack((np.deg2rad(ra),np.deg2rad(dec),redshift,d))
+        print ra[0:100]
+        print dec[0:100]
+        coords = np.column_stack((ra,dec,redshift,d))
 
     else:
         coords = radecredshift2xyz(ra,dec,redshift)
