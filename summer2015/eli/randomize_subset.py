@@ -11,33 +11,27 @@ from astropy.cosmology import FlatLambdaCDM
 import matplotlib.pylab as plt
 
 #Opening Manera mocks
-print 'Reading in mocks...'
+print 'Reading in file...'
 infilename = sys.argv[1]
 
-tag = "default"
+ngals = 10000
 
 if len(sys.argv)>2:
-    tag = sys.argv[2]
+    ngals = int(sys.argv[2])
 
-vals = np.loadtxt(infilename,unpack=True,skiprows=4)
+vals = np.loadtxt(infilename,unpack=True,skiprows=0)
 ra=vals[0]
 dec=vals[1]
 z=vals[2]
-ipoly=vals[3]
-wboss=vals[4]
-wcp=vals[5]
-wred=vals[6]
-veto=vals[7]
 
-plt.figure()
-plt.plot(ra,dec,'o',markersize=0.2)
+norg = len(ra)
 
-norg = (len(ra))
-print "Read in %d galaxies." % (norg)
+index = np.arange(0,len(ra))
+print index
+np.random.shuffle(index)
+print index
 
-index = veto==1
-index *= (wcp+wred-1)==1
-index *= (wboss*wcp*wred)==1
+index = index[0:ngals]
 
 ra = ra[index]
 dec = dec[index]
@@ -52,7 +46,8 @@ plt.plot(ra,dec,'o',markersize=0.2)
 
 mockdata=np.column_stack((ra,dec,z))
 print len(mockdata)
-outname = "%s.dat" % (tag)
+
+outname = "%s_n%d.dat" % (infilename.split('.dat')[0],ngals)
 np.savetxt(outname,mockdata)
 
 plt.show()
