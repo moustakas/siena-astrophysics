@@ -365,6 +365,13 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
     index1 = redshift>0.43
     index = index0*index1
 
+    # Fiducial cuts?
+    indexcut = dec<0.35
+    indexcut *= ra<3.7
+    indexcut += ra>3.7
+
+    index *= indexcut
+
     ra = ra[index]
     dec = dec[index]
     redshift = redshift[index]

@@ -87,13 +87,14 @@ def main():
     # Return ra,dec,z in radians.
     coords0 = jem.get_coordinates(infilename0,False,0,return_radecz=True)
     coords1 = jem.get_coordinates(infilename1,False,0,return_radecz=True)
-    print len(coords1)
-    print len(coords0)
-    print 'Read in data files and left as ra,dec, and redshift!'
-
 
     ngals0 = len(coords0)
     ngals1 = len(coords1)
+
+    print ngals0
+    print ngals0
+    print 'Read in data files and left as ra,dec, and redshift!'
+
 
     coords0cut = None
     if range1lo is not None and range1hi is not None:
@@ -120,7 +121,6 @@ def main():
 
     
     # Figure out the chunking.
-    
 
     #chunk_size = 50
     chunk_size = 1000
@@ -134,6 +134,51 @@ def main():
 
     indexlo = 0
     indexhi = 0
+
+    '''
+    r1 = np.array(coords0[:,0])
+    d1 = np.array(coords0[:,1])
+    z1 = np.array(coords0[:,2])
+
+    indexcut = d1<0.35# * r1<3) + (r1>3) 
+    indexcut *= r1<3.7 
+    indexcut += r1>3.7
+
+    plt.figure(figsize=(10,4))
+    plt.subplot(2,2,1)
+    plt.plot(coords0[:,0][indexcut],coords0[:,1][indexcut],'k.',markersize=0.5)
+    plt.subplot(2,2,2)
+    plt.hist(coords0[:,2][indexcut],bins=50)
+
+    r2 = np.array(coords1[:,0])
+    d2 = np.array(coords1[:,1])
+    z2 = np.array(coords1[:,2])
+
+    indexcut = d2<0.35# * r1<3) + (r1>3) 
+    indexcut *= r2<3.7 
+    indexcut += r2>3.7
+
+    plt.subplot(2,2,3)
+    plt.plot(coords1[:,0][indexcut],coords1[:,1][indexcut],'k.',markersize=0.5)
+    plt.subplot(2,2,4)
+    plt.hist(coords1[:,2][indexcut],bins=50)
+
+    plt.show()
+    exit()
+    '''
+
+    #plt.figure(figsize=(10,4))
+    #plt.subplot(2,2,1)
+    #plt.plot(coords0[:,0],coords0[:,1],'k.',markersize=0.5)
+    #plt.subplot(2,2,2)
+    #plt.hist(coords0[:,2],bins=50)
+    #plt.subplot(2,2,3)
+    #plt.plot(coords1[:,0],coords1[:,1],'k.',markersize=0.5)
+    #plt.subplot(2,2,4)
+    #plt.hist(coords1[:,2],bins=50)
+    #plt.show()
+    #exit()
+
 
     #Calculation Loop
     for j in xrange(nchunks):
