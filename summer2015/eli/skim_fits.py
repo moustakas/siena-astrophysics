@@ -36,16 +36,8 @@ print
 #CMASS CUT
 ################################################################################
 print 'Selecting CMASS targets'
-#bt=data['BOSS_TARGET1']
-#place=1
-##################### CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!
-#digit1=2**place; digit2=2**(place+1)
-#cmassbin=(bt%digit2)/digit1
-#cmass=cmassbin==1
-#cmassnew=cmassbin[cmass]
-#notcmass=len(data)-len(cmassnew)
-
 bt=data['BOSS_TARGET1']
+print bt[bt>0]
 place=1
 ##################### CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!
 digit1=2**place; digit2=2**(place+1)
@@ -53,6 +45,19 @@ cmassbin=(bt%digit2)/digit1
 index_cmass = cmassbin==1
 print index_cmass
 npass = len(index_cmass[index_cmass==True])
+print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
+print 
+
+################################################################################
+print 'Selecting ifib2<21.5 targets'
+#bt=data['BOSS_TARGET1']
+place=8
+##################### CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!
+digit1=2**place; digit2=2**(place+1)
+ifib2bin=(bt%digit2)/digit1
+index_ifib2 = ifib2bin==0
+print index_ifib2
+npass = len(index_ifib2[index_ifib2==True])
 print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
 print 
 
@@ -168,6 +173,7 @@ outname = "%s.dat" % (tag)
 np.savetxt(outname,mockdata)
 
 
+'''
 print 'Making Plot'
 ##### Scatter Plot ######
 import matplotlib.pylab as plt
@@ -178,6 +184,6 @@ plt.title('CMASS DR10 Data')
 #plt.xlim(90,280)
 #plt.ylim(-10,80)
 plt.show()
-
+'''
 
 

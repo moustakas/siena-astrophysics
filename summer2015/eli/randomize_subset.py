@@ -41,8 +41,8 @@ nselect = (len(ra))
 print "Writing out %d galaxies." % (nselect)
 print "Kept %.2f" % (nselect/float(norg))
 
-plt.figure()
-plt.plot(ra,dec,'o',markersize=0.2)
+#plt.figure()
+#plt.plot(ra,dec,'o',markersize=0.2)
 
 mockdata=np.column_stack((ra,dec,z))
 print len(mockdata)
@@ -50,6 +50,6 @@ print len(mockdata)
 outname = "%s_n%d.dat" % (infilename.split('.dat')[0],ngals)
 np.savetxt(outname,mockdata)
 
-plt.show()
+#plt.show()
 
 
