@@ -35,6 +35,10 @@ set tag = "dr10_manera_manera_200k"
 #set randfile = "dr10_randoms_ir4011_n50000.dat"
 #set tag = "dr10_cmass_manera_fiftyk"
 
+set datafile = "dr10_cmass_selection_n200000.dat"
+set randfile = "dr10_randoms_ir4011_n200000.dat"
+set tag = "dr10_cmass_manera_200k"
+
 ################################################################################
 #set datafile = "dr12_cmass_selection_n10000.dat"
 #set randfile = "dr11_randoms_ir4011_n10000.dat"
