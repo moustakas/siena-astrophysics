@@ -58,12 +58,17 @@ def radecredshift2xyz(ra,dec,redshift):
 
     # Comoving Distances In Mpc
     cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
-    comdist=cosmo.comoving_distance(redshift).value
+    comdist=cosmo.comoving_distance(redshift).value * 0.7 # Trying 0.7 for Lado's code.
 
     # Convert spherical to Cartesian Coordinates
-    x=comdist*np.sin(dec)*np.cos(ra)
-    y=comdist*np.sin(dec)*np.sin(ra)
-    z=comdist*np.cos(dec)
+    #x=comdist*np.sin(dec)*np.cos(ra)
+    #y=comdist*np.sin(dec)*np.sin(ra)
+    #z=comdist*np.cos(dec)
+
+    # Reproducing Lado's stuff.
+    x=comdist*np.cos(dec)*np.cos(ra)
+    y=comdist*np.cos(dec)*np.sin(ra)
+    z=comdist*np.sin(dec)
 
     coords=np.column_stack((x,y,z))
 
@@ -394,11 +399,11 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
         del r
     if return_radecz:
         #coords = np.column_stack((np.rad2deg(ra),np.rad2deg(-(dec-np.pi/2)),redshift))
-        cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
-        d = cosmo.comoving_distance(redshift).value
+        cosmo=FlatLambdaCDM(H0=70,Om0=0.310) # Doing 0.310 to match Lado's code.
+        d = cosmo.comoving_distance(redshift).value * 0.7 # Trying the 0.7 to match Lado's code.
         #coords = np.column_stack((np.deg2rad(ra),np.deg2rad(dec),redshift,d))
-        print ra[0:100]
-        print dec[0:100]
+        #print ra[0:100]
+        #print dec[0:100]
         coords = np.column_stack((ra,dec,redshift,d))
 
     else:

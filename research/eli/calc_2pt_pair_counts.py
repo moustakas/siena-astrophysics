@@ -88,12 +88,17 @@ def main():
     coords0 = jem.get_coordinates(infilename0,False,0,return_radecz=True)
     coords1 = jem.get_coordinates(infilename1,False,0,return_radecz=True)
 
+    # Convert to x,y,z
+    print "Converting to x,y,z...."
+    coords0 = jem.radecredshift2xyz(coords0[:,0],coords0[:,1],coords0[:,2])
+    coords1 = jem.radecredshift2xyz(coords1[:,0],coords1[:,1],coords1[:,2])
+
     ngals0 = len(coords0)
     ngals1 = len(coords1)
 
     print ngals0
     print ngals0
-    print 'Read in data files and left as ra,dec, and redshift!'
+    #print 'Read in data files and left as ra,dec, and redshift!'
 
 
     coords0cut = None
@@ -220,8 +225,8 @@ def main():
 
             # Calc just the 1D
             elif args.lado==False and args.oned==True and args.pysurvey==False:
-                #temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
-                temp_paras,temp_perps = jem.one_dimension_trial(r0,other_gals)
+                temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
+                #temp_paras,temp_perps = jem.one_dimension_trial(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
             perps[indexlo:indexhi] = temp_perps
