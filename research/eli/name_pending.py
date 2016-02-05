@@ -60,18 +60,27 @@ def main():
                          nbins,rangeval,range1,range2,
                                        oned=args.oned,)
 
+    
+    outfilenameDD =  'DD.dat'
+    np.savetxt(outfilenameDD,DD_calc)
+    
     RR_calc=jem.twopoint_hist(infilename2,infilename2,
                          nbins,rangeval,range1,range2,
                                       oned=args.oned)
                                       
 
+    
+    outfilenameRR =  'RR.dat'
+    np.savetxt(outfilenameRR,RR_calc)
+    
     DR_calc=jem.twopoint_hist(infilename1,infilename2,
                          nbins,rangeval,range1,range2,
                                        oned=args.oned)
                                        
         
         
-        
+    outfilenameDR = 'DR.dat'    
+    np.savetxt(outfilenameDR,DR_calc)
     
     Xi=jem.corr_est(DD_calc,DR_calc,RR_calc,2000,2000,nbins,oned=args.oned)
     
