@@ -253,7 +253,7 @@ def one_dimension(r1,r2):
     y1=r1[1]
     z1=r1[2]
 
-    # Because we know that r1 is an array.
+    # Because we know that r2 is an array.
     x2=r2[:,0]
     y2=r2[:,1]
     z2=r2[:,2]
@@ -647,5 +647,46 @@ def twopoint_hist(infile1,infile2,nbins,rangeval,
     return tot_freq
 
     
+
+################################################################################
+def define_ranges(loranges, hiranges, maxsep=200):
+
+    ncoords = len(loranges)
+    ngrids = []
+    gridwidths = []
+
+    print loranges
+    print hiranges
+
+    for i in range(0,ncoords):
+
+        r = hiranges[i]-loranges[i];
+
+        ngrids.append(int(r/maxsep))
+        gridwidths.append(r/ngrids[i])
+
+    return ngrids,gridwidths
+
+
+################################################################################
+################################################################################
+def assign_grid_coordinate(coords, loranges, hiranges, gridwidths):
+
+    # Number of points is number of x-axes.
+    ncoords = len(coords[:,0])
+
+    grid_coordinates = -1*np.ones((3,ncoords),dtype=int)
+
+    for i in range(0,3):
+        grid_coordinates[i] = ((coords[:,i]-loranges[i])/gridwidths[i]).astype(int)
+        # Look for the ones on the edge and move them down one.
+        index = (coords[:,i]==hiranges[i])
+        grid_coordinates[i][index] -= 1
+        #print grid_coordinates[i][index]
+        #exit()
+
+    # Need to check for anything less than 0!!!!
+
+    return grid_coordinates
 
 

@@ -117,6 +117,71 @@ def main():
         coords1cut = coords1
    
     ############################################################################
+    # Break up into voxels.
+    ############################################################################
+    loranges = [min(coords0cut[:,0]),min(coords0cut[:,1]),min(coords0cut[:,2])]
+    hiranges = [max(coords0cut[:,0]),max(coords0cut[:,1]),max(coords0cut[:,2])]
+    ngrids,gridwidths = jem.define_ranges(loranges,hiranges, maxsep=200)
+
+    grid_coords0 = jem.assign_grid_coordinate(coords0cut, loranges, hiranges, gridwidths)
+    grid_coords1 = jem.assign_grid_coordinate(coords1cut, loranges, hiranges, gridwidths)
+
+    print ngrids
+    print gridwidths
+    print grid_coords0
+    #exit()
+
+    # Subdivide into voxels.
+
+    # First make our holder of coordinates, broken up by voxel.
+    # Initialize them
+    voxels0 = []
+    for i in range(0,ngrids[0]):
+        voxels0.append([])
+        for j in range(0,ngrids[1]):
+            voxels0[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels0[i][j].append([])
+
+    voxels1 = []
+    for i in range(0,ngrids[0]):
+        voxels1.append([])
+        for j in range(0,ngrids[1]):
+            voxels1[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels1[i][j].append([])
+
+    # Fill them
+    for i in range(0,ngals0):
+        a,b,c = grid_coords0[0][i],grid_coords0[1][i],grid_coords0[2][i]
+        #print a,b,c
+        #print a,b,c,coords0[i],loranges,hiranges
+        voxels0[a][b][c].append(coords0[i])
+        #print voxels0
+    #print voxels0[4][10][5]
+    #exit()
+
+    for i in range(0,ngals1):
+        a,b,c = grid_coords1[0][i],grid_coords1[1][i],grid_coords1[2][i]
+        voxels1[a][b][c].append(coords1[i])
+
+    #print voxels1
+    # Convert lists to arrays
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels0[i][j][k] = np.array(voxels0[i][j][k])
+
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels1[i][j][k] = np.array(voxels1[i][j][k])
+
+    #exit()
+
+
+
+    ############################################################################
     # This is for the histogram.
     nbins=10
     rangeval=200
@@ -129,131 +194,62 @@ def main():
         tot_freq = np.zeros(nbins) 
 
     
-    # Figure out the chunking.
-
-    #chunk_size = 50
-    chunk_size = 1000
-    nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
-
-    ncalcs_per_chunk = chunk_size*len(coords1cut) #chunk_size*ngals1
-
-    # These will store the calculations.
-    paras = np.zeros(ncalcs_per_chunk)
-    perps = np.zeros(ncalcs_per_chunk)
-
-    indexlo = 0
-    indexhi = 0
-
-    '''
-    r1 = np.array(coords0[:,0])
-    d1 = np.array(coords0[:,1])
-    z1 = np.array(coords0[:,2])
-
-    indexcut = d1<0.35# * r1<3) + (r1>3) 
-    indexcut *= r1<3.7 
-    indexcut += r1>3.7
-
-    plt.figure(figsize=(10,4))
-    plt.subplot(2,2,1)
-    plt.plot(coords0[:,0][indexcut],coords0[:,1][indexcut],'k.',markersize=0.5)
-    plt.subplot(2,2,2)
-    plt.hist(coords0[:,2][indexcut],bins=50)
-
-    r2 = np.array(coords1[:,0])
-    d2 = np.array(coords1[:,1])
-    z2 = np.array(coords1[:,2])
-
-    indexcut = d2<0.35# * r1<3) + (r1>3) 
-    indexcut *= r2<3.7 
-    indexcut += r2>3.7
-
-    plt.subplot(2,2,3)
-    plt.plot(coords1[:,0][indexcut],coords1[:,1][indexcut],'k.',markersize=0.5)
-    plt.subplot(2,2,4)
-    plt.hist(coords1[:,2][indexcut],bins=50)
-
-    plt.show()
-    exit()
-    '''
-
-    #plt.figure(figsize=(10,4))
-    #plt.subplot(2,2,1)
-    #plt.plot(coords0[:,0],coords0[:,1],'k.',markersize=0.5)
-    #plt.subplot(2,2,2)
-    #plt.hist(coords0[:,2],bins=50)
-    #plt.subplot(2,2,3)
-    #plt.plot(coords1[:,0],coords1[:,1],'k.',markersize=0.5)
-    #plt.subplot(2,2,4)
-    #plt.hist(coords1[:,2],bins=50)
-    #plt.show()
-    #exit()
-
-
     #Calculation Loop
-    for j in xrange(nchunks):
-        lo = j*chunk_size
-        hi = (j+1)*chunk_size
-        #print "Performing calculations for DR %d chunk: %d-%d" % (j,lo,hi)
+    for ii in range(0,ngrids[0]):
+        for jj in range(0,ngrids[1]):
+            for kk in range(0,ngrids[2]):
 
-        paras *= 0.
-        perps *= 0.
+                c0 = voxels0[ii][jj][kk] 
 
-        print j,nchunks,lo,hi
+                iimax = ii+2
+                if iimax>=ngrids[0]:
+                    iimax = ngrids[0]
+                jjmax = jj+2
+                if jjmax>=ngrids[1]:
+                    jjmax = ngrids[1]
+                kkmax = kk+2
+                if kkmax>=ngrids[2]:
+                    kkmax = ngrids[2]
 
-        #for i,r0 in enumerate(coords0[lo:hi]):
-        for i in range(lo,hi):
-            r0 = coords0cut[i]
+                for aa in range(ii,iimax):
+                    for bb in range(jj,jjmax):
+                        for cc in range(kk,kkmax):
 
-            lo1 = 0
-            if samefile:
-                lo1 = i
-                if do_diagonal==False:
-                    lo1 += 1
+                            c1 = voxels1[aa][bb][cc] 
 
-            indexhi += len(coords1cut[lo1:])
+                            #print "NVALS IN VOXELS: ",len(c0),len(c1)
 
-            other_gals = coords1cut[lo1:]
+                            if len(c0)>0 and len(c1)>0:
+                                print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
 
-            # Calc 1D using the pysurvey distance calc.
-            if args.lado==False and args.oned==False and args.pysurvey==True:
-                if len(other_gals)>0:
-                    temp_paras,temp_perps = jem.pysurvey_distance(r0,other_gals)
+                            if len(c0)==0 or len(c1)==0:
+                                continue
 
-            # Calc para and perp ``our" way. 
-            elif args.lado==False and args.oned==False and args.pysurvey==False:
-                temp_paras,temp_perps = jem.our_para_perp(r0,other_gals)
+                            # These will store the calculations.
+                            for index,r0 in enumerate(c0):
+                                '''
+                                for i in range(lo,hi):
+                                    r0 = c0[i]
 
-            # Calc Lado's way
-            elif args.lado==True and args.oned==False and args.pysurvey==False:
-                temp_paras,temp_perps = jem.lado_para_perp(r0,other_gals)
+                                    lo1 = 0
+                                    if samefile:
+                                        lo1 = i
+                                        if do_diagonal==False:
+                                            lo1 += 1
+                                    '''
 
-            # Calc just the 1D
-            elif args.lado==False and args.oned==True and args.pysurvey==False:
-                temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
-                #temp_paras,temp_perps = jem.one_dimension_trial(r0,other_gals)
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    paras,perps = jem.one_dimension(r0,c1[index+1:])
+                                else:
+                                    paras,perps = jem.one_dimension(r0,c1)
 
-            paras[indexlo:indexhi] = temp_paras
-            perps[indexlo:indexhi] = temp_perps
+                                hist=np.histogram(paras,bins=nbins,range=(0,rangeval))
 
-            indexlo = indexhi
-        
-        # Histogram the values.
-        if args.oned==False:
-            hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
-        else:
-            # THE NUMPY HISTOGRAM SEEMS TO BE FASTER THAN THE MATPLOTLIB ONE HERE. 
-            hist=np.histogram(paras[0:indexhi],bins=nbins,range=(0,rangeval))
+                                tot_freq += hist[0]
 
-        # Mirror the negative perps
-        #hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
-        tot_freq += hist[0]
+                                del hist
 
-        indexlo=0
-        indexhi=0
-
-        del hist
-
-        print tot_freq.sum()
+                            print tot_freq.sum()
    
     print 'Point:'
     #print tot_freq[199,101]
