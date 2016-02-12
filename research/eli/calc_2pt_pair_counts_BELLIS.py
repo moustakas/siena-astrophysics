@@ -227,16 +227,6 @@ def main():
 
                             # These will store the calculations.
                             for index,r0 in enumerate(c0):
-                                '''
-                                for i in range(lo,hi):
-                                    r0 = c0[i]
-
-                                    lo1 = 0
-                                    if samefile:
-                                        lo1 = i
-                                        if do_diagonal==False:
-                                            lo1 += 1
-                                    '''
 
                                 if samefile and aa==ii and bb==jj and cc==kk:
                                     paras,perps = jem.one_dimension(r0,c1[index+1:])
