@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+
+import sys
+import envoy
+import argparse
+import numpy as np
+
+import pynbody as pyn
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
+def main():
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Generate a movie from Gadget-2 snapshots')
+    parser.add_argument('snapfiles', nargs='*', type=str, help='Snapshot file names')
+    parser.add_argument('-f', '--fps', type=int, help='Frame Rate (frames per second)', default=5)
+    parser.add_argument('-o', '--outvideo', type=str, help='Filename of the output video', default='pynmovie.mp4')
+    parser.add_argument('-n', '--nbins', type=int, default=50, help='Number of bins to use for the 2D histogram')
+    parser.add_argument('-k', '--keep-png', action='store_true', default=False, 
+                        help='Do not delete the intermediate-stage PNGs.')
+    args = parser.parse_args()
+    snapfiles = args.snapfiles
+    nsnap = len(snapfiles)
+
+    if nsnap==0:
+        parser.print_help()
+        sys.exit(1)
+	
+    bins = float(args.nbins)
+    for ii, snap in enumerate(snapfiles):
+        pngfile = '{:09d}.png'.format(ii)
+        #pngfile = '{}.png'.format(snap)
+
+        # load the snapshot and retrieve the xyz coordinates
+        print( 'Reading {}'.format(snap))
+        sim = pyn.load(snap)
+        xyz_dm = sim.dm['pos']
+        xyz_stars = sim.stars['pos']
+        xyz_gas = sim.gas['pos']
+
+        # get the weighted center
+        xyz_stars[:,0] = xyz_stars[:,0]-np.average(xyz_stars[:,0],weights=sim.stars['mass'])
+        xyz_stars[:,1] = xyz_stars[:,1]-np.average(xyz_stars[:,1],weights=sim.stars['mass'])
+        xyz_stars[:,2] = xyz_stars[:,2]-np.average(xyz_stars[:,2],weights=sim.stars['mass'])
+			
+        xyz_gas[:,0] = xyz_gas[:,0]-np.average(xyz_gas[:,0])
+        xyz_gas[:,1] = xyz_gas[:,1]-np.average(xyz_gas[:,1])
+        xyz_gas[:,2] = xyz_gas[:,2]-np.average(xyz_gas[:,2])
+			
+        # figure out the range
+        if ii==0:
+            width = np.max(np.abs(xyz_stars))*1.2
+        # build the multi-panel plot                
+        plt.figure(1)
+        # xy, yz, xz for the stars
+        plt.subplot(2,3,1)
+        plt.hist2d(xyz_stars[:,0],xyz_stars[:,1],bins=bins,cmap='Blues',norm=LogNorm())
+        # plt.plot(xyz_stars[:,0],xyz_stars[:,1],'yo',markersize=3)
+        plt.axis([-width,width,-width,width])
+        plt.ylabel('Distance (kpc)')
+
+        plt.subplot(2,3,2)
+        plt.hist2d(xyz_stars[:,1],xyz_stars[:,2],bins=bins,cmap='Blues',norm=LogNorm())
+        # plt.plot(xyz_stars[:,1],xyz_stars[:,2],'yo',markersize=3)
+        plt.axis([-width,width,-width,width])
+
+        plt.subplot(2,3,3)
+        plt.hist2d(xyz_stars[:,0],xyz_stars[:,2],bins=bins,cmap='Blues',norm=LogNorm())
+        # plt.plot(xyz_stars[:,0],xyz_stars[:,2],'yo',markersize=3)
+        plt.axis([-width,width,-width,width])
+
+        # xy, yz, xz for the gas
+        plt.subplot(2,3,4)
+        plt.hist2d(xyz_gas[:,0],xyz_gas[:,1],bins=bins,cmap='YlOrRd',norm=LogNorm())
+        # pyn.plot.sph.image(sim.gas,qty='pos',width=width,cmap='YlOrRd',norm=LogNorm())
+        # plt.plot(xyz_gas[:,0],xyz_gas[:,1],'ro',markersize=2)
+        plt.axis([-width,width,-width,width])
+        plt.ylabel('Distance (kpc)')
+        plt.xlabel('Distance (kpc)')
+
+        plt.subplot(2,3,5)
+        plt.hist2d(xyz_gas[:,1],xyz_gas[:,2],bins=bins,cmap='YlOrRd',norm=LogNorm())
+        # plt.plot(xyz_gas[:,1],xyz_gas[:,2],'ro',markersize=2)
+        plt.axis([-width,width,-width,width])
+        plt.xlabel('Distance (kpc)')
+
+        plt.subplot(2,3,6)
+        # plt.plot(xyz_gas[:,0],xyz_gas[:,2],'ro',markersize=2)
+        plt.hist2d(xyz_gas[:,0],xyz_gas[:,2],bins=bins,cmap='YlOrRd',norm=LogNorm())
+        plt.axis([-width,width,-width,width])
+        plt.xlabel('Distance (kpc)')
+
+        # xy, yz, xz for the DM
+        # plt.subplot(3,3,7)
+        # plt.plot(xyz_dm[:,0],xyz_dm[:,1],'bo',markersize=1)
+        # plt.axis([-width,width,-width,width])
+        # plt.ylabel('Distance (kpc)')
+        # plt.xlabel('Distance (kpc)')
+        # plt.subplot(3,3,8)
+        # plt.plot(xyz_dm[:,1],xyz_dm[:,2],'bo',markersize=1)
+        # plt.axis([-width,width,-width,width])
+        # plt.xlabel('Distance (kpc)')
+        # plt.subplot(3,3,9)
+        # plt.plot(xyz_dm[:,0],xyz_dm[:,2],'bo',markersize=1)
+        # plt.axis([-width,width,-width,width])
+        # plt.xlabel('Distance (kpc)')
+
+        # close the figure
+        plt.savefig(pngfile, dpi=150)
+        plt.close(1)
+                        
+    print('ffmpeg -r %d -i %%09d.png -y %s' % (int(args.fps), args.outvideo))
+    vid = envoy.run('ffmpeg -r %d -i %%09d.png -y %s' % (int(args.fps), args.outvideo))
+
+    # Clean up PNGs
+    #if args.keep is not None:
+    #   pngkeep = args.keep.split(',')
+            
+    for ii in range(nsnap):
+        # load the snapshot and retrieve the xyz coordinates
+        pngfile = '{:09d}.png'.format(ii)
+        if args.keep_png is False:
+            envoy.run('rm '+pngfile)
+            
+if __name__ == "__main__":
+    main()

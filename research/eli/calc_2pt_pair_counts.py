@@ -73,14 +73,36 @@ def main():
     nrands=0
     np.random.seed(1)
 
-    coords0 = jem.get_coordinates(infilename0,ngals_for_calculation,args.pysurvey)
-    coords1 = jem.get_coordinates(infilename1,nrands,args.pysurvey)
-    
-    print 'Read in data files and coverted to cartesian!'
+    #coords0 = jem.get_coordinates(infilename0,True,ngals_for_calculation,args.pysurvey)
+    #coords1 = jem.get_coordinates(infilename1,True,nrands,args.pysurvey)
 
+    # This is for files that do not have XYZ pre-calculated.
+    #coords0 = jem.get_coordinates(infilename0,False,ngals_for_calculation,args.pysurvey)
+    #coords1 = jem.get_coordinates(infilename1,False,nrands,args.pysurvey)
+    #print len(coords1)
+    #print len(coords0)
+    #print 'Read in data files and coverted to cartesian!'
+
+    # Trying something based on conversation with Rose. 
+    # Return ra,dec,z in radians.
+    coords0 = jem.get_coordinates(infilename0,False,0,return_radecz=True)
+    coords1 = jem.get_coordinates(infilename1,False,0,return_radecz=True)
+
+    # Convert to x,y,z
+    print "Converting to x,y,z...."
+    coords0 = jem.radecredshift2xyz(coords0[:,0],coords0[:,1],coords0[:,2])
+    coords1 = jem.radecredshift2xyz(coords1[:,0],coords1[:,1],coords1[:,2])
+
+    print coords0
+    #exit()
 
     ngals0 = len(coords0)
     ngals1 = len(coords1)
+
+    print ngals0
+    print ngals0
+    #print 'Read in data files and left as ra,dec, and redshift!'
+
 
     coords0cut = None
     if range1lo is not None and range1hi is not None:
@@ -94,20 +116,23 @@ def main():
     else:
         coords1cut = coords1
    
+    ############################################################################
     # This is for the histogram.
-    nbins=200
+    nbins=10
     rangeval=200
 
     if args.oned:
         nbins*=2
 
     tot_freq = np.zeros((nbins,nbins)) 
+    if args.oned==True:
+        tot_freq = np.zeros(nbins) 
 
     
     # Figure out the chunking.
-    
 
-    chunk_size = 50
+    #chunk_size = 50
+    chunk_size = 1000
     nchunks = len(coords0cut)/chunk_size     #ngals_for_calculation/chunk_size
 
     ncalcs_per_chunk = chunk_size*len(coords1cut) #chunk_size*ngals1
@@ -119,6 +144,51 @@ def main():
     indexlo = 0
     indexhi = 0
 
+    '''
+    r1 = np.array(coords0[:,0])
+    d1 = np.array(coords0[:,1])
+    z1 = np.array(coords0[:,2])
+
+    indexcut = d1<0.35# * r1<3) + (r1>3) 
+    indexcut *= r1<3.7 
+    indexcut += r1>3.7
+
+    plt.figure(figsize=(10,4))
+    plt.subplot(2,2,1)
+    plt.plot(coords0[:,0][indexcut],coords0[:,1][indexcut],'k.',markersize=0.5)
+    plt.subplot(2,2,2)
+    plt.hist(coords0[:,2][indexcut],bins=50)
+
+    r2 = np.array(coords1[:,0])
+    d2 = np.array(coords1[:,1])
+    z2 = np.array(coords1[:,2])
+
+    indexcut = d2<0.35# * r1<3) + (r1>3) 
+    indexcut *= r2<3.7 
+    indexcut += r2>3.7
+
+    plt.subplot(2,2,3)
+    plt.plot(coords1[:,0][indexcut],coords1[:,1][indexcut],'k.',markersize=0.5)
+    plt.subplot(2,2,4)
+    plt.hist(coords1[:,2][indexcut],bins=50)
+
+    plt.show()
+    exit()
+    '''
+
+    #plt.figure(figsize=(10,4))
+    #plt.subplot(2,2,1)
+    #plt.plot(coords0[:,0],coords0[:,1],'k.',markersize=0.5)
+    #plt.subplot(2,2,2)
+    #plt.hist(coords0[:,2],bins=50)
+    #plt.subplot(2,2,3)
+    #plt.plot(coords1[:,0],coords1[:,1],'k.',markersize=0.5)
+    #plt.subplot(2,2,4)
+    #plt.hist(coords1[:,2],bins=50)
+    #plt.show()
+    #exit()
+
+
     #Calculation Loop
     for j in xrange(nchunks):
         lo = j*chunk_size
@@ -127,6 +197,8 @@ def main():
 
         paras *= 0.
         perps *= 0.
+
+        print j,nchunks,lo,hi
 
         #for i,r0 in enumerate(coords0[lo:hi]):
         for i in range(lo,hi):
@@ -158,6 +230,7 @@ def main():
             # Calc just the 1D
             elif args.lado==False and args.oned==True and args.pysurvey==False:
                 temp_paras,temp_perps = jem.one_dimension(r0,other_gals)
+                #temp_paras,temp_perps = jem.one_dimension_trial(r0,other_gals)
 
             paras[indexlo:indexhi] = temp_paras
             perps[indexlo:indexhi] = temp_perps
@@ -165,9 +238,12 @@ def main():
             indexlo = indexhi
         
         # Histogram the values.
-        hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
-        tot_freq += hist[0]
-        
+        if args.oned==False:
+            hist=plt.hist2d(perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
+        else:
+            # THE NUMPY HISTOGRAM SEEMS TO BE FASTER THAN THE MATPLOTLIB ONE HERE. 
+            hist=np.histogram(paras[0:indexhi],bins=nbins,range=(0,rangeval))
+
         # Mirror the negative perps
         #hist=plt.hist2d(-1*perps[0:indexhi],paras[0:indexhi],bins=nbins,range=((-rangeval,rangeval),(-rangeval,rangeval)))
         tot_freq += hist[0]
@@ -180,19 +256,38 @@ def main():
         print tot_freq.sum()
    
     print 'Point:'
-    print tot_freq[199,101]
+    #print tot_freq[199,101]
+
+    # Do this for the 1D
+    xvals = np.linspace(0,rangeval,nbins+1) # THIS IS PROBABLY NOT EXACTLY CORRECT
+
     if args.no_plots==False:
         print 'Final Plot'    
-        extent = [-rangeval,rangeval, -rangeval,rangeval]
-        fig = plt.figure()
-        axes = fig.add_subplot(1,1,1)
-        print 'Imshow'
-        print tot_freq
-        ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+        if args.oned==False:
+            extent = [-rangeval,rangeval, -rangeval,rangeval]
+            fig = plt.figure()
+            axes = fig.add_subplot(1,1,1)
+            print 'Imshow'
+            print tot_freq
+            ret = axes.imshow(tot_freq,extent=extent,interpolation='nearest') #,origin=origin,cmap=cmap,axes=axes,aspect=aspect
+        else:
+            plt.plot(xvals[0:nbins],tot_freq,'k.')
+
         plt.show()
 
-    print('Writing {}'.format(outfilename))
-    np.savetxt(outfilename,tot_freq)
+    if args.oned==False:
+        print('Writing {}'.format(outfilename))
+        np.savetxt(outfilename,tot_freq)
+    else:
+        print('Writing {}'.format(outfilename))
+        outfile = open(outfilename,"w")
+        output = "%d,%d,0,0\n" % (ngals0,ngals1)
+        outfile.write(output)
+        for i in xrange(nbins):
+            output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],tot_freq[i])
+            outfile.write(output)
+        outfile.close()
+
 
 
 

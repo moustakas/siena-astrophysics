@@ -21,14 +21,15 @@ print 'Data is Read'
 # BOSS TARGET CUT
 print 'Cutting BOSS Targets'
 indbt1=data['BOSS_TARGET1']>0
-bt1new=data['BOSS_TARGET1'][indbt1]
-notboss=len(data)-len(bt1new)
+#bt1new=data['BOSS_TARGET1'][indbt1]
+notboss=len(data)-len(indbt1[indbt1==True])
 print " %d targets are not BOSS Targets " % notboss
 
 #CMASS CUT
 print 'Cutting CMASS Targets'
 bt=data['BOSS_TARGET1']
 place=1
+##################### CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!
 digit1=2**place; digit2=2**(place+1)
 cmassbin=(bt%digit2)/digit1
 cmass=cmassbin==1
