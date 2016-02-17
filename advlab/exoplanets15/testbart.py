@@ -5,7 +5,7 @@ Try out BART.  See http://dan.iel.fm/bart/current for details.
 
 """
 #!/usr/bin/python
-
+########################TESTING############################
 import bart
 import transit
 from kplr.ld import get_quad_coeffs
