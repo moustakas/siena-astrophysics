@@ -758,8 +758,8 @@ def twopoint_hist_grid(infile1,infile2,nbins,rangeval,
     ############################################################################
     # Break up into voxels.
     ############################################################################
-    loranges = [min(coords0cut[:,0]),min(coords0cut[:,1]),min(coords0cut[:,2])]
-    hiranges = [max(coords0cut[:,0]),max(coords0cut[:,1]),max(coords0cut[:,2])]
+    loranges = [np.min((coords0cut[:,0],coords1cut[:,0])),np.min((coords0cut[:,1],coords1cut[:,1])),np.min((coords0cut[:,2],coords1cut[:,2]))]
+    hiranges = [np.max((coords0cut[:,0],coords1cut[:,0])),np.max((coords0cut[:,1],coords1cut[:,1])),np.max((coords0cut[:,2],coords1cut[:,2]))]
     ngrids,gridwidths = define_ranges(loranges,hiranges, maxsep=200)
 
     grid_coords0 = assign_grid_coordinate(coords0cut, loranges, hiranges, gridwidths)
@@ -784,16 +784,17 @@ def twopoint_hist_grid(infile1,infile2,nbins,rangeval,
             voxels1[i].append([])
             for k in range(0,ngrids[2]):
                 voxels1[i][j].append([])
-
+    #import pdb ; pdb.set_trace()
     # Fill them
     for i in range(0,ngals0):
         a,b,c = grid_coords0[0][i],grid_coords0[1][i],grid_coords0[2][i]
         voxels0[a][b][c].append(coords0[i])
-
     for i in range(0,ngals1):
-        a,b,c = grid_coords1[0][i],grid_coords1[1][i],grid_coords1[2][i]
+        a,b,c = grid_coords1[0][i],grid_coords1[1][i],grid_coords1[2][i] 
+        #print(a,b,c,i)
+        #if i==537:
+        #    import pdb ; pdb.set_trace()
         voxels1[a][b][c].append(coords1[i])
-
     # Convert lists to arrays
     for i in range(0,ngrids[0]):
         for j in range(0,ngrids[1]):
