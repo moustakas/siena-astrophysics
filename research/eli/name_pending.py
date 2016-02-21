@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--pysurvey', dest='pysurvey',default=False,action='store_true',help='Use pysurvey\'s calculations')
     parser.add_argument('--1d', dest='oned',default=False,action='store_true',help='One dimensional function')
     parser.add_argument('--maxdist',type=int,default=200,help='Maximum Distance,Default=200Mpc')
-    parser.add_argument('--distres',type=int,default=1,help='Resolution,Default=1Mpc/bin')
+    parser.add_argument('--distres',type=int,default=2,help='Resolution,Default=1Mpc/bin')
     args=parser.parse_args()
 
   
@@ -55,7 +55,8 @@ def main():
     print rangeval                    
     print distres
     print nbins
-
+    DD_calc_test=jem.twopoint_hist_grid(infilename1,infilename2,nbins,rangeval,range1,range2,oned=args.oned)
+    '''
     DD_calc=jem.twopoint_hist(infilename1,infilename1,
                          nbins,rangeval,range1,range2,
                                        oned=args.oned,)
@@ -87,7 +88,7 @@ def main():
 
     jem.corr_plot(Xi,-rangeval,rangeval,-rangeval,rangeval,"Title","Xlabel","Ylabel",oned=args.oned)
 
-    #Saving
+    Saving
     outfilename=args.outfilename
     if outfilename:
         print 'Saving'
@@ -105,6 +106,6 @@ def main():
     remsec=sec%remmin
 
     print "This code took %f hours, %f minutes, and %f seconds to run" % (hour, remmin, remsec)
-
+    '''
 if __name__ == "__main__":
     main()

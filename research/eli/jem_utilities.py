@@ -689,4 +689,182 @@ def assign_grid_coordinate(coords, loranges, hiranges, gridwidths):
 
     return grid_coordinates
 
+def twopoint_hist_grid(infile1,infile2,nbins,rangeval,
+                         range1=None,range2=None,
+                                     oned=False):
+    """Given command-line arguments, will return
+        frequency arrays for galactic distances.
+
+    Args:
+        See Below
+
+    Returns:
+        Dependant on command-line arguments.
+    """
+
+    infilename0 = infile1
+    infilename1 = infile2
+
+    range1lo = None
+    range1hi = None
+    if range1 is not None:
+        range1lo = int(range1.split('-')[0])
+        range1hi = int(range1.split('-')[1])
+
+    range2lo = None
+    range2hi = None
+    if range2 is not None:
+        range2lo = int(range2.split('-')[0])
+        range2hi = int(range2.split('-')[1])
+
+    do_diagonal = False
+    if range2lo>range1lo:
+        do_diagonal = True
+
+    # Check to see if we are using the same file for both (DD or RR)
+    # or if they are different (DR)
+    samefile = False
+    if (infilename0==infilename1):
+        samefile = True
+
+    # Randomizing a Sample of SDSS Data
+    ngals_for_calculation = 0
+    nrands=0
+    np.random.seed(1)
+
+    coords0 = get_coordinates(infilename0,False,0,return_radecz=True)
+    coords1 = get_coordinates(infilename1,False,0,return_radecz=True)
+
+    # Convert to x,y,z
+    print "Converting to x,y,z...."
+    coords0 = radecredshift2xyz(coords0[:,0],coords0[:,1],coords0[:,2])
+    coords1 = radecredshift2xyz(coords1[:,0],coords1[:,1],coords1[:,2])
+
+    ngals0 = len(coords0)
+    ngals1 = len(coords1)
+
+    coords0cut = None
+    if range1lo is not None and range1hi is not None:
+        coords0cut = coords0[range1lo:range1hi]
+    else:
+        coords0cut = coords0
+
+    coords1cut = None
+    if range2lo is not None and range2hi is not None:
+        coords1cut = coords1[range2lo:range2hi]
+    else:
+        coords1cut = coords1
+   
+    ############################################################################
+    # Break up into voxels.
+    ############################################################################
+    loranges = [np.min((coords0cut[:,0],coords1cut[:,0])),np.min((coords0cut[:,1],coords1cut[:,1])),np.min((coords0cut[:,2],coords1cut[:,2]))]
+    hiranges = [np.max((coords0cut[:,0],coords1cut[:,0])),np.max((coords0cut[:,1],coords1cut[:,1])),np.max((coords0cut[:,2],coords1cut[:,2]))]
+    ngrids,gridwidths = define_ranges(loranges,hiranges, maxsep=200)
+
+    grid_coords0 = assign_grid_coordinate(coords0cut, loranges, hiranges, gridwidths)
+    grid_coords1 = assign_grid_coordinate(coords1cut, loranges, hiranges, gridwidths)
+
+    # Subdivide into voxels.
+
+    # First make our holder of coordinates, broken up by voxel.
+    # Initialize them
+    voxels0 = []
+    for i in range(0,ngrids[0]):
+        voxels0.append([])
+        for j in range(0,ngrids[1]):
+            voxels0[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels0[i][j].append([])
+
+    voxels1 = []
+    for i in range(0,ngrids[0]):
+        voxels1.append([])
+        for j in range(0,ngrids[1]):
+            voxels1[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels1[i][j].append([])
+    #import pdb ; pdb.set_trace()
+    # Fill them
+    for i in range(0,ngals0):
+        a,b,c = grid_coords0[0][i],grid_coords0[1][i],grid_coords0[2][i]
+        voxels0[a][b][c].append(coords0[i])
+    for i in range(0,ngals1):
+        a,b,c = grid_coords1[0][i],grid_coords1[1][i],grid_coords1[2][i] 
+        #print(a,b,c,i)
+        #if i==537:
+        #    import pdb ; pdb.set_trace()
+        voxels1[a][b][c].append(coords1[i])
+    # Convert lists to arrays
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels0[i][j][k] = np.array(voxels0[i][j][k])
+
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels1[i][j][k] = np.array(voxels1[i][j][k])
+
+
+    ############################################################################
+    # This is for the histogram.
+    nbins=nbins
+    rangeval=rangeval
+
+    if oned==True:
+        nbins*=2
+
+    tot_freq = np.zeros((nbins,nbins)) 
+    if oned==True:
+        tot_freq = np.zeros(nbins) 
+
+    
+    #Calculation Loop
+    for ii in range(0,ngrids[0]):
+        for jj in range(0,ngrids[1]):
+            for kk in range(0,ngrids[2]):
+
+                c0 = voxels0[ii][jj][kk] 
+
+                iimax = ii+2
+                if iimax>=ngrids[0]:
+                    iimax = ngrids[0]
+                jjmax = jj+2
+                if jjmax>=ngrids[1]:
+                    jjmax = ngrids[1]
+                kkmax = kk+2
+                if kkmax>=ngrids[2]:
+                    kkmax = ngrids[2]
+
+                for aa in range(ii,iimax):
+                    for bb in range(jj,jjmax):
+                        for cc in range(kk,kkmax):
+
+                            c1 = voxels1[aa][bb][cc] 
+
+                            if len(c0)>0 and len(c1)>0:
+                                print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
+
+                            if len(c0)==0 or len(c1)==0:
+                                continue
+
+                            # These will store the calculations.
+                            for index,r0 in enumerate(c0):
+
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    paras,perps = one_dimension(r0,c1[index+1:])
+                                else:
+                                    paras,perps = one_dimension(r0,c1)
+
+                                hist=np.histogram(paras,bins=nbins,range=(0,rangeval))
+
+                                tot_freq += hist[0]
+
+                                del hist
+
+                            print tot_freq.sum()
+   
+    return tot_freq
+    
 
