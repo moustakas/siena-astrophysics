@@ -74,6 +74,36 @@ def radecredshift2xyz(ra,dec,redshift):
 
     return coords
 
+################################################################################
+################################################################################
+def radecredshift2xyz_with_weights(oldcoords):
+
+    ra = oldcoords[:,0]
+    dec = oldcoords[:,1]
+    redshift = oldcoords[:,2]
+    weights = oldcoords[:,3]
+
+    # Comoving Distances In Mpc
+    cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+    comdist=cosmo.comoving_distance(redshift).value * 0.7 # Trying 0.7 for Lado's code.
+
+    # Convert spherical to Cartesian Coordinates
+    #x=comdist*np.sin(dec)*np.cos(ra)
+    #y=comdist*np.sin(dec)*np.sin(ra)
+    #z=comdist*np.cos(dec)
+
+    # Reproducing Lado's stuff.
+    x=comdist*np.cos(dec)*np.cos(ra)
+    y=comdist*np.cos(dec)*np.sin(ra)
+    z=comdist*np.sin(dec)
+
+    coords=np.column_stack((x,y,z,weights,comdist))
+
+    return coords
+
+################################################################################
+################################################################################
+
 
 # This is the way we think we should calculate para and perp.
 
@@ -233,6 +263,32 @@ def one_dimension_trial(r1,r2):
 
     
 # This is for 1D.
+
+################################################################################
+################################################################################
+def one_dimension_with_weights(r1,r2):
+    x1=r1[0]
+    y1=r1[1]
+    z1=r1[2]
+    w1=r1[3]
+
+    # Because we know that r2 is an array.
+    x2=r2[:,0]
+    y2=r2[:,1]
+    z2=r2[:,2]
+    w2=r2[:,3]
+
+    d1 = x1-x2
+    d2 = y1-y2 
+    d3 = z1-z2
+
+    distances = mag([d1,d2,d3])
+
+    weights = w1*w2
+
+    return distances,weights
+################################################################################
+    
 
 def one_dimension(r1,r2):
     """Calculates standard distance between two galaxies 
@@ -412,6 +468,35 @@ def get_coordinates(infilename,xyz=False,maxgals=0,return_radecz=False):
 
     return coords
 
+################################################################################
+################################################################################
+def get_coordinates_with_weight(infilename):
+
+    r=np.loadtxt(infilename,unpack=True)
+
+    ra=np.deg2rad(r[0])
+    dec=np.deg2rad(r[1])
+    redshift=r[2]
+    #weights=r[3]
+    weights=np.ones(len(redshift))
+
+    del r
+
+    # Made some common cuts
+    index0 = redshift<0.7
+    index1 = redshift>0.43
+    index = index0*index1
+
+    ra = ra[index]
+    dec = dec[index]
+    redshift = redshift[index]
+
+    coords = np.column_stack((ra,dec,redshift,weights))
+
+    return coords
+
+################################################################################
+################################################################################
                                                                                 
 def corr_est(DD,DR,RR,ngals,nrands,nbins,
              oned=False):
@@ -865,6 +950,140 @@ def twopoint_hist_grid(infile1,infile2,nbins,rangeval,
 
                             print tot_freq.sum()
    
+    return tot_freq
+    
+################################################################################
+################################################################################
+def voxelize_the_data(coords0,coords1,maxsep=200):
+
+    ngals0 = len(coords0[:,0])
+    ngals1 = len(coords1[:,0])
+
+    ############################################################################
+    # Break up into voxels.
+    ############################################################################
+    loranges = [np.min((coords0[:,0],coords1[:,0])),np.min((coords0[:,1],coords1[:,1])),np.min((coords0[:,2],coords1[:,2]))]
+    hiranges = [np.max((coords0[:,0],coords1[:,0])),np.max((coords0[:,1],coords1[:,1])),np.max((coords0[:,2],coords1[:,2]))]
+    ngrids,gridwidths = define_ranges(loranges,hiranges, maxsep=maxsep)
+    print ngrids
+    print gridwidths
+
+    grid_coords0 = assign_grid_coordinate(coords0, loranges, hiranges, gridwidths)
+    grid_coords1 = assign_grid_coordinate(coords1, loranges, hiranges, gridwidths)
+
+
+    # Subdivide into voxels.
+
+    # First make our holder of coordinates, broken up by voxel.
+    # Initialize them
+    voxels0 = []
+    for i in range(0,ngrids[0]):
+        voxels0.append([])
+        for j in range(0,ngrids[1]):
+            voxels0[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels0[i][j].append([])
+
+    voxels1 = []
+    for i in range(0,ngrids[0]):
+        voxels1.append([])
+        for j in range(0,ngrids[1]):
+            voxels1[i].append([])
+            for k in range(0,ngrids[2]):
+                voxels1[i][j].append([])
+
+    
+    # Fill them
+    for i in range(0,ngals0):
+        a,b,c = grid_coords0[0][i],grid_coords0[1][i],grid_coords0[2][i]
+        voxels0[a][b][c].append(coords0[i])
+    for i in range(0,ngals1):
+        a,b,c = grid_coords1[0][i],grid_coords1[1][i],grid_coords1[2][i] 
+        voxels1[a][b][c].append(coords1[i])
+
+    # Convert lists to arrays
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels0[i][j][k] = np.array(voxels0[i][j][k])
+
+    for i in range(0,ngrids[0]):
+        for j in range(0,ngrids[1]):
+            for k in range(0,ngrids[2]):
+                voxels1[i][j][k] = np.array(voxels1[i][j][k])
+
+
+    return voxels0,voxels1,ngrids
+
+
+############################################################################
+def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
+
+    tot_freq = np.zeros(nbins) 
+
+    tot_points_looped_over = 0
+
+    #Calculation Loop
+    for ii in range(0,ngrids[0]):
+        for jj in range(0,ngrids[1]):
+            for kk in range(0,ngrids[2]):
+
+                c0 = voxels0[ii][jj][kk] 
+
+                #if len(c0)==0:
+                    #continue
+
+                tot_points_looped_over += len(c0)
+
+                print 
+
+                iimax = ii+2
+                if iimax>=ngrids[0]:
+                    iimax = ngrids[0]
+                jjmax = jj+2
+                if jjmax>=ngrids[1]:
+                    jjmax = ngrids[1]
+                kkmax = kk+2
+                if kkmax>=ngrids[2]:
+                    kkmax = ngrids[2]
+
+                for aa in range(ii,iimax):
+                    for bb in range(jj,jjmax):
+                        for cc in range(kk,kkmax):
+
+                            c1 = voxels1[aa][bb][cc] 
+
+                            #if len(c0)>0 and len(c1)>0:
+                                #print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
+                            print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
+
+                            if len(c0)==0 or len(c1)==0:
+                                continue
+
+                            # These will store the calculations.
+                            for index,r0 in enumerate(c0):
+
+                                #print r0
+
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    distances,weights = one_dimension_with_weights(r0,c1[index+1:])
+                                else:
+                                    distances,weights = one_dimension_with_weights(r0,c1)
+
+                                #print distances
+                                #print weights
+
+                                hist=np.histogram(distances,weights=weights,bins=nbins,range=(0,maxrange))
+
+                                #print hist
+
+                                tot_freq += hist[0]
+
+                                del hist
+
+                    #print tot_freq.sum()
+   
+    print "tot points looped over: %d" % (tot_points_looped_over)
     return tot_freq
     
 
