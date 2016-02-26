@@ -8,31 +8,34 @@ import scipy.optimize as op
 import sys
 import corner
 import copy
-################Model Light Curve##############################
+
+
+###################Set up functions to calculate probablilities##################
 def lnlike(theta,params,time,flux,ferr):
-	params.per = theta
-	m = batman.TransitModel(params, t/24.0)
-	mflux = m.light_curve(params)
-#	plt.plot(time,mflux, c = 'b')
-	return -0.5*np.sum((flux-mflux)**2/ferr**2)
+    params.per = theta
+    m = batman.TransitModel(params, t/24.0)
+    mflux = m.light_curve(params)
+    plt.plot(time,mflux, c = 'b')
+    return -0.5*np.sum((flux-mflux)**2/ferr**2)
 
 def lnprior(theta):
-	per = theta
-	print per
+    per = theta
+    print per
 	
-	if type(per) == np.ndarray:
-		import pdb ; pdb.set_trace()
+    if type(per) == np.ndarray:
+        import pdb ; pdb.set_trace()
 	
-	if (per>1.00)*(per<10.00):
-		return 0.0
-	return -np.inf
+    if (per>1.00)*(per<10.00):
+        return 0.0
+    
+    return -np.inf
 
 def lnprob(theta,params,time,flux ,ferr):
-	#print 'theta', theta
-	lp = lnprior(theta)
-	if not np.isfinite(lp):
-		return -np.inf
-	return lp + lnlike(theta,params,time,flux,ferr)
+    #print 'theta', theta
+    lp = lnprior(theta)
+    if not np.isfinite(lp):
+        return -np.inf
+    return lp + lnlike(theta,params,time,flux,ferr)
 
 time, flux, ferr = np.loadtxt("k30-c.txt",unpack = True)
 
@@ -43,7 +46,7 @@ Rearth = 6.371e6
 Rsun = 6.957e8
 autosun = Rsun / 1.5e11
 
-# Set the parameters for the model curve
+################ Set parameters for the model light curve####################
 params = batman.TransitParams()
 params.t0 = 0.
 params.per = koi.koi_period
@@ -55,8 +58,6 @@ params.w = 80#koi.koi_longp
 params.limb_dark = "nonlinear"
 params.u = [koi.koi_ldm_coeff1,koi.koi_ldm_coeff2,koi.koi_ldm_coeff3,koi.koi_ldm_coeff4]
 #print(params.a)
-
-#print koi.koi_prad
 
 t = np.linspace(-20,20,len(flux))
 
@@ -73,7 +74,6 @@ plt.plot(samples)
 plt.show()
 
 
-
 '''
 period = np.linspace(1.5,9.5,20)
 prob = np.zeros_like(period)
@@ -81,9 +81,9 @@ myparams = params
 
 plt.plot(time,flux,'gs')
 for ii,per in enumerate(period):
-	myparams.per = per
-	prob[ii] = lnprob(myparams,time,flux,ferr)
-	print(per,prob[ii])
+    myparams.per = per
+    prob[ii] = lnprob(myparams,time,flux,ferr)
+    print(per,prob[ii])
 plt.show()
 
 plt.plot(period,prob,marker = 's',ls = '-')
@@ -93,6 +93,7 @@ sys.exit(1)
 
 m = batman.TransitModel(params, t/24.0)
 modelcurve = m.light_curve(params)
+
 ###Attempt to use emcee################
 nll = lambda *args: -lnlike(*args)
 result = op.minimize(nll, ["prad"], args=(modelcurve, flux, ferr))
@@ -104,6 +105,7 @@ pos = [result["prad"] + 1e-4*np.random.randn(ndim) for i in range(nwalkers)]
 sampler = emcee.EnsembleSampler(nwalkers,ndim,lnprob, args = (modelcurve,flux,ferr))
 sampler.run_mcmc(pos,500)
 ########################################
+
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(time,flux,'gs')
