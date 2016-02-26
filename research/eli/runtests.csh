@@ -6,9 +6,13 @@
 #set randfile = "dr10_randoms_ir4011_n50000.dat"
 #set tag = "dr10_manera_fiftyk"
 
-set datafile = "dr10_ir4011_n200000.dat"
-set randfile = "dr10_randoms_ir4011_n200000.dat"
-set tag = "dr10_manera_manera_ladofix_cartesian_200k"
+#set datafile = "dr10_ir4011_n200000.dat"
+#set randfile = "dr10_randoms_ir4011_n200000.dat"
+#set tag = "dr10_manera_manera_ladofix_cartesian_200k"
+
+set datafile = "dr10_ir4011_n10000.dat"
+set randfile = "dr10_randoms_ir4011_n10000.dat"
+set tag = "dr10_manera_manera_ladofix_cartesian_voxelized_10k"
 
 ################################################################################
 
@@ -50,8 +54,8 @@ set tag = "dr10_manera_manera_ladofix_cartesian_200k"
 #set randfile = "dr11_randoms_ir4011_n100000.dat"
 #set tag = "dr12_hundredk"
 
-#time ~/anaconda/bin/python calc_2pt_pair_counts_BELLIS.py --no-plots --outfilename "$tag"galsDD.dat $datafile $datafile --1d #>& dd"$tag".log &
-#time ~/anaconda/bin/python calc_2pt_pair_counts_BELLIS.py --no-plots --outfilename "$tag"galsDR.dat $datafile $randfile --1d >& dr"$tag".log &
-time ~/anaconda/bin/python calc_2pt_pair_counts_BELLIS.py --no-plots --outfilename "$tag"galsRR.dat $randfile $randfile --1d #>& rr"$tag".log &
+time ~/anaconda/bin/python calc_2pt_pair_counts_factored_BELLIS.py --no-plots --outfilename "$tag"galsDD.dat $datafile $datafile --1d #>& dd"$tag".log &
+#time ~/anaconda/bin/python calc_2pt_pair_counts_factored_BELLIS.py --no-plots --outfilename "$tag"galsDR.dat $datafile $randfile --1d >& dr"$tag".log &
+#time ~/anaconda/bin/python calc_2pt_pair_counts_factored_BELLIS.py --no-plots --outfilename "$tag"galsRR.dat $randfile $randfile --1d #>& rr"$tag".log &
 
 
