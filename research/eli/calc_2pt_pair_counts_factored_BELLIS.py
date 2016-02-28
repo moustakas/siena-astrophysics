@@ -75,11 +75,11 @@ def main():
     # Break up into voxels.
     ############################################################################
 
-    maxsep=500
+    maxsep=200
     nbins=20
     # ngrids tells you how many galaxies are along each axis. 
     #'''
-    voxels0,voxels1,ngrids  = jem.voxelize_the_data(coords0,coords1,maxsep=maxsep)
+    voxels0,voxels1,ngrids,gridwidths,loranges,hiranges  = jem.voxelize_the_data(coords0,coords1,maxsep=maxsep)
 
     # Count the entries as a sanity check.
     tot = 0
@@ -88,9 +88,9 @@ def main():
             for k in j:
                 tot += len(k)
 
-    print tot
-    #exit()
+    print "Tot: ",tot
     print ngrids
+    #exit()
 
     pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
 
@@ -98,15 +98,18 @@ def main():
     #exit()
     #'''
 
+
     '''
     # Alternatively (for small numbers, <10k)
     coords=np.column_stack((coords0[:,0],coords0[:,1],coords0[:,2]))
     print len(coords)
     print len(coords[0])
     distances=scipy.spatial.distance.pdist(coords)
+    #print np.sort(distances[distances<maxsep])
     hist=np.histogram(distances,bins=nbins,range=(0,maxsep))
     pair_counts = hist[0]
     '''
+
 
     print "Sum: ",sum(pair_counts)
 
@@ -126,7 +129,7 @@ def main():
     outfile.write(output)
     for i in xrange(nbins):
         output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
-        print output
+        print output.rstrip()
         outfile.write(output)
     outfile.close()
 

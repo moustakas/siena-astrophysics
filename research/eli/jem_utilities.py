@@ -740,6 +740,7 @@ def define_ranges(loranges, hiranges, maxsep=200):
     ngrids = []
     gridwidths = []
 
+    print "loranges and hiranges"
     print loranges
     print hiranges
 
@@ -773,6 +774,9 @@ def assign_grid_coordinate(coords, loranges, hiranges, gridwidths):
     # Need to check for anything less than 0!!!!
 
     return grid_coordinates
+
+################################################################################
+################################################################################
 
 def twopoint_hist_grid(infile1,infile2,nbins,rangeval,
                          range1=None,range2=None,
@@ -965,6 +969,8 @@ def voxelize_the_data(coords0,coords1,maxsep=200):
     loranges = [np.min((coords0[:,0],coords1[:,0])),np.min((coords0[:,1],coords1[:,1])),np.min((coords0[:,2],coords1[:,2]))]
     hiranges = [np.max((coords0[:,0],coords1[:,0])),np.max((coords0[:,1],coords1[:,1])),np.max((coords0[:,2],coords1[:,2]))]
     ngrids,gridwidths = define_ranges(loranges,hiranges, maxsep=maxsep)
+    print "ngrids and gridwidths"
+
     print ngrids
     print gridwidths
 
@@ -1013,11 +1019,15 @@ def voxelize_the_data(coords0,coords1,maxsep=200):
                 voxels1[i][j][k] = np.array(voxels1[i][j][k])
 
 
-    return voxels0,voxels1,ngrids
+    return voxels0,voxels1,ngrids,gridwidths,loranges,hiranges
 
 
 ############################################################################
 def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
+
+    voxel_combinations_so_far = []
+
+    tot_distances = []
 
     tot_freq = np.zeros(nbins) 
 
@@ -1030,52 +1040,69 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
                 c0 = voxels0[ii][jj][kk] 
 
-                #if len(c0)==0:
-                    #continue
+                if len(c0)==0:
+                    continue
 
                 tot_points_looped_over += len(c0)
 
-                print 
+                #print 
+                print ii,jj,kk
 
+                iimin = ii-0
                 iimax = ii+2
                 if iimax>=ngrids[0]:
                     iimax = ngrids[0]
+                if iimin<0:
+                    iimin=0
+                jjmin = jj-0
                 jjmax = jj+2
                 if jjmax>=ngrids[1]:
                     jjmax = ngrids[1]
+                if jjmin<0:
+                    jjmin=0
+                kkmin = kk-0
                 kkmax = kk+2
                 if kkmax>=ngrids[2]:
                     kkmax = ngrids[2]
+                if kkmin<0:
+                    kkmin=0
 
-                for aa in range(ii,iimax):
-                    for bb in range(jj,jjmax):
-                        for cc in range(kk,kkmax):
+                for aa in range(iimin,iimax):
+                    for bb in range(jjmin,jjmax):
+                        for cc in range(kkmin,kkmax):
+
+                            combination0 = "%03s%03s%03s" % (cc,bb,aa)
+                            combination1 = "%03s%03s%03s" % (kk,jj,ii)
+                            combination = "%s%s" % (max(combination0,combination1),min(combination0,combination1))
+
+                            if combination in voxel_combinations_so_far:
+                                continue
+                            else:
+                                voxel_combinations_so_far.append(combination)
 
                             c1 = voxels1[aa][bb][cc] 
 
-                            #if len(c0)>0 and len(c1)>0:
-                                #print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
-                            print ii,jj,kk, aa, bb, cc, len(c0),len(c1)
-
-                            if len(c0)==0 or len(c1)==0:
+                            if len(c1)==0:
                                 continue
 
                             # These will store the calculations.
                             for index,r0 in enumerate(c0):
 
-                                #print r0
+                                '''
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    distances = distances=scipy.spatial.distance.pdist(c0)
+                                else:
+                                    distances=scipy.spatial.distance.cdist(c0,c1)
+
+                                weights = np.ones(len(distances))
+                                '''
 
                                 if samefile and aa==ii and bb==jj and cc==kk:
                                     distances,weights = one_dimension_with_weights(r0,c1[index+1:])
                                 else:
                                     distances,weights = one_dimension_with_weights(r0,c1)
 
-                                #print distances
-                                #print weights
-
                                 hist=np.histogram(distances,weights=weights,bins=nbins,range=(0,maxrange))
-
-                                #print hist
 
                                 tot_freq += hist[0]
 
@@ -1083,6 +1110,7 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
                     #print tot_freq.sum()
    
+    #print np.sort(tot_distances)
     print "tot points looped over: %d" % (tot_points_looped_over)
     return tot_freq
     

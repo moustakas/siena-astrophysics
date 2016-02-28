@@ -1,18 +1,19 @@
-set datafile = "dr10_ir4011_n10000.dat"
-set randfile = "dr10_randoms_ir4011_n10000.dat"
-set tag = "dr10_manera_10k"
+#set datafile = "dr10_ir4011_n10000.dat"
+#set randfile = "dr10_randoms_ir4011_n10000.dat"
+#set tag = "dr10_manera_10k"
 
 #set datafile = "dr10_ir4011_n50000.dat"
 #set randfile = "dr10_randoms_ir4011_n50000.dat"
 #set tag = "dr10_manera_fiftyk"
 
-#set datafile = "dr10_ir4011_n200000.dat"
-#set randfile = "dr10_randoms_ir4011_n200000.dat"
-#set tag = "dr10_manera_manera_ladofix_cartesian_200k"
+set datafile = "dr10_ir4011_n200000.dat"
+set randfile = "dr10_randoms_ir4011_n200000.dat"
+set tag = "dr10_manera_manera_ladofix_cartesian_voxelized_200k"
 
-set datafile = "dr10_ir4011_n10000.dat"
-set randfile = "dr10_randoms_ir4011_n10000.dat"
-set tag = "dr10_manera_manera_ladofix_cartesian_voxelized_10k"
+#set datafile = "dr10_ir4011_n10000.dat"
+#set datafile = "test100.dat"
+#set randfile = "dr10_randoms_ir4011_n10000.dat"
+#set tag = "dr10_manera_manera_ladofix_cartesian_voxelized_10k"
 
 ################################################################################
 
