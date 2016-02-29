@@ -740,9 +740,9 @@ def define_ranges(loranges, hiranges, maxsep=200):
     ngrids = []
     gridwidths = []
 
-    print "loranges and hiranges"
-    print loranges
-    print hiranges
+    #print "loranges and hiranges"
+    #print loranges
+    #print hiranges
 
     for i in range(0,ncoords):
 
@@ -966,17 +966,16 @@ def voxelize_the_data(coords0,coords1,maxsep=200):
     ############################################################################
     # Break up into voxels.
     ############################################################################
-    loranges = [np.min((coords0[:,0],coords1[:,0])),np.min((coords0[:,1],coords1[:,1])),np.min((coords0[:,2],coords1[:,2]))]
-    hiranges = [np.max((coords0[:,0],coords1[:,0])),np.max((coords0[:,1],coords1[:,1])),np.max((coords0[:,2],coords1[:,2]))]
+    loranges = [np.min((np.min(coords0[:,0]),np.min(coords1[:,0]))),np.min((np.min(coords0[:,1]),np.min(coords1[:,1]))),np.min((np.min(coords0[:,2]),np.min(coords1[:,2])))]
+    hiranges = [np.max((np.max(coords0[:,0]),np.max(coords1[:,0]))),np.max((np.max(coords0[:,1]),np.max(coords1[:,1]))),np.max((np.max(coords0[:,2]),np.max(coords1[:,2])))]
     ngrids,gridwidths = define_ranges(loranges,hiranges, maxsep=maxsep)
-    print "ngrids and gridwidths"
 
+    print "ngrids and gridwidths"
     print ngrids
     print gridwidths
 
     grid_coords0 = assign_grid_coordinate(coords0, loranges, hiranges, gridwidths)
     grid_coords1 = assign_grid_coordinate(coords1, loranges, hiranges, gridwidths)
-
 
     # Subdivide into voxels.
 
@@ -1025,6 +1024,8 @@ def voxelize_the_data(coords0,coords1,maxsep=200):
 ############################################################################
 def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
+    start_time_pc = time.time()
+
     voxel_combinations_so_far = []
 
     tot_distances = []
@@ -1035,6 +1036,7 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
     #Calculation Loop
     for ii in range(0,ngrids[0]):
+        print ii,time.time()-start_time_pc
         for jj in range(0,ngrids[1]):
             for kk in range(0,ngrids[2]):
 
@@ -1046,21 +1048,21 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
                 tot_points_looped_over += len(c0)
 
                 #print 
-                print ii,jj,kk
+                #print ii,jj,kk
 
-                iimin = ii-0
+                iimin = ii-1
                 iimax = ii+2
                 if iimax>=ngrids[0]:
                     iimax = ngrids[0]
                 if iimin<0:
                     iimin=0
-                jjmin = jj-0
+                jjmin = jj-1
                 jjmax = jj+2
                 if jjmax>=ngrids[1]:
                     jjmax = ngrids[1]
                 if jjmin<0:
                     jjmin=0
-                kkmin = kk-0
+                kkmin = kk-1
                 kkmax = kk+2
                 if kkmax>=ngrids[2]:
                     kkmax = ngrids[2]
@@ -1071,14 +1073,15 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
                     for bb in range(jjmin,jjmax):
                         for cc in range(kkmin,kkmax):
 
-                            combination0 = "%03s%03s%03s" % (cc,bb,aa)
-                            combination1 = "%03s%03s%03s" % (kk,jj,ii)
-                            combination = "%s%s" % (max(combination0,combination1),min(combination0,combination1))
+                            if samefile:
+                                combination0 = "%03s%03s%03s" % (cc,bb,aa)
+                                combination1 = "%03s%03s%03s" % (kk,jj,ii)
+                                combination = "%s%s" % (max(combination0,combination1),min(combination0,combination1))
 
-                            if combination in voxel_combinations_so_far:
-                                continue
-                            else:
-                                voxel_combinations_so_far.append(combination)
+                                if combination in voxel_combinations_so_far:
+                                    continue
+                                else:
+                                    voxel_combinations_so_far.append(combination)
 
                             c1 = voxels1[aa][bb][cc] 
 
@@ -1111,7 +1114,7 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
                     #print tot_freq.sum()
    
     #print np.sort(tot_distances)
-    print "tot points looped over: %d" % (tot_points_looped_over)
+    #print "tot points looped over: %d" % (tot_points_looped_over)
     return tot_freq
     
 
