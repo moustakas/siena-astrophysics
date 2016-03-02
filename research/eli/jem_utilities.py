@@ -477,8 +477,8 @@ def get_coordinates_with_weight(infilename):
     ra=np.deg2rad(r[0])
     dec=np.deg2rad(r[1])
     redshift=r[2]
-    #weights=r[3]
-    weights=np.ones(len(redshift))
+    weights=r[4]
+    #weights=np.ones(len(redshift))
 
     del r
 
@@ -490,7 +490,7 @@ def get_coordinates_with_weight(infilename):
     ra = ra[index]
     dec = dec[index]
     redshift = redshift[index]
-
+    weights = weights[index]
     coords = np.column_stack((ra,dec,redshift,weights))
 
     return coords
@@ -1030,7 +1030,9 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
     tot_distances = []
 
-    tot_freq = np.zeros(nbins) 
+    tot_freq = np.zeros(nbins)
+
+    tot_weight_val = 0
 
     tot_points_looped_over = 0
 
@@ -1108,13 +1110,23 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
                                 hist=np.histogram(distances,weights=weights,bins=nbins,range=(0,maxrange))
 
                                 tot_freq += hist[0]
-
+                                
+                                weight_tot_one = np.sum(weights)
+                                #print "weight one"
+                                #print weight_tot_one
+                                #print '..........'
+                                #print 'tot'
+                                tot_weight_val += weight_tot_one
+                                #print tot_weight_val
                                 del hist
 
-                    #print tot_freq.sum()
+                    #print tot_weight_val
    
     #print np.sort(tot_distances)
     #print "tot points looped over: %d" % (tot_points_looped_over)
-    return tot_freq
+    #print tot_freq
+    new_tot_freq = tot_freq/tot_weight_val
+    #print new_tot_freq
+    return new_tot_freq
     
 
