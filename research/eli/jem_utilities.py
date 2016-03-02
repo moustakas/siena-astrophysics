@@ -1034,6 +1034,8 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
     tot_points_looped_over = 0
 
+    weight_total = 0
+
     #Calculation Loop
     for ii in range(0,ngrids[0]):
         print ii,time.time()-start_time_pc
@@ -1107,6 +1109,8 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
 
                                 hist=np.histogram(distances,weights=weights,bins=nbins,range=(0,maxrange))
 
+                                weight_total += weights.sum()
+
                                 tot_freq += hist[0]
 
                                 del hist
@@ -1115,6 +1119,7 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
    
     #print np.sort(tot_distances)
     #print "tot points looped over: %d" % (tot_points_looped_over)
+    tot_freq /= weight_total
     return tot_freq
     
 
