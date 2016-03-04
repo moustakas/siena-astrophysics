@@ -15,23 +15,24 @@ def lnlike(theta,params,time,flux,ferr):
     params.per = theta
     m = batman.TransitModel(params, t/24.0)
     mflux = m.light_curve(params)
-    plt.plot(time,mflux, c = 'b')
+    #plt.plot(time,mflux, c = 'b')
     return -0.5*np.sum((flux-mflux)**2/ferr**2)
 
 def lnprior(theta):
     per = theta
-    print per
+    print(per)
 	
     if type(per) == np.ndarray:
-        import pdb ; pdb.set_trace()
-	
+	print(np.shape(per))
+        #import pdb ; pdb.set_trace()
+    
     if (per>1.00)*(per<10.00):
-        return 0.0
+	return 0.0
     
     return -np.inf
 
 def lnprob(theta,params,time,flux ,ferr):
-    #print 'theta', theta
+    #print('theta', theta)
     lp = lnprior(theta)
     if not np.isfinite(lp):
         return -np.inf
@@ -60,15 +61,16 @@ params.u = [koi.koi_ldm_coeff1,koi.koi_ldm_coeff2,koi.koi_ldm_coeff3,koi.koi_ldm
 #print(params.a)
 
 t = np.linspace(-20,20,len(flux))
+#t = np.linspace(-20,20,10)
 
-nwalkers, ndim = 30, 1
+nwalkers, ndim = 6, 1
 pos = np.random.uniform(1.0,9.0,nwalkers) 
 sampler = emcee.EnsembleSampler(nwalkers,ndim,lnprob, args = (params,time,flux,ferr))
 sampler.run_mcmc(pos,500)
 #import pdb
 #pdb.set_trace()
 
-#samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
+samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
 plt.plot(samples)
 
 plt.show()
@@ -93,18 +95,6 @@ sys.exit(1)
 
 m = batman.TransitModel(params, t/24.0)
 modelcurve = m.light_curve(params)
-
-###Attempt to use emcee################
-nll = lambda *args: -lnlike(*args)
-result = op.minimize(nll, ["prad"], args=(modelcurve, flux, ferr))
-m_ml, b_ml, lnf_ml = result["prad"]
-
-ndim, nwalkers = 3, 100
-pos = [result["prad"] + 1e-4*np.random.randn(ndim) for i in range(nwalkers)]
-
-sampler = emcee.EnsembleSampler(nwalkers,ndim,lnprob, args = (modelcurve,flux,ferr))
-sampler.run_mcmc(pos,500)
-########################################
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
