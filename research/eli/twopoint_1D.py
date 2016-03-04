@@ -34,10 +34,10 @@ print ndata
 print nrand
 
 plt.figure(figsize=(8,8))
-plt.plot(x,w,'ko',label='Siena')
-plt.ylabel(r'$\xi$',fontsize=24)
-#plt.plot(x,w*x*x,'ko',label='Siena')
-#plt.ylabel(r'$\xi r^2$ (Mpc$^2$)',fontsize=24)
+#plt.plot(x,w,'ko',label='Siena')
+#plt.ylabel(r'$\xi$',fontsize=24)
+plt.plot(x,w*x*x,'ko',label='Siena')
+plt.ylabel(r'$\xi r^2$ (Mpc$^2$)',fontsize=24)
 
 plt.xlabel(r'Comoving separation (h$^{-1}$Mpc)',fontsize=18)
 plt.title(r'$\xi$')
@@ -46,8 +46,8 @@ plt.title(r'$\xi$')
 
 # Overlay other results. 
 x,y,yerr = np.loadtxt('anderson_results.dat',unpack=True)
-plt.errorbar(x,y,yerr=yerr,fmt='ro',label='Anderson')
-#plt.errorbar(x,y*x*x,yerr=yerr*x*x,fmt='ro',label='Anderson')
+#plt.errorbar(x,y,yerr=yerr,fmt='ro',label='Anderson')
+plt.errorbar(x,y*x*x,yerr=yerr*x*x,fmt='ro',label='Anderson')
 
 plt.legend()
 
