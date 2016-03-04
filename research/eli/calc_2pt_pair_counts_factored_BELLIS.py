@@ -52,63 +52,66 @@ def main():
 
     # Assume reading in from a text file.
     # Return ra,dec (in radians), redshift z, and weight.
+    start = time.time()
     print "Reading in data...."
+    print "Opening ",infilename0
     coords0 = jem.get_coordinates_with_weight(infilename0)
+    print "Opening ",infilename1
     coords1 = jem.get_coordinates_with_weight(infilename1)
     print "Read in data......"
+    time_read = time.time()
+    print "Time to read in data %f" % (time_read - start)
+    print "Total execution time %f" % (time.time() - start)
 
     # Convert to x,y,z
     print "Converting to x,y,z...."
     coords0 = jem.radecredshift2xyz_with_weights(coords0)
     coords1 = jem.radecredshift2xyz_with_weights(coords1)
-    print "Converted to x,y,z...."
+    time_convert = time.time()
+    print "Time to convert data %f" % (time_convert - time_read)
+    print "Total execution time %f" % (time.time() - start)
 
     ngals0 = len(coords0)
     ngals1 = len(coords1)
 
-    print ngals0
-    print ngals0
-    #print 'Read in data files and left as ra,dec, and redshift!'
-
+    print "Ngals 0/1: ",ngals0,ngals0
 
     ############################################################################
     # Break up into voxels.
     ############################################################################
 
-    maxsep=500
+    maxsep=200
     nbins=20
-    # ngrids tells you how many galaxies are along each axis. 
     #'''
-    voxels0,voxels1,ngrids  = jem.voxelize_the_data(coords0,coords1,maxsep=maxsep)
+    print "Breaking up into voxels..."
+    # ngrids tells you how many galaxies are along each axis. 
+    voxels0,voxels1,ngrids,gridwidths,loranges,hiranges  = jem.voxelize_the_data(coords0,coords1,maxsep=maxsep)
+    time_vox = time.time()
+    print "Time to voxelize data %f" % (time_vox - time_convert)
+    print "Total execution time %f" % (time.time() - start)
 
-    # Count the entries as a sanity check.
-    tot = 0
-    for i in voxels0:
-        for j in i:
-            for k in j:
-                tot += len(k)
-
-    print tot
-    #exit()
-    print ngrids
-
+    print "Performing the pair counts...."
     pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
-
-    print pair_counts
-    #exit()
+    time_pc = time.time()
+    print "Time to perform pair counts %f" % (time_pc - time_pc)
+    print "Total execution time %f" % (time.time() - start)
     #'''
 
     '''
     # Alternatively (for small numbers, <10k)
-    coords=np.column_stack((coords0[:,0],coords0[:,1],coords0[:,2]))
-    print len(coords)
-    print len(coords[0])
-    distances=scipy.spatial.distance.pdist(coords)
+    coords0t=np.column_stack((coords0[:,0],coords0[:,1],coords0[:,2]))
+    coords1t=np.column_stack((coords1[:,0],coords1[:,1],coords1[:,2]))
+    print len(coords0t)
+    print len(coords0t[0])
+    #distances=scipy.spatial.distance.pdist(coords)
+    distances=scipy.spatial.distance.cdist(coords0t,coords1t)
+    #print np.sort(distances[distances<maxsep])
     hist=np.histogram(distances,bins=nbins,range=(0,maxsep))
     pair_counts = hist[0]
     '''
 
-    print "Sum: ",sum(pair_counts)
+
+    #print "Sum: ",sum(pair_counts)
 
 
     # Do this for the 1D
@@ -126,11 +129,12 @@ def main():
     outfile.write(output)
     for i in xrange(nbins):
         output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
-        print output
+        print output.rstrip()
         outfile.write(output)
     outfile.close()
 
-
+    print "Finished writing out data."
+    print "Total execution time %f" % (time.time() - start)
 
 
 ################################################################################
