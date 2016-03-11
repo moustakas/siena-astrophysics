@@ -477,8 +477,9 @@ def get_coordinates_with_weight(infilename):
     ra=np.deg2rad(r[0])
     dec=np.deg2rad(r[1])
     redshift=r[2]
-    weights=r[3]
-    #weights=np.ones(len(redshift))
+    #weights=r[3]
+    #weights=r[4]
+    weights=np.ones(len(redshift))
     #weights=0.1*np.ones(len(redshift))
 
     del r
@@ -1141,9 +1142,9 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
     #print "tot points looped over: %d" % (tot_points_looped_over)
     print "Total weights: %f" % (tot_weight_val)
     print "# calcs      : %f" % (ncalcs)
-    new_tot_freq = tot_freq/tot_weight_val
-    #new_tot_freq = tot_freq
-    new_tot_freq *= ncalcs
+    #new_tot_freq = tot_freq/tot_weight_val
+    new_tot_freq = tot_freq
+    #new_tot_freq *= ncalcs
     #print new_tot_freq
     return new_tot_freq
     
