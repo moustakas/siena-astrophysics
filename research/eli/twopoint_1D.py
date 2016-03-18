@@ -22,6 +22,8 @@ DD = DD[3][1:]
 DR = DR[3][1:]
 RR = RR[3][1:]
 
+print ndata,nrand
+
 DD /= ((ndata**2-ndata)/2.)
 DR /= ((nrand*ndata)/1.)
 RR /= ((nrand**2-nrand)/2.)
@@ -39,7 +41,7 @@ plt.ylabel(r'$\xi r^2$ (Mpc$^2$)',fontsize=24)
 
 plt.xlabel(r'Comoving separation (h$^{-1}$Mpc)',fontsize=18)
 plt.title(r'$\xi$')
-plt.xlim(50,180)
+#plt.xlim(50,180)
 #plt.ylim(-0.01,0.10)
 
 # Overlay other results. 

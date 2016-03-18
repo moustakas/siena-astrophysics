@@ -11,12 +11,9 @@ time = []
 flux = []
 ferr = []
 quality = []
-#planet = sys.argv[1]
 
 client = kplr.API()
 koi = client.koi("806.02")
-#koi = client.planet("30c")
-#print(koi.koi)
 
 ################Model Light Curve##############################
 
@@ -35,12 +32,14 @@ params.ecc = koi.koi_eccen
 params.w = 90#koi.koi_longp
 params.limb_dark = "nonlinear"
 params.u = [koi.koi_ldm_coeff1,koi.koi_ldm_coeff2,koi.koi_ldm_coeff3,koi.koi_ldm_coeff4]
+
 t = np.linspace(-0.2392/2,0.2392/2,678)
 m = batman.TransitModel(params, t)
 modelcurve = m.light_curve(params) 
-plt.figure()
-plt.plot(t,modelcurve)
-plt.ylim(.890,1)
+
+#plt.figure()
+#plt.plot(t,modelcurve)
+#plt.ylim(.890,1)
 
 ####################Get Light Curves####################
 
@@ -62,6 +61,7 @@ time = time - 67
 flux = np.concatenate(flux)
 ferr = np.concatenate(ferr)
 quality = np.concatenate(quality)
+print flux
 plt.figure()
 plt.plot(time,flux,'go')
 
@@ -79,29 +79,30 @@ stacknorm = []
 stackferr = []
 
 for ii in range(neclipse):
-#for ii in range(0,1,1):
 	wlong = np.where( (time > (midcurve + ii*per - dur - 0.75)) * 
 		(time < (midcurve + ii *per + dur + 0.75)) * 1)
 
 	thistime = time[wlong]
 	thisferr = ferr[wlong]
 	thisflux = flux[wlong]
-	thisferr = ferr[wlong]
-	
+
+	thisflux[np.where(np.isnan(thisflux))] = np.median(thisflux[~np.isnan(thisflux)]) 
+	thisferr[np.where(np.isnan(thisferr))] = np.median(thisferr[~np.isnan(thisferr)]) 
+
 	stacktime.append((thistime - ii * per - midcurve)*24.0)
 	
-	thisferr[np.isnan(thisferr)] = np.median(thisferr)	
-	thisflux[np.isnan(thisflux)] = np.median(thisflux)	
 	wshort = np.where( (thistime > (midcurve + ii*per - 1.3* dur)) *
                 (thistime < (midcurve + ii * per + 1.3*dur)) * 1)	
 	ivar = 1 / thisferr**2
 	ivar[wshort] = 0
+
 	coeff = np.polyfit(thistime, thisflux, ndeg,  w = ivar)
 
 	print("thistime", thistime)
 	print("thisflux", thisflux)
 	print("ivar", ivar)
 	print("coeff", coeff)
+	
 	fit = np.polyval(coeff,thistime)
 
 	normalflux = thisflux / fit
