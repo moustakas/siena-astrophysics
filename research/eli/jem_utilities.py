@@ -84,7 +84,7 @@ def radecredshift2xyz_with_weights(oldcoords):
     weights = oldcoords[:,3]
 
     # Comoving Distances In Mpc
-    cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+    cosmo=FlatLambdaCDM(H0=70,Om0=0.274)
     comdist=cosmo.comoving_distance(redshift).value * 0.7 # Trying 0.7 for Lado's code.
 
     # Convert spherical to Cartesian Coordinates
@@ -477,9 +477,9 @@ def get_coordinates_with_weight(infilename):
     ra=np.deg2rad(r[0])
     dec=np.deg2rad(r[1])
     redshift=r[2]
-    #weights=r[3]
+    weights=r[3]
     #weights=r[4]
-    weights=np.ones(len(redshift))
+    #weights=np.ones(len(redshift))
     #weights=0.1*np.ones(len(redshift))
 
     del r
