@@ -19,10 +19,10 @@ h=hdulist[1]
 print 'Reading in data...'
 data=h.data
 
-nentries = len(data['BOSS_TARGET1'])
+nentries = len(data['z'])
 
 print "Read in %d entries." % (nentries)
-
+'''
 ################################################################################
 # BOSS TARGET CUT
 ################################################################################
@@ -60,15 +60,15 @@ print index_ifib2
 npass = len(index_ifib2[index_ifib2==True])
 print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
 print 
-
+'''
 ################################################################################
 #GALAXY CUT
 ################################################################################
-print 'Selecting Galaxies'
-index_gal=data['CLASS']=='GALAXY'
-npass = len(index_gal[index_gal==True])
-print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
-print 
+#print 'Selecting Galaxies'
+#index_gal=data['CLASS']=='GALAXY'
+#npass = len(index_gal[index_gal==True])
+#print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
+#print 
 
 #galnew=data['CLASS'][gal]
 #notgal=len(data)-len(galnew)
@@ -77,11 +77,11 @@ print
 ################################################################################
 # PRIMARY OBSERVATION CUT                
 ################################################################################
-print 'Primary Observation Cut'
-index_po=data['SPECPRIMARY']==1
-npass = len(index_po[index_po==True])
-print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
-print 
+#print 'Primary Observation Cut'
+#index_po=data['SPECPRIMARY']==1
+#npass = len(index_po[index_po==True])
+#print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
+#print 
 
 #ponew=data['SPECPRIMARY'][po]
 #notpo=len(data)-len(ponew)
@@ -90,35 +90,16 @@ print
 ################################################################################
 # WARNING VALUES CUT
 ################################################################################
-print 'Cutting out Warning Values (selecting ones with value==0)'
-index_warning=data['ZWARNING_NOQSO']==0
-npass = len(index_warning[index_warning==True])
-print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
-print 
+#print 'Cutting out Warning Values (selecting ones with value==0)'
+#index_warning=data['ZWARNING_NOQSO']==0
+#npass = len(index_warning[index_warning==True])
+#print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
+#print 
 
 #wvnew=data['ZWARNING_NOQSO'][wv]
 #notwv=len(data)-len(wvnew)
 #print " %d targets contained redshift errors" % notwv
-'''
-# CHUNK CUT
-print 'Chunk Cut'
-c1=data['CHUNK']!="boss1"
-c1new=data['CHUNK'][c1]
-c2=data['CHUNK']!="boss2"
-c2new=data['CHUNK'][c2]
-notc=(len(data)-len(c1new))+(len(data)-len(c2new))
-print " %d targets were removed due to differing flag meanings " % notc
 
-#IFIBER CUT
-print 'IFiber Cut'
-place=8
-digit1=2**place; digit2=2**(place+1)
-ifibbin=(bt%digit2)/digit1
-ifib=ifibbin==0
-ifibnew=ifibbin[ifib]
-notifib=len(data)-len(ifibnew)
-print " %d targets had a fiber magnitude over 21.5 " % notifib
-'''
 ################################################################################
 # Z CUT #
 ################################################################################
@@ -139,8 +120,8 @@ ralo = 90.
 rahi = 270.
 
 print 'Selecting values with right ascension %f-%f' % (ralo,rahi)
-index_racut=data['PLUG_RA']>ralo
-index_racut *= data['PLUG_RA']<rahi
+index_racut=data['RA']>ralo
+index_racut *= data['RA']<rahi
 npass = len(index_racut[index_racut==True])
 print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
 print 
@@ -148,13 +129,12 @@ print
 ################################################################################
 print "Calculating the total cuts!"
 ################################################################################
-index_total = index_bt1*\
-              index_cmass*\
-              index_po*\
-              index_warning*\
-              index_gal*\
-              index_zcut*\
+index_total = index_zcut*\
               index_racut
+              #index_cmass
+              #index_po
+              #index_warning
+              #index_gal
 
 npass = len(index_total[index_total==True])
 print "%d (%f) targets pass cuts" % (npass,npass/float(nentries))
@@ -162,28 +142,22 @@ print
 
 totcmass=data[index_total]
 
-ra = totcmass['PLUG_RA']
-dec = totcmass['PLUG_DEC']
-z = totcmass['Z']
+points = 200000
+aa=np.arange(0,len(totcmass))
+np.random.shuffle(aa)
+finaldat=totcmass[aa[0:points]]
 
+
+ra = finaldat['RA']
+dec = finaldat['DEC']
+z = finaldat['Z']
+sys = finaldat['weight_systot']
+cp = finaldat['weight_cp']
+rf = finaldat['weight_noz']
+weight = sys*(rf + cp - 1)
+print len(weight)
 print "Writing out data...\n"
-mockdata=np.column_stack((ra,dec,z))
+mockdata=np.column_stack((ra,dec,z,weight))
 print len(mockdata)
 outname = "%s.dat" % (tag)
 np.savetxt(outname,mockdata)
-
-
-'''
-print 'Making Plot'
-##### Scatter Plot ######
-import matplotlib.pylab as plt
-plt.plot(ra,dec,'o',markersize=0.2)
-plt.xlabel('Right Ascension (Degrees)')
-plt.ylabel('Declination (Degrees)')
-plt.title('CMASS DR10 Data')
-#plt.xlim(90,280)
-#plt.ylim(-10,80)
-plt.show()
-'''
-
-

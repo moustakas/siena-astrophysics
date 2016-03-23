@@ -84,7 +84,7 @@ def radecredshift2xyz_with_weights(oldcoords):
     weights = oldcoords[:,3]
 
     # Comoving Distances In Mpc
-    cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+    cosmo=FlatLambdaCDM(H0=70,Om0=0.274)
     comdist=cosmo.comoving_distance(redshift).value * 0.7 # Trying 0.7 for Lado's code.
 
     # Convert spherical to Cartesian Coordinates
@@ -477,7 +477,8 @@ def get_coordinates_with_weight(infilename):
     ra=np.deg2rad(r[0])
     dec=np.deg2rad(r[1])
     redshift=r[2]
-    weights=r[4]
+    weights=r[3]
+    #weights=r[4]
     #weights=np.ones(len(redshift))
     #weights=0.1*np.ones(len(redshift))
 
@@ -1141,9 +1142,9 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
     #print "tot points looped over: %d" % (tot_points_looped_over)
     print "Total weights: %f" % (tot_weight_val)
     print "# calcs      : %f" % (ncalcs)
-    new_tot_freq = tot_freq/tot_weight_val
-    #new_tot_freq = tot_freq
-    new_tot_freq *= ncalcs
+    #new_tot_freq = tot_freq/tot_weight_val
+    new_tot_freq = tot_freq
+    #new_tot_freq *= ncalcs
     #print new_tot_freq
     return new_tot_freq
     
