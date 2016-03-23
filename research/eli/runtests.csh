@@ -60,9 +60,10 @@
 set num = "50k"
 #set sampledir = "/home/elibeaudin/samples/"
 set sampledir = "/home/bellis/cmass/samples/"
-set datafile = $sampledir$num"_weighted_north_cmass.dat"
-set randfile = $sampledir$num"_weighted_random.dat"
-set tag = "eli_voxelized_real_weight"$num
+set datafile = $sampledir$num"_weighted2_north_cmass.dat"
+set randfile = $sampledir$num"_weighted2_random.dat"
+set tag = "eli_voxelized_real_weight_no_fkp"$num
+#set tag = "eli_voxelized_weight_0.1_"$num
 
 set cmd = "calc_2pt_pair_counts_factored_BELLIS.py"
 #set cmd = "calc_2pt_pair_counts.py"
@@ -70,6 +71,6 @@ set cmd = "calc_2pt_pair_counts_factored_BELLIS.py"
 #set python = `which python`
 set python = "~/anaconda/bin/python"
 
-time $python $cmd --no-plots --outfilename "$tag"galsDD.dat $datafile $datafile --1d #>& dd"$tag".log &
-time $python $cmd --no-plots --outfilename "$tag"galsDR.dat $datafile $randfile --1d #>& dr"$tag".log &
-time $python $cmd --no-plots --outfilename "$tag"galsRR.dat $randfile $randfile --1d #>& rr"$tag".log &
+time $python $cmd --no-plots --outfilename "$tag"galsDD.dat $datafile $datafile --1d >& dd"$tag".log &
+time $python $cmd --no-plots --outfilename "$tag"galsDR.dat $datafile $randfile --1d >& dr"$tag".log &
+time $python $cmd --no-plots --outfilename "$tag"galsRR.dat $randfile $randfile --1d >& rr"$tag".log &
