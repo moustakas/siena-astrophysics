@@ -4,7 +4,8 @@ ALL = \
 	physics_threetwo_schedule.pdf \
 	physics_astrominor_schedule.pdf \
 	physics_bs_schedule.pdf \
-	physics_biochem_schedule.pdf
+	physics_biochem_schedule.pdf \
+	physics_applied_schedule.pdf
 
 LATEX = xelatex
 
