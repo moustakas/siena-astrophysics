@@ -9,28 +9,127 @@ import batman
 import copy
 import corner
 import emcee
+import argparse
 
-time = []
-flux = []
-ferr = []
-quality = []
+Rearth = 6.371e6
+Rsun = 6.957e8
 
-client = kplr.API()
-koi = client.koi(806.02)
+def get_lightcurves(koi='806.02'):
+    time = []
+    flux = []
+    ferr = []
+    quality = []
+    
+    client = kplr.API()
+    koidat = client.koi(koi)
 
-######Functions for Optimization##########################
+    lcs = koidat.get_light_curves(short_cadence = False)
+    name = koidat.kepler_name
+
+    # download all of the different light curves
+    for lc in lcs:
+    	with lc.open() as f:
+		hdu_data = f[1].data
+		time.append(hdu_data["time"])
+		flux.append(hdu_data["sap_flux"])
+		ferr.append(hdu_data["sap_flux_err"])
+		quality.append(hdu_data["sap_quality"])
+
+def normalize(koidat):
+    time = []
+    flux = []
+    ferr = []
+    quality = []
+    
+    lcs = koidat.get_light_curves(short_cadence = False)
+
+    # download all of the different light curves
+    for lc in lcs:
+        with lc.open() as f:
+                hdu_data = f[1].data
+                time.append(hdu_data["time"])
+                flux.append(hdu_data["sap_flux"])
+                ferr.append(hdu_data["sap_flux_err"])
+                quality.append(hdu_data["sap_quality"])
+
+    time = np.concatenate(time)
+    time = time - 67
+
+    #put all of the different eclipses together
+    flux = np.concatenate(flux)
+    ferr = np.concatenate(ferr)
+    quality = np.concatenate(quality)
+   
+    plt.figure()
+    plt.plot(time,flux,'go')
+
+    midcurve = koidat.koi_time0bk-67 
+    per = koidat.koi_period 
+    dur = koidat.koi_duration/24   #converts the duration into days
+    neclipse = 7 
+    ndeg = 2
+
+    stacktime=[]
+    normalflux=[]
+    stacknorm=[]
+    stackferr=[]
+
+    for ii in range(neclipse):
+        wlong = np.where( (time > (midcurve + ii*per - dur - 0.75)) *
+                (time < (midcurve + ii *per + dur + 0.75)) * 1)
+
+        thistime=time[wlong]
+        thisferr=ferr[wlong]
+        thisflux=flux[wlong]
+
+        thisflux[np.where(np.isnan(thisflux))] = np.median(thisflux[~np.isnan(thisflux)])
+        thisferr[np.where(np.isnan(thisferr))] = np.median(thisferr[~np.isnan(thisferr)])
+
+        temptime = (thistime - ii * per - midcurve)*24.0
+
+        stacktime.append((thistime - ii * per - midcurve)*24.0)
+
+        wshort = np.where( (thistime > (midcurve + ii*per - 1.3* dur)) *
+                (thistime < (midcurve + ii * per + 1.3*dur)) * 1)
+        
+        ivar = 1 / thisferr**2
+        ivar[wshort] = 0
+
+        coeff = np.polyfit(thistime, thisflux, ndeg,  w = ivar)
+
+        fit = np.polyval(coeff,thistime)
+
+        normalflux = thisflux / fit
+        normalferr = thisferr / fit
+
+        stacknorm.append(normalflux)
+        stackferr.append(normalferr)
+
+        plt.figure()
+        plt.errorbar(thistime,thisflux,thisferr)
+        plt.plot(thistime, fit, "g-")
+        plt.plot(thistime[wshort], thisflux[wshort], "ro")
+        plt.ylabel('Flux')
+        plt.xlabel('Time(Days)')
+        plt.title('Flux with Line of Best Fit (Light Curve Masked)')
+
+    stacknorm = np.concatenate(stacknorm)
+    stacktime = np.concatenate(stacktime)
+    stackferr = np.concatenate(stackferr)
+    np.savetxt(name + 'norm',zip(stacktime,stacknorm, stackferr))
+    normdata = stacknorm, stacktime, stackferr
+    return normdata 
 
 def lnlike(theta,params,time,flux,ferr):
     myparams = copy.copy(params)
-    #print theta
     myparams.per = theta[0]
     myparams.rp = theta[1]
+    t = np.linspace(-20,20,len(flux))
     m = batman.TransitModel(myparams, t/24.0)
     mflux = m.light_curve(myparams)
     return -0.5*np.sum((flux-mflux)**2/ferr**2)
 
 def lnprior(theta):
-
     per = theta[0]
     rp = theta[1]
 
@@ -45,137 +144,74 @@ def lnprob(theta,params,time,flux ,ferr):
         return -np.inf
     return lp + lnlike(theta,params,time,flux,ferr)
 
-####################Get Light Curves####################
+def optimize(normdata,koidat):
+    flux, time, ferr = normdata
 
-lcs = koi.get_light_curves(short_cadence = False)
+    true_per = koidat.koi_period
+    true_rp = koidat.koi_prad * (Rearth / Rsun) / koidat.koi_srad
 
-# download all of the different light curves
-for lc in lcs:
-	with lc.open() as f:
-		hdu_data = f[1].data
-		time.append(hdu_data["time"])
-		flux.append(hdu_data["sap_flux"])
-		ferr.append(hdu_data["sap_flux_err"])
-		quality.append(hdu_data["sap_quality"])
+    params = batman.TransitParams()
+    params.t0 = 0.
+    params.per = true_per
+    params.rp = true_rp
+    params.a = koidat.koi_sma * 1.496E11 / Rsun
+    params.inc = koidat.koi_incl
+    params.ecc = koidat.koi_eccen
+    params.w = 90 #koidat.koi_longp
+    params.limb_dark = 'nonlinear'
+    params.u = [koidat.koi_ldm_coeff1,koidat.koi_ldm_coeff2,koidat.koi_ldm_coeff3,koidat.koi_ldm_coeff4]
 
-time = np.concatenate(time)
-time = time - 67
+    t = np.linspace(-20,20,len(flux))
+    
+    #time, flux, ferr = np.loadtxt(normdata, unpack=True) 
 
-#put all of the different eclipses together
-flux = np.concatenate(flux)
-ferr = np.concatenate(ferr)
-quality = np.concatenate(quality)
-print flux
-plt.figure()
-plt.plot(time,flux,'go')
+    nwalkers, ndim = 50, 2
 
-###############Normalized Stacked Light Curve########################
+    pos = np.zeros((nwalkers,ndim))
+    pos[:,0] = np.random.uniform(50.0, 80.0, nwalkers)
+    pos[:,1] = np.random.uniform(0, 0.5, nwalkers)
 
-midcurve = koi.koi_time0bk-67 
-per = koi.koi_period 
-dur = koi.koi_duration/24
-neclipse = 7 
-ndeg = 2
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(params,time,flux,ferr), threads = 3)
+    sampler.run_mcmc(pos,200)
 
-stacktime = []
-normalflux = []
-stacknorm = []
-stackferr = []
+    samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
+    np.savetxt(samples.txt,zip(samples[0],samples[1]))
+    #return samples
 
-for ii in range(neclipse):
-	wlong = np.where( (time > (midcurve + ii*per - dur - 0.75)) * 
-		(time < (midcurve + ii *per + dur + 0.75)) * 1)
+    plt.figure()
+    fig = corner.corner(samples,labels = ["per","a"], truths = [true_per,true_rp])
+    plt.show()
 
-	thistime = time[wlong]
-	thisferr = ferr[wlong]
-	thisflux = flux[wlong]
+##########Creation of Final Plots######################
+def finalplots(samples):
+    fig = corner.corner(samples,labels = ["per","a"], truths = [true_per,true_rp])
+    plt.show()
 
-	thisflux[np.where(np.isnan(thisflux))] = np.median(thisflux[~np.isnan(thisflux)]) 
-	thisferr[np.where(np.isnan(thisferr))] = np.median(thisferr[~np.isnan(thisferr)]) 
+####################################################
+def main():
 
-	stacktime.append((thistime - ii * per - midcurve)*24.0)
-	
-	wshort = np.where( (thistime > (midcurve + ii*per - 1.3* dur)) *
-                (thistime < (midcurve + ii * per + 1.3*dur)) * 1)	
-	ivar = 1 / thisferr**2
-	ivar[wshort] = 0
+    parser = argparse.ArgumentParser()
 
-	coeff = np.polyfit(thistime, thisflux, ndeg,  w = ivar)
+    parser.add_argument('-k','--koi', type=str, default='806.02', help='koi')
+    parser.add_argument('--get-lightcurves',action='store_true', help='get light curves')
+    parser.add_argument('--normalize', action = 'store_true', help='Normalize the light curves')
+    parser.add_argument('--optimize', action='store_true',help='Fit with MCMC')
+#    parser.add_argument('--build-results', action='store_true', help='Produce triangle/final plots')
 
-#	print("thistime", thistime)
-#	print("thisflux", thisflux)
-#	print("ivar", ivar)
-#	print("coeff", coeff)
-	
-	fit = np.polyval(coeff,thistime)
+    args = parser.parse_args()
+    if args.koi is None:
+        parser.print_help()
+        sys.exit(1)
+    
+    koidat = kplr.API().koi(args.koi)
+    
+    if args.normalize:
+        normalize(koidat)
+    if args.optimize:
+        optimize(normalize(koidat),koidat)
+#    if args.build-results:
+#        finalplots(samples) 
 
-	normalflux = thisflux / fit
-	normalferr = thisferr / fit
-	
-	stacknorm.append(normalflux)
-	stackferr.append(normalferr)
-
-	plt.figure()
-	plt.errorbar(thistime,thisflux,thisferr)
-	plt.plot(thistime, fit, "g-")
-	plt.plot(thistime[wshort], thisflux[wshort], "ro")
-	plt.ylabel('Flux')
-	plt.xlabel('Time(Days)')
-	plt.title('Flux with Line of Best Fit (Light Curve Masked)')
-#############################################################
-
-stacknorm = np.concatenate(stacknorm)
-stacktime = np.concatenate(stacktime)
-stackferr = np.concatenate(stackferr)
-np.savetxt("k30-c.txt",zip(stacktime,stacknorm, stackferr))
-
-################Model Light Curve##############################
-
-Rearth = 6.371e6
-Rsun = 6.955e8
-
-true_per =  koi.koi_period
-true_rp = koi.koi_prad * (Rearth / Rsun) / koi.koi_srad
-params = batman.TransitParams()
-params.t0 = 0.
-params.per = true_per
-params.rp = true_rp
-params.a = koi.koi_sma * 1.496E11 / Rsun
-params.inc = koi.koi_incl
-params.ecc = koi.koi_eccen
-params.w = 90 #koi.koi_longp
-params.limb_dark = 'nonlinear'
-params.u = [koi.koi_ldm_coeff1,koi.koi_ldm_coeff2,koi.koi_ldm_coeff3,koi.koi_ldm_coeff4]
-
-t = np.linspace(-20,20,len(stacknorm))
-
-###################Optimization######################
-
-nwalkers, ndim = 100, 2
-pos = np.zeros((nwalkers,ndim))
-
-pos[:,0] = np.random.uniform(3.0, 6.0, nwalkers)
-pos[:,1] = np.random.uniform(0, 0.5, nwalkers)
-
-#print(pos)
-
-sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(params,stacktime,stacknorm,stackferr), threads = 3)
-sampler.run_mcmc(pos,2000)
-
-samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
-np.savetxt('k30c-samples.txt',zip(samples[0],samples[1]))
-
-fig = corner.corner(samples,labels = ["per","a"], truths = [true_per,true_rp])
-plt.show()
-
-####################total plot########################
-plt.figure()
-#plt.plot(t,modelcurve)
-plt.plot(stacktime, stacknorm,'go')
-plt.ylabel('Normalized Flux')
-plt.xlabel('Time (Hours)')
-plt.title('Stacked and Normalized Curve')
-plt.xlim((-9.0, 9.0))
-
-plt.show()
+if __name__ == '__main__':
+    main()
 
