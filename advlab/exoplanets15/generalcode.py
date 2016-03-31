@@ -24,7 +24,6 @@ def get_lightcurves(koi='806.02'):
     koidat = client.koi(koi)
 
     lcs = koidat.get_light_curves(short_cadence = False)
-    name = koidat.kepler_name
 
     # download all of the different light curves
     for lc in lcs:
@@ -42,6 +41,7 @@ def normalize(koidat):
     quality = []
     
     lcs = koidat.get_light_curves(short_cadence = False)
+    name = koidat.kepler_name
 
     # download all of the different light curves
     for lc in lcs:
@@ -175,7 +175,7 @@ def optimize(normdata,koidat):
     sampler.run_mcmc(pos,200)
 
     samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
-    np.savetxt(samples.txt,zip(samples[0],samples[1]))
+    np.savetxt('samples.txt',zip(samples[0],samples[1]))
     #return samples
 
     plt.figure()
