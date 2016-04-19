@@ -1,4 +1,4 @@
-generalcode.py - A general code used to normalize and optimize physical parameters of kepler objects.  This is a cobination of k30ccode.py and modlecurve.py.
+generalcode.py - A python code used to normalize and optimize physical parameters of kepler objects.  This is a cobination of k30ccode.py and modlecurve.py.
 
 In order to use you must have the following packages installed:
 
@@ -9,3 +9,13 @@ matplotlib- a python plotting library based off of the matlab plotting libraries
 numpy - a toolkit that makes it easier to work with arrays in python.
  
 Some examples of plots are shown in the phtotos directory. I also have included some examples on how to create models of light curves and how to pull in data using kplr. I have also included a code that tests emcee to help debug any problems(This code was written by Dan Foreman-Mackey.).
+
+To use generalcode.py:
+
+-k : KOI number used to identify object
+--get_light_curves: This will cache the lightcurves you are looking for in the kplr folder.
+--normalize: This will normalize the light curves and save the output in a file.
+--optimize: Will read in the file from normalize and optimize parameters (Might need some tinkering if you            want to incorporate different parameters to be optimized)
+--final_plots: Will read in the samples and create a triangle and fitted plot.
+
+

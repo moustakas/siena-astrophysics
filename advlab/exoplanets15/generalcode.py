@@ -213,7 +213,7 @@ def main():
     parser.add_argument('--get-lightcurves',action='store_true', help='get light curves')
     parser.add_argument('--normalize', action = 'store_true', help='Normalize the light curves')
     parser.add_argument('--optimize', action='store_true',help='Fit with MCMC')
-    parser.add_argument('--final_plot', action='store_true', help='Produce triangle/final plots')
+    parser.add_argument('--final_plots', action='store_true', help='Produce triangle/final plots')
 
     args = parser.parse_args()
     if args.koi is None:
@@ -226,7 +226,7 @@ def main():
         normalize(koidat)
     if args.optimize:
         optimize(koidat)
-    if args.final_plot:
+    if args.final_plots:
         finalplots('samples.txt',koidat) 
 
 if __name__ == '__main__':
