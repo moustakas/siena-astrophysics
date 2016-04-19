@@ -130,7 +130,7 @@ def lnprior(theta):
     per = theta[0]
     rp = theta[1]
 
-    if ((per>50.00)*(per<70.00)) and ((rp>0.05)*(rp<0.25)):
+    if ((per>45.00)*(per<70.00)) and ((rp>0.05)*(rp<0.20)):
         return 0.0
    
     return -np.inf
@@ -161,7 +161,7 @@ def optimize(koidat):
 
     t = np.linspace(-20,20,len(stacknorm))
     
-    nwalkers, ndim = 50, 2
+    nwalkers, ndim = 100, 2
 
     pos = np.zeros((nwalkers,ndim))
     pos[:,0] = np.random.uniform(40.0, 80.0, nwalkers)
@@ -173,27 +173,38 @@ def optimize(koidat):
     samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
     np.savetxt('samples.txt',samples)
 
-##########Creation of Final Plots######################
 def finalplots(samples,koidat):
     sample = np.loadtxt(samples,unpack = False)  
+    name = koidat.kepler_name
+    stacktime, stacknorm, stackferr = np.loadtxt(name + 'norm',unpack = True)
     true_per = koidat.koi_period
     true_rp = koidat.koi_prad * (Rearth / Rsun) 
     fig = corner.corner(sample,labels = ["per","rp"], truths = [true_per,true_rp])
+    per, rp = np.loadtxt(samples,unpack = True) 
+
+    best_per = per[len(per) - 1] 
+    best_rp = rp[len(rp) -1] 
 
     params = batman.TransitParams()
     params.t0 = 0.
-    params.per = true_per
-    params.rp = true_rp
+    params.per = best_per
+    params.rp = best_rp 
     params.a = koidat.koi_sma * 1.496E11 / Rsun
     params.inc = koidat.koi_incl
     params.ecc = koidat.koi_eccen
     params.w = 90 #koidat.koi_longp
     params.limb_dark = 'nonlinear'
     params.u = [koidat.koi_ldm_coeff1,koidat.koi_ldm_coeff2,koidat.koi_ldm_coeff3,koidat.koi_ldm_coeff4]
-
+    
+    t = np.linspace(-20,20,len(stacknorm))
+    m = batman.TransitModel(params, t/24.0)
+    modelcurve = m.light_curve(params)
+    
+    plt.figure()
+    plt.plot(t,modelcurve,'ro')
+    plt.plot(stacktime,stacknorm,'bo')
+    
     plt.show()
-
-####################################################
 
 def main():
     parser = argparse.ArgumentParser()
