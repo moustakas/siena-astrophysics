@@ -4,7 +4,6 @@ import sys
 import kplr
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.convolution import convolve, Box1DKernel
 import batman
 import copy
 import corner
@@ -63,7 +62,7 @@ def normalize(koidat):
     plt.figure()
     plt.plot(time,flux,'go')
 
-    midcurve = koidat.koi_time0bk-67 
+    midcurve = koidat.koi_time0bk-67 #subtract 67 to match the time scale
     per = koidat.koi_period 
     dur = koidat.koi_duration/24   #converts the duration into days
     neclipse = 7 
@@ -117,8 +116,6 @@ def normalize(koidat):
     stacktime = np.concatenate(stacktime)
     stackferr = np.concatenate(stackferr)
     np.savetxt(name + 'norm',zip(stacktime,stacknorm, stackferr))
-    normdata = stacknorm, stacktime, stackferr
-    return normdata 
 
 def lnlike(theta,params,time,flux,ferr):
     myparams = copy.copy(params)
@@ -133,7 +130,7 @@ def lnprior(theta):
     per = theta[0]
     rp = theta[1]
 
-    if ((per>50.00)*(per<70.00)) and ((rp>0.1)*(rp<0.5)):
+    if ((per>45.00)*(per<70.00)) and ((rp>0.05)*(rp<0.20)):
         return 0.0
    
     return -np.inf
@@ -144,11 +141,12 @@ def lnprob(theta,params,time,flux ,ferr):
         return -np.inf
     return lp + lnlike(theta,params,time,flux,ferr)
 
-def optimize(normdata,koidat):
-    flux, time, ferr = normdata
+def optimize(koidat):
+    name = koidat.kepler_name
+    stacktime, stacknorm, stackferr = np.loadtxt(name + 'norm',unpack = True)
 
     true_per = koidat.koi_period
-    true_rp = koidat.koi_prad * (Rearth / Rsun) / koidat.koi_srad
+    true_rp = koidat.koi_prad * (Rearth / Rsun) 
 
     params = batman.TransitParams()
     params.t0 = 0.
@@ -161,42 +159,61 @@ def optimize(normdata,koidat):
     params.limb_dark = 'nonlinear'
     params.u = [koidat.koi_ldm_coeff1,koidat.koi_ldm_coeff2,koidat.koi_ldm_coeff3,koidat.koi_ldm_coeff4]
 
-    t = np.linspace(-20,20,len(flux))
+    t = np.linspace(-20,20,len(stacknorm))
     
-    #time, flux, ferr = np.loadtxt(normdata, unpack=True) 
-
-    nwalkers, ndim = 50, 2
+    nwalkers, ndim = 100, 2
 
     pos = np.zeros((nwalkers,ndim))
-    pos[:,0] = np.random.uniform(50.0, 80.0, nwalkers)
-    pos[:,1] = np.random.uniform(0, 0.5, nwalkers)
+    pos[:,0] = np.random.uniform(40.0, 80.0, nwalkers)
+    pos[:,1] = np.random.uniform(0.0, 0.3, nwalkers)
 
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(params,time,flux,ferr), threads = 3)
-    sampler.run_mcmc(pos,200)
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(params,stacktime,stacknorm,stackferr), threads = 3)
+    sampler.run_mcmc(pos,250)
 
     samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
-    np.savetxt('samples.txt',zip(samples[0],samples[1]))
-    #return samples
+    np.savetxt('samples.txt',samples)
 
+def finalplots(samples,koidat):
+    sample = np.loadtxt(samples,unpack = False)  
+    name = koidat.kepler_name
+    stacktime, stacknorm, stackferr = np.loadtxt(name + 'norm',unpack = True)
+    true_per = koidat.koi_period
+    true_rp = koidat.koi_prad * (Rearth / Rsun) 
+    fig = corner.corner(sample,labels = ["per","rp"], truths = [true_per,true_rp])
+    per, rp = np.loadtxt(samples,unpack = True) 
+
+    best_per = per[len(per) - 1] 
+    best_rp = rp[len(rp) -1] 
+
+    params = batman.TransitParams()
+    params.t0 = 0.
+    params.per = best_per
+    params.rp = best_rp 
+    params.a = koidat.koi_sma * 1.496E11 / Rsun
+    params.inc = koidat.koi_incl
+    params.ecc = koidat.koi_eccen
+    params.w = 90 #koidat.koi_longp
+    params.limb_dark = 'nonlinear'
+    params.u = [koidat.koi_ldm_coeff1,koidat.koi_ldm_coeff2,koidat.koi_ldm_coeff3,koidat.koi_ldm_coeff4]
+    
+    t = np.linspace(-20,20,len(stacknorm))
+    m = batman.TransitModel(params, t/24.0)
+    modelcurve = m.light_curve(params)
+    
     plt.figure()
-    fig = corner.corner(samples,labels = ["per","a"], truths = [true_per,true_rp])
+    plt.plot(t,modelcurve,'ro')
+    plt.plot(stacktime,stacknorm,'bo')
+    
     plt.show()
 
-##########Creation of Final Plots######################
-def finalplots(samples):
-    fig = corner.corner(samples,labels = ["per","a"], truths = [true_per,true_rp])
-    plt.show()
-
-####################################################
 def main():
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-k','--koi', type=str, default='806.02', help='koi')
     parser.add_argument('--get-lightcurves',action='store_true', help='get light curves')
     parser.add_argument('--normalize', action = 'store_true', help='Normalize the light curves')
     parser.add_argument('--optimize', action='store_true',help='Fit with MCMC')
-#    parser.add_argument('--build-results', action='store_true', help='Produce triangle/final plots')
+    parser.add_argument('--final_plots', action='store_true', help='Produce triangle/final plots')
 
     args = parser.parse_args()
     if args.koi is None:
@@ -208,9 +225,9 @@ def main():
     if args.normalize:
         normalize(koidat)
     if args.optimize:
-        optimize(normalize(koidat),koidat)
-#    if args.build-results:
-#        finalplots(samples) 
+        optimize(koidat)
+    if args.final_plots:
+        finalplots('samples.txt',koidat) 
 
 if __name__ == '__main__':
     main()
