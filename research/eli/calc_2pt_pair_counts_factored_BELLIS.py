@@ -91,7 +91,8 @@ def main():
     print "Total execution time %f" % (time.time() - start)
 
     print "Performing the pair counts...."
-    pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
+    #pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
+    pair_counts = jem.do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
     time_pc = time.time()
     print "Time to perform pair counts %f" % (time_pc - time_pc)
     print "Total execution time %f" % (time.time() - start)
