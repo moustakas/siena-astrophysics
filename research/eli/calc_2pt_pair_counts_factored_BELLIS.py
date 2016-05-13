@@ -94,6 +94,8 @@ def main():
     #pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
     pair_counts = jem.do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
     time_pc = time.time()
+    print "PAIR COUNTS"
+    print  pair_counts.shape
     print "Time to perform pair counts %f" % (time_pc - time_pc)
     print "Total execution time %f" % (time.time() - start)
     #'''
@@ -124,15 +126,29 @@ def main():
 
         plt.show()
 
-    print('Writing {}'.format(outfilename))
-    outfile = open(outfilename,"w")
-    output = "%d,%d,0,0\n" % (ngals0,ngals1)
-    outfile.write(output)
-    for i in xrange(nbins):
-        output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
-        print output.rstrip()
+    if args.oned==False:
+        print('Writing {}'.format(outfilename))
+        outfile = open(outfilename,"w")
+        line_one = np.zeros(nbins)
+        line_one = np.insert(line_one,0,ngals0)
+        line_one = np.insert(line_one,1,ngals1)
+        output = line_one
         outfile.write(output)
-    outfile.close()
+        output = pair_counts
+        print output
+        outfile.write(output)
+        outfile.close()
+
+    else:
+        print('Writing {}'.format(outfilename))
+        outfile = open(outfilename,"w")
+        output = "%d,%d,0,0\n" % (ngals0,ngals1)
+        outfile.write(output)
+        for i in xrange(nbins):
+            output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
+            print output.rstrip()
+            outfile.write(output)
+        outfile.close()
 
     print "Finished writing out data."
     print "Total execution time %f" % (time.time() - start)
