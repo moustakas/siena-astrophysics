@@ -87,21 +87,6 @@ def main():
     print('Working on gr vs. rz vs. w1 vs. w2...')
     knc_clf3, knc_compl3, knc_contam3 = kneighbor(rzgw1w2,objtype)
     print('Completeness = {}, contamination = {}'.format(knc_compl3,knc_contam3))
-
- # Kernel SVM
-   # print('Working on gr vs. rz...')
-   # svm_clf1, svm_compl1, svm_contam1 = kernel_svm(rzg,objtype)
-   # print('Completeness = {}, contamination = {}'.format(svm_compl1,svm_contam1))
-
- # Kernel SVM
-   # print('Working on gr vs. rz vs. w1...')
-   # svm_clf2, svm_compl2, svm_contam2 = kernel_svm(rzgw1,objtype)
-   # print('Completeness = {}, contamination = {}'.format(svm_compl2,svm_contam2))
-
-  # Kernel SVM
-   # print('Working on gr vs. rz vs. w1 vs. w2...')
-   # svm_clf3, svm_compl3, svm_contam3 = kernel_svm(rzgw1w2,objtype)
-   # print('Completeness = {}, contamination = {}'.format(svm_compl3,svm_contam3))
           
     #Plotting the Completeness and the contamination
     classifier = [0,1,2]
@@ -112,20 +97,26 @@ def main():
     fig.subplots_adjust(bottom=0.2)
     for ii,mm in enumerate(markers):
         ax.plot(ii,compl[ii],'b'+mm,label='Completeness',markersize=20)
-    ax.set_xlabel('classifier')
-    ax.set_ylabel(r'Completeness')
+    ax.set_ylabel(r'Completeness',fontsize=20)
     ax.set_xlim(-0.25,2.25)
-    #ax.set_ylim(0.2,0.8)
     ax.set_ylim(0,1)
-    #ax.legend(loc='best', fancybox=True, framealpha=0.5)
+    ax.spines['bottom'].set_linewidth(3)
+    ax.spines['left'].set_linewidth(3)
+    ax.spines['top'].set_linewidth(3)
+    ax.spines['right'].set_linewidth(3)
     myxticks = (['gr-rz','gr-rz-w1','gr-rz-w1-w2'])
-    plt.xticks(classifier,myxticks,rotation=45)
+    plt.xticks(classifier,myxticks,rotation=20)
     ax2 = ax.twinx()
     for ii,mm in enumerate(markers):
         ax2.plot(ii,contam[ii],'r'+mm,label='Contamination',markersize=20)
-    ax2.set_ylabel(r'Contamination')
+    ax2.set_ylabel(r'Contamination',fontsize=20)
+    ax2.spines['bottom'].set_linewidth(3)
+    ax2.spines['left'].set_linewidth(3)
+    ax2.spines['top'].set_linewidth(3)
+    ax2.spines['right'].set_linewidth(3)
+    ax.tick_params(labelsize=20)
+    ax2.tick_params(labelsize=20)
     ax2.set_xlim(-0.25,2.25)
-    #ax2.set_ylim(0.2,0.8)
     ax2.set_ylim(0,1)
     ax2.margins(0.2)
 

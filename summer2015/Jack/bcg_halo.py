@@ -63,10 +63,10 @@ def main():
     
     #M(halo) vs M(BCG)
     sns.set(style='white',font_scale=1.5)
-    fig = plt.figure(figsize=(8,6))
+    fig = plt.figure(figsize=(12.3,13.6))
     ax = fig.gca()
     sns.kdeplot(mhalo[midz], mbcg[midz], shade=True)
-    sns.despine(fig=fig)
+    #sns.despine(fig=fig)
     #plt.scatter(mhalo, mbcg, c='b')
     plt.xlabel('$log_{10}\ (M_{halo}/M_{\odot})$')
     plt.ylim(10.5,12.5)
@@ -117,7 +117,7 @@ def main():
     midbins, midstats = medxbin(redshift[mid], mbcg[mid], binsz)
     hibins, histats = medxbin(redshift[hi], mbcg[hi], binsz)
 
-    fig3 = plt.figure(figsize=(8,6))
+    fig3 = plt.figure(figsize=(12.3,13.6))
     #sns.kdeplot(redshift[lo], mbcg[lo], cmap="Blues", legend=True)
     #sns.kdeplot(redshift[mid],mbcg[mid], cmap="Reds", legend=True)
     #sns.kdeplot(redshift[hi],mbcg[hi], cmap="Greens_r", legend=True)
@@ -133,7 +133,7 @@ def main():
     plt.ylim(10.5,12.5)
     plt.xlim(0.05,0.73)
     fig3.subplots_adjust(bottom=0.2, left=0.15)
-    plt.legend(['low halo', 'mid halo', 'high halo'])
+    plt.legend(['$M_{halo}<14.0$', '$14.0<M_{halo}<14.5$', '$M_{halo}>14.5$'])
     plt.savefig(in_dir+'3_halo.jpg',clobber=True)
 
     
