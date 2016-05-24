@@ -1,7 +1,7 @@
 ##################################################
 # Personal system defaults
 umask 002
-export PS1="\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]"
+export PS1="\u@\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]% "
 export EDITOR=emacs
 
 ##################################################
@@ -17,3 +17,21 @@ export PATH=$PATH:/usr/local/astrometry/bin
 ##################################################
 # Set up Python
 export PYTHONPATH=${PYTHONPATH}:${LEGACYPIPE_DIR}/py:${ASTROMETRY_DIR}/lib/python
+
+##################################################
+# Personal aliases
+
+alias l='ls -l --color=auto'
+# alias l='ls -l --color=auto | grep -v "~"'
+alias lt='ls -ltr --color=auto '
+alias lm='ls -l --color=auto | more'
+alias dirs='ls -l --color=auto | grep ^d'
+alias cls='clear'
+alias df='df -kH'
+alias du='du -ksh'
+alias mv='mv -i'
+alias rm='rm -i'
+alias cp='cp -ip'        # make copy preserve timestamp of files
+alias cx='chmod +x'
+alias findf='find . -name "\!*"  -print'
+alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
