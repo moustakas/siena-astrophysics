@@ -1,0 +1,19 @@
+##################################################
+# Personal system defaults
+umask 002
+export PS1="\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]"
+export EDITOR=emacs
+
+##################################################
+# Some convenience variables
+export ASTROMETRY_DIR=/usr/local/astrometry/bin/python
+export LEGACYPIPE_DIR=/usr/local/legacysurvey/legacypipe/py
+export LEGACY_SURVEY_DIR=/usr/local/legacysurvey/legacypipe-dir
+
+##################################################
+# Expand my path
+export PATH=$PATH:/usr/local/astrometry/bin
+
+##################################################
+# Set up Python
+export PYTHONPATH=${PYTHONPATH}:${LEGACYPIPE_DIR}/py:${ASTROMETRY_DIR}/lib/python
