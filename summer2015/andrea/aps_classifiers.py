@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn import svm
+from sklearn import svm, tree
 from astroML.utils import completeness_contamination
 
 def plot_boundary(clf,xlim,ylim,ax,useproba=False):
     sns.set(palette='Reds',style='white')
-    hh = 0.03  # step size in the mesh
+    hh = 0.01  # step size in the mesh
     xx, yy = np.meshgrid(np.arange(xlim[0],xlim[1],hh),
                          np.arange(ylim[0],ylim[1],hh))
     if useproba:
@@ -27,6 +27,28 @@ def naive_bayes(colors,labels):
     clf.fit(colors,labels)
     pred = clf.predict(colors)
     compl, contam = completeness_contamination(pred,labels)
+    return clf, compl, contam
+
+def tree(colors, labels):
+    from sklearn.tree import DecisionTreeClassifier as dtc
+    from sklearn.cross_validation import StratifiedKFold
+    clf = dtc(max_depth=12,criterion='entropy')
+    nfold = 9
+    skf = StratifiedKFold(labels, nfold)
+    compl = np.zeros(nfold)
+    contam = np.zeros(nfold)
+    ii = 0
+    #import pdb ; pdb.set_trace()
+    for train, test in skf:
+    #for ii, enumerate(zip(train, test)) in skf:
+        clf.fit(colors[train,:], labels[train])
+        pred = clf.predict(colors[test,:])
+        compl1, contam1 = completeness_contamination(pred, labels[test])
+        #print(compl1, contam1)
+        compl[ii] = compl1
+        contam[ii] = contam1
+        ii += 1
+    #import pdb ; pdb.set_trace()
     return clf, compl, contam
 
 def gaussmix_bayes(colors,labels):
@@ -75,67 +97,100 @@ def get_deep2(usesim=False):
         rzlim = [-0.5,2.0]
         grlim = [-0.5,1.5]
     else: 
-        filename = '/home/desi2/data'+'/deep2-oii.fits.gz'
-        filestars = '/home/desi2/data'+'/deep2-stars.fits.gz'
+        filename = '/home/desi2/aps'+'/deep2-field1-oii.fits.gz'
+        #filestars = '/home/desi2/data'+'/deep2-stars.fits.gz'
         oii = fits.getdata(filename,1)
-        stars = fits.getdata(filestars,1)
+        #stars = fits.getdata(filestars,1)
 
-        minmag = 23.3
+        minmag = 23.4
         oii = oii[np.where((oii['CFHTLS_R']<minmag)*1)]
-        stars = stars[np.where((stars['CFHTLS_R']<minmag)*1)]
+        #stars = stars[np.where((stars['CFHTLS_R']<minmag)*1)]
 
         ngal = len(oii)
-        nstar = len(stars)
+        #nstar = len(stars)
 
-        gr = np.concatenate((oii['CFHTLS_G']-oii['CFHTLS_R'],stars['CFHTLS_G']-stars['CFHTLS_R']))
-        rz = np.concatenate((oii['CFHTLS_R']-oii['CFHTLS_Z'],stars['CFHTLS_R']-stars['CFHTLS_Z']))
-        oiiflux = np.concatenate((oii['OII_3727'],np.zeros(nstar)))
-        redshift = np.concatenate((oii['ZBEST'],np.zeros(nstar)))
-        field = np.concatenate((oii['FIELD'],stars['FIELD']))
-        istar = np.concatenate((np.zeros(ngal),np.ones(nstar)))
-        igood = ((redshift>0.8)*1)*((oiiflux>8E-17)*1)
+        gr = oii['CFHTLS_G']-oii['CFHTLS_R']
+        rz = oii['CFHTLS_R']-oii['CFHTLS_Z']
+        oiiflux = oii['OII_3727']
+        redshift = oii['ZHELIO']
+        field = oii['FIELD']
+        igood = ((redshift>1.0)*1)*((oiiflux>8E-17)*1)
         colorgood = ((gr>-0.3)*1)*((gr<1.8)*1)*((rz>-0.3)*1)*((rz<2.1)*1)
+        istar = np.zeros(ngal)
         
         data = np.vstack((gr,rz,oiiflux,redshift,field,istar,igood,colorgood)).T
         pdata = pandas.DataFrame(data,columns=['g-r','r-z','oiiflux','redshift',
                                                'field','istar','igood','colorgood'])
 
+        #gr = np.concatenate((oii['CFHTLS_G']-oii['CFHTLS_R'],stars['CFHTLS_G']-stars['CFHTLS_R']))
+        #rz = np.concatenate((oii['CFHTLS_R']-oii['CFHTLS_Z'],stars['CFHTLS_R']-stars['CFHTLS_Z']))
+        #oiiflux = np.concatenate((oii['OII_3727'],np.zeros(nstar)))
+        #redshift = np.concatenate((oii['ZBEST'],np.zeros(nstar)))
+        #field = np.concatenate((oii['FIELD'],stars['FIELD']))
+        #istar = np.concatenate((np.zeros(ngal),np.ones(nstar)))
+        #igood = ((redshift>0.8)*1)*((oiiflux>8E-17)*1)
+        #colorgood = ((gr>-0.3)*1)*((gr<1.8)*1)*((rz>-0.3)*1)*((rz<2.1)*1)
+        #
+        #data = np.vstack((gr,rz,oiiflux,redshift,field,istar,igood,colorgood)).T
+        #pdata = pandas.DataFrame(data,columns=['g-r','r-z','oiiflux','redshift',
+        #                                       'field','istar','igood','colorgood'])
+
         rzlim = [-0.3,2.1]
         grlim = [-0.3,1.8]
 
     return pdata, rzlim, grlim
-    
 
 def main():
     """Document me"""
 
     # Comment
     pdata, rzlim, grlim = get_deep2(usesim=False)
-    
-    f1 = pdata.loc[(pdata['field']==1)]
+
     f1 = pdata.loc[(pdata['field']==1)&(pdata['colorgood']==1)]
     rzg = np.array([f1['r-z'].values,f1['g-r'].values]).T
     igood = f1['igood'].values
 
-    # Gaussian NB
-    print('Working on Gaussian NB classifier...')
-    gnb_clf, gnb_compl, gnb_contam = naive_bayes(rzg,igood)
-    print('Completeness = {}, contamination = {}'.format(gnb_compl,gnb_contam))
+    # Decision Tree
+    tree_clf, tree_compl, tree_contam = tree(rzg, igood)
+    print(tree_compl, tree_contam)
 
-    # Gaussian Mixture
-    print('Working on Gaussian mixture Gauss classifier...')
-    gmm_clf, gmm_compl, gmm_contam = gaussmix_bayes(rzg,igood)
-    print('Completeness = {}, contamination = {}'.format(gmm_compl,gmm_contam))
+    galgood = pdata.loc[(pdata['field']==1)&(pdata['istar']==0)&
+                        (pdata['igood']==1)&(pdata['colorgood']==1)]
+    galbad = pdata.loc[(pdata['field']==1)&(pdata['istar']==0)&
+                       (pdata['igood']==0)&(pdata['colorgood']==1)]
 
-    # K Neighbors
-    print('Working on Kneighbors classifier...')
-    knc_clf, knc_compl, knc_contam = kneighbor(rzg,igood)
-    print('Completeness = {}, contamination = {}'.format(knc_compl,knc_contam))
+    fig, ax = plt.subplots(1,1)
+    ax.scatter(galbad['r-z'].values,galbad['g-r'].values,c='blue',marker='o',s=4)
+    ax.scatter(galgood['r-z'].values,galgood['g-r'].values,c='magenta',marker='d',s=20)
+    #sns.kdeplot(stars['r-z'].values,stars['g-r'].values,ax=ax2,gridsize=50)
+    plot_boundary(tree_clf,rzlim,grlim,ax,useproba=True)
+    ax.set_xlim(rzlim)
+    ax.set_ylim(grlim)
+    plt.show()
 
-    # Kernel SVM
-    print('Working on Kernel SVM classifier...')
-    svm_clf, svm_compl, svm_contam = kernel_svm(rzg,igood)
-    print('Completeness = {}, contamination = {}'.format(svm_compl,svm_contam))
+    #import pdb ; pdb.set_trace()
+
+    sys.exit(1)
+
+    ## Gaussian NB
+    #print('Working on Gaussian NB classifier...')
+    #gnb_clf, gnb_compl, gnb_contam = naive_bayes(rzg,igood)
+    #print('Completeness = {}, contamination = {}'.format(gnb_compl,gnb_contam))
+    #
+    ## Gaussian Mixture
+    #print('Working on Gaussian mixture Gauss classifier...')
+    #gmm_clf, gmm_compl, gmm_contam = gaussmix_bayes(rzg,igood)
+    #print('Completeness = {}, contamination = {}'.format(gmm_compl,gmm_contam))
+    #
+    ## K Neighbors
+    #print('Working on Kneighbors classifier...')
+    #knc_clf, knc_compl, knc_contam = kneighbor(rzg,igood)
+    #print('Completeness = {}, contamination = {}'.format(knc_compl,knc_contam))
+    #
+    ## Kernel SVM
+    #print('Working on Kernel SVM classifier...')
+    #svm_clf, svm_compl, svm_contam = kernel_svm(rzg,igood)
+    #print('Completeness = {}, contamination = {}'.format(svm_compl,svm_contam))
 
     # Make the plot!
     galgood = pdata.loc[(pdata['field']==1)&(pdata['istar']==0)&

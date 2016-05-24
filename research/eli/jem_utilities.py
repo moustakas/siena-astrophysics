@@ -84,7 +84,7 @@ def radecredshift2xyz_with_weights(oldcoords):
     weights = oldcoords[:,3]
 
     # Comoving Distances In Mpc
-    cosmo=FlatLambdaCDM(H0=70,Om0=0.3)
+    cosmo=FlatLambdaCDM(H0=70,Om0=0.274)
     comdist=cosmo.comoving_distance(redshift).value * 0.7 # Trying 0.7 for Lado's code.
 
     # Convert spherical to Cartesian Coordinates
@@ -107,7 +107,7 @@ def radecredshift2xyz_with_weights(oldcoords):
 
 # This is the way we think we should calculate para and perp.
 
-def our_para_perp(r0,r1):
+def our_para_perp_with_weights(r1,r2):
     """Calculate r_parallel and r_perpendicular distances
                                     between two galaxies.
 
@@ -121,10 +121,11 @@ def our_para_perp(r0,r1):
         R_para () : The magnitude of the r_parallel distance
         R_perp () : The magnitude of the r_perpendicular distance
     """
-
+    w1 = r1[3]
+    w2 = r2[:,3]
     # First compute R_LOS and dR
-    R_LOS = (r0 + r1)/2
-    dR = r1 - r0
+    R_LOS = (r1 + r2)/2
+    dR = r2 - r1
     R_LOS_mag = mag(R_LOS)
 
     # Dot product
@@ -138,8 +139,8 @@ def our_para_perp(r0,r1):
     R_perp = np.sqrt(dR_mag*dR_mag - R_para*R_para)
     
     #print i,lo1,indexlo,indexhi,len(R_para),len(paras)
-
-    return R_para,R_perp
+    weights = w1*w2
+    return R_para,R_perp,weights
 
 
 # This is the way we think Lado calculates para and perp.
@@ -477,9 +478,9 @@ def get_coordinates_with_weight(infilename):
     ra=np.deg2rad(r[0])
     dec=np.deg2rad(r[1])
     redshift=r[2]
-    #weights=r[3]
+    weights=r[3]
     #weights=r[4]
-    weights=np.ones(len(redshift))
+    #weights=np.ones(len(redshift))
     #weights=0.1*np.ones(len(redshift))
 
     del r
@@ -1147,5 +1148,130 @@ def do_pair_counts(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
     #new_tot_freq *= ncalcs
     #print new_tot_freq
     return new_tot_freq
+#####################################################################################
+def do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True):
+
+    start_time_pc = time.time()
+
+    voxel_combinations_so_far = []
+
+    tot_distances = []
+
+    tot_freq = np.zeros(nbins)
+
+    tot_weight_val = 0
+
+    tot_points_looped_over = 0
+
+    ncalcs = 0
+
+    weight_total = 0
+
+    #Calculation Loop
+    for ii in range(0,ngrids[0]):
+        print ii,time.time()-start_time_pc
+        for jj in range(0,ngrids[1]):
+            for kk in range(0,ngrids[2]):
+
+                c0 = voxels0[ii][jj][kk] 
+
+                if len(c0)==0:
+                    continue
+
+                tot_points_looped_over += len(c0)
+
+                #print 
+                #print ii,jj,kk
+
+                iimin = ii-1
+                iimax = ii+2
+                if iimax>=ngrids[0]:
+                    iimax = ngrids[0]
+                if iimin<0:
+                    iimin=0
+                jjmin = jj-1
+                jjmax = jj+2
+                if jjmax>=ngrids[1]:
+                    jjmax = ngrids[1]
+                if jjmin<0:
+                    jjmin=0
+                kkmin = kk-1
+                kkmax = kk+2
+                if kkmax>=ngrids[2]:
+                    kkmax = ngrids[2]
+                if kkmin<0:
+                    kkmin=0
+
+                for aa in range(iimin,iimax):
+                    for bb in range(jjmin,jjmax):
+                        for cc in range(kkmin,kkmax):
+
+                            if samefile:
+                                combination0 = "%03s%03s%03s" % (cc,bb,aa)
+                                combination1 = "%03s%03s%03s" % (kk,jj,ii)
+                                combination = "%s%s" % (max(combination0,combination1),min(combination0,combination1))
+
+                                if combination in voxel_combinations_so_far:
+                                    continue
+                                else:
+                                    voxel_combinations_so_far.append(combination)
+
+                            c1 = voxels1[aa][bb][cc] 
+
+                            if len(c1)==0:
+                                continue
+
+                            # These will store the calculations.
+                            for index,r0 in enumerate(c0):
+
+                                '''
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    distances = distances=scipy.spatial.distance.pdist(c0)
+                                else:
+                                    distances=scipy.spatial.distance.cdist(c0,c1)
+
+                                weights = np.ones(len(distances))
+                                '''
+
+                                if samefile and aa==ii and bb==jj and cc==kk:
+                                    paras,perps,weights = our_para_perp_with_weights(r0,c1[index+1:])
+                                else:
+                                    paras,perps,weights = our_para_perp_with_weights(r0,c1)
+
+                                #print weights
+                                hist=np.histogram2d(perps,paras,bins=nbins,range=((-maxrange,maxrange),(-maxrange,maxrange)))
+
+                                #weight_total += weights.sum()
+
+                                tot_freq += hist[0]
+
+                                #print tot_freq
+
+                                ncalcs += len(distances)
+                                
+                                weight_tot_one = np.sum(weights)
+
+                                #print weight_tot_one 
+                                #print weights
+
+                                #print '..........'
+                                #print 'tot'
+                                tot_weight_val += weight_tot_one
+                                #print "weight one"
+                                #print weight_tot_one, tot_weight_val
+                                del hist
+
+                    #print tot_weight_val
+   
+    #print np.sort(tot_distances)
+    #print "tot points looped over: %d" % (tot_points_looped_over)
+    print "Total weights: %f" % (tot_weight_val)
+    print "# calcs      : %f" % (ncalcs)
+    #new_tot_freq = tot_freq/tot_weight_val
+    new_tot_freq = tot_freq
+    #new_tot_freq *= ncalcs
+    #print new_tot_freq
+    return new_tot_freq
+
     
 
