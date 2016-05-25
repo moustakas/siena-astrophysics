@@ -11,8 +11,10 @@ path='/home/desi1/repos/CUTE/CUTE/test/'
 data=np.loadtxt(path+'corr_full_pm.dat')
 
 for ii in range(0,len(data[0])):
-    locals()['matrix{0}'.format(ii)]=[item[ii] for item in data]
+    locals()['matrix{0}'.format(ii)]=data[:,ii]
 
 # Plot data on loglog axes and show
 plt.loglog(matrix0,matrix1,'bo')
 plt.show()
+
+
