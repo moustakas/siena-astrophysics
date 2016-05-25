@@ -6,8 +6,8 @@
 import ephem.stars
 import ephem
 
-for staar in ephem.stars.db.split("\n"):
-  print staar.split(",")[0]
+for star in ephem.stars.db.split("\n"):
+  print star.split(",")[0]
 
 u=ephem.Uranus('2016/5/24')
 print("%s %s %s" % (u.ra, u.dec, u.mag))
