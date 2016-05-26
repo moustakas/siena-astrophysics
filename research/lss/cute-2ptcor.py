@@ -86,7 +86,7 @@ def main():
         pfile.write('z_dist_filename= junk\n')
         pfile.write('output_filename= '+outfile+'\n')
         pfile.write('num_lines= all\n')
-        pfile.write('corr_type= radial\n')
+        pfile.write('corr_type= monopole\n')
         pfile.write('corr_estimator= LS\n')
         pfile.write('np_rand_fact= 8\n')
         pfile.write('omega_M= 0.3\n')
@@ -94,9 +94,9 @@ def main():
         pfile.write('w= -1\n')
         pfile.write('log_bin= 0\n')
         pfile.write('n_logint= 10\n')
-        pfile.write('dim1_max= 75.0\n')
+        pfile.write('dim1_max= 150\n')
         pfile.write('dim1_nbin= 75\n')
-        pfile.write('dim2_max= 75.0\n')
+        pfile.write('dim2_max= 150\n')
         pfile.write('dim2_nbin= 75\n')
         pfile.write('dim3_min= 0.4\n')
         pfile.write('dim3_max= 0.7\n')
@@ -106,18 +106,25 @@ def main():
         pfile.write('n_pix_sph= 2048\n')
      
         pfile.close()
-        #os.system('CUTE-noweights '+paramfile)
-        os.system('CUTE '+paramfile)
+        #os.system('CUTE '+paramfile)
+        os.system('CUTE-noweights '+paramfile)
     
     if args.qaplots:
         # Make rockin' plots and write out.
-        cutedata=np.loadtxt(outfile)
-        for ii in range(0,len(cutedata[0])): # data -> cutedata
-           globals()['matrix{0}'.format(ii)]=cutedata[:,ii]
-        plt.figure()
-        plt.loglog(matrix0,matrix1,'bo')
-        plt.show()
-        pass
-           
+        if corrtype = monopole
+
+            rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
+            plt.figure()
+            plt.scatter(rad, xi*rad**2)
+            #plt.axis([-5, 155, 0, 120])
+            plt.xlabel('$\mathrm{\ radius \ (Mpc)}$')
+            plt.ylabel(r'$\mathrm{\ radius^2 * \xi}$')
+            #plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'bao-no-weights.pdf'))
+            plt.show()
+
+        if corrtype = 3D_ps
+
+            
+            
 if __name__ == "__main__":
     main()
