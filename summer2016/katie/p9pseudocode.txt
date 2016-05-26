@@ -1,0 +1,41 @@
+Planet 9 Pseudocode for tractor data DR3
+
+planet9dr3
+
+Import list of known asteroids
+
+#Check sigma for g, r, and z
+Set det_g = sigma(g) > 5
+Set det_r = sigma(r) > 5
+Set det_z = sigma(z) < 1
+
+# Remove WISE data by checking sigma
+Set no_w1 = sigma(WISE 0) < 5
+Set no_w2 = sigma(WISE 1) < 5
+
+# Check data against certain constraints to find 'good' objects
+Set good = byte array of n_elements(cat) + 1
+Check if objects in good match up with sigma standards for g, ,r and z
+Check if objects in good have 1 image contributing in each filter (g, r, and z)
+Check if objects in good are in bounds of the brick
+Check if the images satisfy each condition in each filter (g, r, and z)
+Check if the image contains a very bright star in the blob
+Check if the flux ratios are < 0.1 for each filter (g, ,r, and z)
+Check if the fraction of pixels masked from the object is < 0.1 for each filter
+(g, r, and z)
+
+Check if objects in good match up with sigma standards for no_w1 and no_w2
+
+If objects in good are bright
+   flux in the g filter > 1 and flux in the r filter >1
+
+if the total number of objects in good is 0 
+   print good
+
+Set wgood = objects in good
+Match ra and dec of object against ra and dec of all known asteroids
+Remove objects that match up with objects in known asteroids list
+
+print good
+
+NOT SURE ABOUT THE REST OF THE CODE (specfically the parts about the sweep)
