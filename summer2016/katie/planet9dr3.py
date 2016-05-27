@@ -1,62 +1,102 @@
 #!/usr/bin/env python
+'''
+Search for Planet 9 in DECaLS/DR3.
 
+Katie Hoag
+2016 May 27
+Siena College
 
-# Planet Nine code for DR3
-
+'''
 import os
 import numpy as np
-import glob
+from glob import glob
 
-datadir = '/home/desi2/candidatesp9/'
-known = glob.glob(os.path.join(datadir, 'tractor-*.fits'))
+import pdb
 
-def candidate_bitmask(cat): #brightness????
+from astropy.io import fits
+from astropy.table import vstack
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 
-    # Sigma checker for g, r, and z filters
-    det_g = (cat['decam_flux[1, *]']*sqrt(cat['decam_flux_ivar[1, *]']) > 5)
-    det_r = (cat['decam_flux[2, *]']*sqrt(cat['decam_flux_ivar[2, *]']) > 5)
-    no_z = (cat['decam_flux[4, *]']*sqrt(cat['decam_flux_ivar[4, *]']) < 1)
 
-    # Remove WISE data
-    # Sigma checker on WISE 1 and 2
-    no_w1 = (cat['wise_flux[0, *]']*sqrt(cat['wise_flux_ivar[0, *]']) < 5)
-    no_w2 = (cat['wise_flux[1, *]']*sqrt(cat['wise_flux_ivar[1, *]']) < 5)
+def getcandidates(cat, gfaint=None):
+    '''Select Planet 9 candidates from a Tractor catalog.'''
 
-    good = np.ndarray(n_elements(cat)) + 1
+    # The sigma checker for g, r, and z filters.  
+    det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 5)
+    det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 5)
+    no_z = (cat['decam_flux'][:, 4]*np.sqrt(cat['decam_flux_ivar'][:, 4]) < 1)
+
+    # Remove WISE data.  
+    # Run sigma checker on WISE 1 and 2.  
+    no_w1 = (cat['wise_flux'][:, 0]*np.sqrt(cat['wise_flux_ivar'][:, 0]) < 5)
+    no_w2 = (cat['wise_flux'][:, 1]*np.sqrt(cat['wise_flux_ivar'][:, 1]) < 5)
+
     
-    # Must comply with the following parameters to be considered
-    (good and (det_g and det_r and no_z)) * 1
-    (good and (cat['brick_primary'] == 'T')) * 1
-    (good and (cat['decam_nobs' [1, :]] == 1)) * 1 # g filter
-    (good and (cat['decam_nobs' [2, :]] == 1)) * 1 # r filter
-    (good and (cat['decam_nobs' [4, :]] > 1)) * 1 # z filter
-    (good and (cat['out_of_bounds'] == 'F')) * 1
-    (good and (cat['decam_anymask' [1, :]] == 0)) * 1 # g filter
-    (good and (cat['decam_anymask' [2, :]] == 0)) * 1 # r filter
-    (good and (cat['decam_anymask' [4, :]] == 0)) * 1 # z filter
-    (good and (cat['tycho2inblob'] == 'F')) * 1
-    (good and (cat['decam_fracflux'[1, :]] < 0.1)) * 1 # g filter
-    (good and (cat['decam_fracflux'[2, :]] < 0.1)) * 1 # r filter
-    (good and (cat['decam_fracflux'[4, :]] < 0.1)) * 1 # z filter
-    (good and (cat['decam_fracmasked'[1, :]] < 0.1)) * 1 # g filter
-    (good and (cat['decam_fracmasked'[2, :]] < 0.1)) * 1 # r filter
-    (good and (cat['decam_fracmasked'[4, :]] < 0.1)) * 1 # z filter
+    # Candidates must comply with the following parameters to be considered.  
 
-    good and (no_w1 and no_w2) * 1
+    good = (det_g*det_r*no_z*no_w1*no_w2*
+            (cat['brick_primary'] == 'T')*
+            (cat['decam_nobs'][:, 1] == 1)*
+            (cat['decam_nobs'][:, 2] == 1)*
+            (cat['decam_nobs'][:, 4] >= 1)*
+            (cat['out_of_bounds'] == 'F')*
+            (cat['decam_anymask'][:, 1] == 0)*
+            (cat['decam_anymask'][:, 2] == 0)*
+            (cat['decam_anymask'][:, 4] == 0)*
+            (cat['tycho2inblob'] == 'F')*
+            (cat['decam_fracflux'][:, 1] < 0.1)*
+            (cat['decam_fracflux'][:, 2] < 0.1)*
+            (cat['decam_fracflux'][:, 4] < 0.1)*
+            (cat['decam_fracmasked'][:, 1] < 0.1)*
+            (cat['decam_fracmasked'][:, 2] < 0.1)*
+            (cat['decam_fracmasked'][:, 4] < 0.1))*1
+    return np.where(good)[0]
+    
+    #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
+
+    #wgood = np.where(good)
+
+    # obj_coord = SkyCoord() # known data  
+    #cat_coord = SkyCoord(cat['ra'], cat['dec'])  # in degrees  
+    #separation = obj_coord.separation(cat_coord)  # Separation might be good to use  
+    #if separation <        # small enough for the objects to overlap
 
 
-    #if # keyword_set(bright)?
+def main():
 
+    datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
+    outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
+    catfiles = glob(os.path.join(datadir, 'tractor-*.fits'))
+    ncat = len(catfiles)
 
-   #if np.sum(good) == 0:
-    #    return good
+    gfaint = 30.0
+    nout = 0
+    for ii, thisfile in enumerate(catfiles):
+        print('Reading {}'.format(thisfile))
+        cat = fits.getdata(thisfile, 1) 
+        cand = getcandidates(cat, gfaint=gfaint)
 
-    rejects=[]
-    wgood = where(good)
-    #if cat[wgood].ra == known.ra0 and cat[wgood].dec == known.dec0:
-        # spherematch line?
-     #   rejects.append(wgood)
-      #  return'''
-       
-    return
+        if len(cand) > 0:
+            
+            if nout > 0:
+                out = cat[cand]
+                nout = len(out)
+            else:
+                out = vstack((out, cat[cand]))
+                nout = len(out)
+
+    if nout > 0:
+        # Match candidate catalog (out) against known asteroids
+        # outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
+        # ...
+        # ...
+        # finalout = out[non-matching-objects]
+        
+        print('Writing {}'.format(outfile))
+        out.write(outfile, clobber=True)
+        #finalout.write(outfile, clobber=True)
+
+if __name__ == '__main__':
+    main()
