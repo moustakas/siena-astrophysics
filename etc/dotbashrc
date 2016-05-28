@@ -6,9 +6,11 @@ export EDITOR=emacs
 
 ##################################################
 # Some convenience variables
-export ASTROMETRY_DIR=/usr/local/astrometry/bin/python
-export LEGACYPIPE_DIR=/usr/local/legacysurvey/legacypipe/py
+export ASTROMETRY_DIR=/usr/local/astrometry
+export LEGACYPIPE_DIR=/usr/local/legacysurvey/legacypipe
 export LEGACY_SURVEY_DIR=/usr/local/legacysurvey/legacypipe-dir
+export SIENAASTROPHYSICS_DIR=${HOME}/repos/siena-astrophysics
+export DUST_DIR=/global/work/data/sfd_dustmaps/
 
 ##################################################
 # Expand my path
@@ -35,3 +37,6 @@ alias cp='cp -ip'        # make copy preserve timestamp of files
 alias cx='chmod +x'
 alias findf='find . -name "\!*"  -print'
 alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
+
+alias decals_sim='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim.py'
+alias decals_sim_plots='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim_plots.py'
