@@ -124,18 +124,19 @@ def main():
 
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
+        # Does the param file have to be in a certain order?
         pfile = open(paramfile,'w')
-
+        pfile.write('data_filename= '+datafile+'\n')
+        pfile.write('random_filename= '+randomfile+'\n')
+        pfile.write('mask_filename= junk\n')
+        pfile.write('z_dist_filename= junk\n')
+        pfile.write('output_filename= '+outfile+'\n')
+        pfile.write('corr_type= '+args.docute+'\n')
+        pfile.write('num_lines= all\n')
+        pfile.write('corr_estimator= LS\n')
+            
         if args.docute == 'monopole':
-            pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
             pfile.write('input_format= 2\n')
-            pfile.write('mask_filename= junk\n')
-            pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
-            pfile.write('num_lines= all\n')
-            pfile.write('corr_type= monopole\n')
-            pfile.write('corr_estimator= LS\n')
             pfile.write('np_rand_fact= 8\n')
             pfile.write('omega_M= 0.3\n')
             pfile.write('omega_L= 0.7\n')
@@ -152,17 +153,9 @@ def main():
             pfile.write('radial_aperture= 1\n')
             pfile.write('use_pm= 1\n')
             pfile.write('n_pix_sph= 2048\n')
-            
+                
         if args.docute == '3D_rm':
-            pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
             pfile.write('input_format= 2\n')
-            pfile.write('mask_filename= junk\n')
-            pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
-            pfile.write('num_lines= all\n')
-            pfile.write('corr_type= '+args.docute+'\n')
-            pfile.write('corr_estimator= LS\n')
             pfile.write('np_rand_fact= 9.5217\n')
             pfile.write('omega_M= 0.3\n')
             pfile.write('omega_L= 0.7\n')
