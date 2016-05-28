@@ -55,8 +55,7 @@ def getcandidates(cat, gfaint=None):
     
     #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
-    #wgood = np.where(good)
-
+# use matching catalogs and astropy.coordinates
     # obj_coord = SkyCoord() # known data  
     #cat_coord = SkyCoord(cat['ra'], cat['dec'])  # in degrees  
     #separation = obj_coord.separation(cat_coord)  # Separation might be good to use  
