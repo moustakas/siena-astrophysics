@@ -12,6 +12,7 @@ export LEGACY_SURVEY_DIR=/usr/local/legacysurvey/legacypipe-dir
 export SIENAASTROPHYSICS_DIR=${HOME}/repos/siena-astrophysics
 export DUST_DIR=/global/work/data/sfd_dustmaps/
 export LSS_BOSS=/global/work/projects/lss-boss
+export DECALS_SIM_DIR=/globa/work/decam/versions/sim
 
 ##################################################
 # Expand my path
@@ -38,6 +39,7 @@ alias cp='cp -ip'        # make copy preserve timestamp of files
 alias cx='chmod +x'
 alias findf='find . -name "\!*"  -print'
 alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
+alias pwd='pwd -P'
 
 alias decals_sim='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim.py'
 alias decals_sim_plots='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim_plots.py'
