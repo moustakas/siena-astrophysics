@@ -4,9 +4,11 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
+
 # r perp para
 # all 600
 # monopole vs published
+# implement logging
 
 from __future__ import division, print_function
 
@@ -55,9 +57,6 @@ def compute_hexadecapole(mu, r, xirm):
 def more_cute():
     # link to the data
     # loop through each data file doing cute
-    
-
-
 
 def main():
 
@@ -65,7 +64,7 @@ def main():
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='3D_rm', help='Run CUTE.')
-    parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
+    parser.add_argument('--qaplots', type=str, default='3D_rm', help='Generate QAplots.')
     # Add arguments concerning corr_type
 
     args = parser.parse_args()
@@ -187,37 +186,25 @@ def main():
     
     if args.qaplots:
         # Make rockin' plots and write out.
-        #if corr_type = monopole:
-            # rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            # plt.figure()
-            # plt.scatter(rad, xi*rad**2)
-            # plt.axis([-5, 155, 0, 120])
-            # plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-            # plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
-            # plt.show()
+        if args.qaplots == 'monopole':
+            rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
+            plt.figure()
+            plt.scatter(rad, xi*rad**2)
+            plt.axis([-5, 155, 0, 120])
+            plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
+            plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
+            plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
+            plt.show()
 
-        #if corr_type = 3D_ps
+        if args.qaplots == '3D.rm':
             mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
             rad = np.linspace(2,198,40)
             mono1 = compute_monopole(mu, rad, xi)
             q1 = compute_quadrupole(mu, rad, xi)
             hex1 = compute_hexadecapole(mu, rad, xi)
             plt.imshow(xi.reshape(50, 40)) ; plt.show()
-
-            # plt.figure()      
-            #ax = fig.add_subplot(111, projection='3d')
-            # plt.scatter(rad, mu, xi*rad**2)
-            # plt.figure()
-            # plt.mplot3D(rad, mu, xi*rad**2) 
-            # plt.axis([-5, 155, 0, 120])
-            # plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-            # plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
             plotmqh(mono1,q1,hex1,rad)
             plt.show()
-            
-            
-            
+        
 if __name__ == "__main__":
     main()
