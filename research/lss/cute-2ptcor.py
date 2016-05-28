@@ -18,7 +18,7 @@ import logging as log
 import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
 
 def plotmqh(mono1,q1,hx1,rrange):
 
