@@ -4,11 +4,11 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-#rperp para
+# r perp para
 # all 600
-#monoppole vs published
+# monopole vs published
 
-From __future__ import division, print_function
+from __future__ import division, print_function
 
 import os
 import sys
@@ -31,26 +31,31 @@ def plotmqh(mono1,q1,hx1,rrange):
     plt.plot(rrange, hx1*rrange**2, 'ko')
 
 def compute_monopole(mu, r, xirm):
-        xirm = xirm*1.0
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        mono1 = xr*np.trapz(Bxirm)
-        print(len(mono1))
-        return mono1
+    xirm = xirm*1.0
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    mono1 = xr*np.trapz(Bxirm)
+    print(len(mono1))
+    return mono1
 
 def compute_quadrupole(mu, r, xirm):
-        xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        q1 = xr*np.trapz(Bxirm)
-        return q1
+    xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    q1 = xr*np.trapz(Bxirm)
+    return q1
 
 def compute_hexadecapole(mu, r, xirm):
-        xirm = xirm*(35*(mu*mu*mu*mu)-(30*mu*mu)+3)/8
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        hx1 = xr*np.trapz(Bxirm)
-        return hx1
+    xirm = xirm*(35*(mu*mu*mu*mu)-(30*mu*mu)+3)/8
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    hx1 = xr*np.trapz(Bxirm)
+    return hx1
+
+def more_cute():
+    # link to the data
+    # loop through each data file doing cute
+    
 
 
 
