@@ -4,11 +4,13 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-#rperp para
-# all 600
-#monoppole vs published
 
-From __future__ import division, print_function
+# r perp para
+# all 600
+# monopole vs published
+# implement logging
+
+from __future__ import division, print_function
 
 import os
 import sys
@@ -31,28 +33,30 @@ def plotmqh(mono1,q1,hx1,rrange):
     plt.plot(rrange, hx1*rrange**2, 'ko')
 
 def compute_monopole(mu, r, xirm):
-        xirm = xirm*1.0
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        mono1 = xr*np.trapz(Bxirm)
-        print(len(mono1))
-        return mono1
+    xirm = xirm*1.0
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    mono1 = xr*np.trapz(Bxirm)
+    print(len(mono1))
+    return mono1
 
 def compute_quadrupole(mu, r, xirm):
-        xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        q1 = xr*np.trapz(Bxirm)
-        return q1
+    xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    q1 = xr*np.trapz(Bxirm)
+    return q1
 
 def compute_hexadecapole(mu, r, xirm):
-        xirm = xirm*(35*(mu*mu*mu*mu)-(30*mu*mu)+3)/8
-        Bxirm = np.reshape(xirm,[40,50])
-        xr = 0.025
-        hx1 = xr*np.trapz(Bxirm)
-        return hx1
+    xirm = xirm*(35*(mu*mu*mu*mu)-(30*mu*mu)+3)/8
+    Bxirm = np.reshape(xirm,[40,50])
+    xr = 0.025
+    hx1 = xr*np.trapz(Bxirm)
+    return hx1
 
-
+def more_cute():
+    # link to the data
+    # loop through each data file doing cute
 
 def main():
 
@@ -60,7 +64,7 @@ def main():
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='3D_rm', help='Run CUTE.')
-    parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
+    parser.add_argument('--qaplots', type=str, default='3D_rm', help='Generate QAplots.')
     # Add arguments concerning corr_type
 
     args = parser.parse_args()
@@ -120,18 +124,19 @@ def main():
 
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
+        # Does the param file have to be in a certain order?
         pfile = open(paramfile,'w')
-
+        pfile.write('data_filename= '+datafile+'\n')
+        pfile.write('random_filename= '+randomfile+'\n')
+        pfile.write('mask_filename= junk\n')
+        pfile.write('z_dist_filename= junk\n')
+        pfile.write('output_filename= '+outfile+'\n')
+        pfile.write('corr_type= '+args.docute+'\n')
+        pfile.write('num_lines= all\n')
+        pfile.write('corr_estimator= LS\n')
+            
         if args.docute == 'monopole':
-            pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
             pfile.write('input_format= 2\n')
-            pfile.write('mask_filename= junk\n')
-            pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
-            pfile.write('num_lines= all\n')
-            pfile.write('corr_type= monopole\n')
-            pfile.write('corr_estimator= LS\n')
             pfile.write('np_rand_fact= 8\n')
             pfile.write('omega_M= 0.3\n')
             pfile.write('omega_L= 0.7\n')
@@ -148,17 +153,9 @@ def main():
             pfile.write('radial_aperture= 1\n')
             pfile.write('use_pm= 1\n')
             pfile.write('n_pix_sph= 2048\n')
-            
+                
         if args.docute == '3D_rm':
-            pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
             pfile.write('input_format= 2\n')
-            pfile.write('mask_filename= junk\n')
-            pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
-            pfile.write('num_lines= all\n')
-            pfile.write('corr_type= '+args.docute+'\n')
-            pfile.write('corr_estimator= LS\n')
             pfile.write('np_rand_fact= 9.5217\n')
             pfile.write('omega_M= 0.3\n')
             pfile.write('omega_L= 0.7\n')
@@ -182,37 +179,25 @@ def main():
     
     if args.qaplots:
         # Make rockin' plots and write out.
-        #if corr_type = monopole:
-            # rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            # plt.figure()
-            # plt.scatter(rad, xi*rad**2)
-            # plt.axis([-5, 155, 0, 120])
-            # plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-            # plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
-            # plt.show()
+        if args.qaplots == 'monopole':
+            rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
+            plt.figure()
+            plt.scatter(rad, xi*rad**2)
+            plt.axis([-5, 155, 0, 120])
+            plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
+            plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
+            plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
+            plt.show()
 
-        #if corr_type = 3D_ps
+        if args.qaplots == '3D.rm':
             mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
             rad = np.linspace(2,198,40)
             mono1 = compute_monopole(mu, rad, xi)
             q1 = compute_quadrupole(mu, rad, xi)
             hex1 = compute_hexadecapole(mu, rad, xi)
             plt.imshow(xi.reshape(50, 40)) ; plt.show()
-
-            # plt.figure()      
-            #ax = fig.add_subplot(111, projection='3d')
-            # plt.scatter(rad, mu, xi*rad**2)
-            # plt.figure()
-            # plt.mplot3D(rad, mu, xi*rad**2) 
-            # plt.axis([-5, 155, 0, 120])
-            # plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-            # plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
             plotmqh(mono1,q1,hex1,rad)
             plt.show()
-            
-            
-            
+        
 if __name__ == "__main__":
     main()
