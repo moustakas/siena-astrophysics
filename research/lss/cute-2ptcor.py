@@ -19,7 +19,7 @@ import logging as log
 
 import numpy as np
 from astropy.io import fits
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #from mpl_toolkits.mplot3d import Axes3D
 
 def plotmqh(mono1,q1,hx1,rrange):
@@ -57,6 +57,7 @@ def compute_hexadecapole(mu, r, xirm):
 def more_cute():
     # link to the data
     # loop through each data file doing cute
+    return done
 
 def main():
 
@@ -77,11 +78,13 @@ def main():
         log.fatal('Required ${} environment variable not set'.format(key))
         return 0
 
+    # Add CUTE dir?
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
+    # names for output and param files
 
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
@@ -115,10 +118,6 @@ def main():
 	rand[:,3] = wcp[keep]+wzf[keep]-1
         # COMPUTE FPK WEIGHTS
 	
-        # plt.figure()
-        # plt.plot(data[:,0],data[:,1],'bo')
-        # plt.show()
-
         log.info('Writing {}'.format(randomfile))
 	np.savetxt(randomfile, rand)
 
