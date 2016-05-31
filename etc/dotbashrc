@@ -9,8 +9,9 @@ export EDITOR=emacs
 export ASTROMETRY_DIR=/usr/local/astrometry
 export LEGACYPIPE_DIR=/usr/local/legacysurvey/legacypipe
 export LEGACY_SURVEY_DIR=/usr/local/legacysurvey/legacypipe-dir
-export SIENAASTROPHYSICS_DIR=${HOME}/repos/siena-astrophysics
+export SIENA_ASTROPHYSICS_DIR=${HOME}/repos/siena-astrophysics
 export DUST_DIR=/global/work/data/sfd_dustmaps/
+export LSS_BOSS=/global/work/projects/lss-boss
 
 ##################################################
 # Expand my path
@@ -40,3 +41,4 @@ alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
 
 alias decals_sim='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim.py'
 alias decals_sim_plots='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim_plots.py'
+alias cute-2ptcor='python ${SIENA_ASTROPHYSICS_DIR}/research/lss/cute-2ptcor.py'
