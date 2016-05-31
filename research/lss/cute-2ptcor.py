@@ -19,7 +19,6 @@ import logging as log
 
 import numpy as np
 from astropy.io import fits
-#import matplotlib.pyplot as plt
 
 #import matplotlib.pyplot as plt
 #from mpl_toolkits.mplot3d import Axes3D
@@ -103,7 +102,7 @@ def main():
         # keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         # specz = allspecz[keep]
         # ngal = len(keep)
-        
+        # return specz
         data = np.zeros((ngal,4))
         
         data[:,0] = specz['RA']
@@ -137,33 +136,33 @@ def main():
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
         # Does the param file have to be in a certain order?
-        specz = allspecz[keep]
-        ngal = len(keep)
-        data = np.zeros((ngal,4))
+        # specz = allspecz[keep]
+        # ngal = len(keep)
+        # data = np.zeros((ngal,4))
       
-	data[:,0] = specz['RA']
-	data[:,1] = specz['DEC']
-	data[:,2] = specz['Z']
-	data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # RETURN FPK WEIGHTS ONCE RANDOMS ARE COMPUTED
-        log.info('Writing {}'.format(datafile))
-	np.savetxt(datafile, data)
+	# data[:,0] = specz['RA']
+	# data[:,1] = specz['DEC']
+	# data[:,2] = specz['Z']
+	# data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        # # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        # # RETURN FPK WEIGHTS ONCE RANDOMS ARE COMPUTED
+        # log.info('Writing {}'.format(datafile))
+	# np.savetxt(datafile, data)
 	
-	ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
-	  np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
-	keep = np.where(veto==1)[0]
-	nobj = len(keep)
+	# ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
+	#   np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
+	# keep = np.where(veto==1)[0]
+	# nobj = len(keep)
 	
-	rand = np.zeros((nobj,4))
-	rand[:,0] = ra[keep]
-	rand[:,1] = dec[keep]
-	rand[:,2] = z[keep]
-	rand[:,3] = wcp[keep]+wzf[keep]-1
-        # COMPUTE FPK WEIGHTS
+	# rand = np.zeros((nobj,4))
+	# rand[:,0] = ra[keep]
+	# rand[:,1] = dec[keep]
+	# rand[:,2] = z[keep]
+	# rand[:,3] = wcp[keep]+wzf[keep]-1
+        # # COMPUTE FPK WEIGHTS
 	
-        log.info('Writing {}'.format(randomfile))
-	np.savetxt(randomfile, rand)
+        # log.info('Writing {}'.format(randomfile))
+	# np.savetxt(randomfile, rand)
 
         # Do stuff; write paramfile; call cute using os.system()
         # Does the param file have to be in a certain order? Probably not
