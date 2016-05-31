@@ -7,6 +7,8 @@ http://data.sdss3.org/sas/dr11/boss/lss/
 
 # r perp para
 # all 600
+# all combinations
+# covariance matrix
 # monopole vs published
 # implement logging
 # calculate random weights and reimpliment data weights
@@ -62,7 +64,6 @@ def more_cute():
 def main():
 
     parser = argparse.ArgumentParser()
-  
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
