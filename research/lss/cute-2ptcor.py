@@ -7,11 +7,11 @@ http://data.sdss3.org/sas/dr11/boss/lss/
 
 # r perp para
 # all 600
-# all combinations
-# covariance matrix
 # monopole vs published
 # implement logging
 # calculate random weights and reimpliment data weights
+# all combinations
+# covariance matrix
 
 from __future__ import division, print_function
 
@@ -21,6 +21,8 @@ import argparse
 import logging as log
 import numpy as np
 from astropy.io import fits
+import astropy.cosmology as cosmo
+
 
 def plotmqh(mono1,q1,hx1,rrange):
 
@@ -31,6 +33,7 @@ def plotmqh(mono1,q1,hx1,rrange):
     plt.plot(rrange, q1*rrange**2, 'ko')
     plt.subplot(313)
     plt.plot(rrange, hx1*rrange**2, 'ko')
+    plt.show()
 
 def compute_monopole(mu, r, xirm):
     xirm = xirm*1.0
@@ -61,6 +64,11 @@ def more_cute():
         # write out unique file names
     return end
 
+# def calc_fkp_distance(z):
+#     weight = cosmo.comoving_distance(z)
+
+
+    
 def main():
 
     parser = argparse.ArgumentParser()
@@ -79,7 +87,7 @@ def main():
 
     CUTEdir = os.path.join(os.getenv('CUTE'))
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
-    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
+    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms','*.dat')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
@@ -120,6 +128,10 @@ def main():
 
     if args.docute:
 
+        for item in randomsdir:
+
+            randomfile = os.path.join(randomsdir, str(item))
+
         pfile = open(paramfile,'w')
         pfile.write('data_filename= '+datafile+'\n')
         pfile.write('random_filename= '+randomfile+'\n')
@@ -129,7 +141,7 @@ def main():
         pfile.write('corr_type= '+args.docute+'\n')
         pfile.write('num_lines= all\n')
         pfile.write('corr_estimator= LS\n')
-            
+        
         if args.docute == 'monopole':
             pfile.write('input_format= 2\n')
             pfile.write('np_rand_fact= 8\n')
@@ -148,7 +160,7 @@ def main():
             pfile.write('radial_aperture= 1\n')
             pfile.write('use_pm= 1\n')
             pfile.write('n_pix_sph= 2048\n')
-                
+            
         if args.docute == '3D_rm':
             pfile.write('input_format= 2\n')
             pfile.write('np_rand_fact= 9.5217\n')
@@ -169,11 +181,10 @@ def main():
             pfile.write('n_pix_sph= 2048\n')
 
         pfile.close()
-        os.system('CUTE '+paramfile)
+
+            os.system('CUTE '+paramfile)
+            
         #os.system('CUTE-noweights '+paramfile)
-        # Fix this
-        #os.system(os.path.join('.',CUTEdir,'/CUTE ')+paramfile)
-        #os.system('./CUTE '+paramfile)
 
     if args.qaplots:
 
