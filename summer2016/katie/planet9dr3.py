@@ -70,7 +70,7 @@ def main():
 
     ncat = len(catfiles)
 
-    known_asteroids = fits.getdata(os.path.join(datadir, 'asteroids_decals_dr2.fits'), 1)
+    known_asteroids = fits.getdata(#GET THE ASTEROIDS)
     
     gfaint = 30.0
     nout = 0
