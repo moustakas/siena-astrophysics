@@ -9,6 +9,7 @@ http://data.sdss3.org/sas/dr11/boss/lss/
 # all 600
 # monopole vs published
 # implement logging
+# calculate random weights and reimpliment data weights
 
 from __future__ import division, print_function
 
@@ -68,7 +69,6 @@ def main():
     parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
 
-    # Add arguments concerning corr_type
     args = parser.parse_args()
     # Set up the logger; basic error checking.
     #log = logging.getLogger()
@@ -101,7 +101,7 @@ def main():
         data[:,2] = specz['Z']
         data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # RETURN FPK WEIGHTS ONCE RANDOMS ARE COMPUTED
+
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
 	
@@ -115,14 +115,12 @@ def main():
         rand[:,1] = dec[keep]
         rand[:,2] = z[keep]
         rand[:,3] = wcp[keep]+wzf[keep]-1
-        # COMPUTE FPK WEIGHTS
 
         log.info('Writing {}'.format(randomfile))
         np.savetxt(randomfile, rand)
 
     if args.docute:
-        # Do stuff; write paramfile; call cute using os.system()
-        # Does the param file have to be in a certain order? Probably not
+
         pfile = open(paramfile,'w')
         pfile.write('data_filename= '+datafile+'\n')
         pfile.write('random_filename= '+randomfile+'\n')
