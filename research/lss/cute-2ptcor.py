@@ -57,15 +57,9 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def more_cute():
-    # for item in randomsdir:
-        # randomfile = item
-        # do cute
-        # write out unique file names
-    return end
-
-# def calc_fkp_distance(z):
-#     weight = cosmo.comoving_distance(z)
+def calc_fkp_distance(z):
+    weight = Planck13.comoving_volume(z)
+    return weight
 
 
     
@@ -116,15 +110,19 @@ def main():
           np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
         keep = np.where(veto==1)[0]
         nobj = len(keep)
-	
-        rand = np.zeros((nobj,4))
-        rand[:,0] = ra[keep]
-        rand[:,1] = dec[keep]
-        rand[:,2] = z[keep]
-        rand[:,3] = wcp[keep]+wzf[keep]-1
 
-        log.info('Writing {}'.format(randomfile))
-        np.savetxt(randomfile, rand)
+	for item in randomsdir:
+
+            randomfile = os.path.join(randomsdir, str(item))
+
+            rand = np.zeros((nobj,4))
+            rand[:,0] = ra[keep]
+            rand[:,1] = dec[keep]
+            rand[:,2] = z[keep]
+            rand[:,3] = wcp[keep]+wzf[keep]-1
+
+            log.info('Writing {}'.format(randomfile))
+            np.savetxt(randomfile, rand)
 
     if args.docute:
 
