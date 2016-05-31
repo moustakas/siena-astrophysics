@@ -53,21 +53,23 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def more_cute():
-    for item in randomsdir:
-        randomfile = item
-        do cute
-        write out unique file names
+    # for item in randomsdir:
+        # randomfile = item
+        # do cute
+        # write out unique file names
     return end
 
 def main():
 
     parser = argparse.ArgumentParser()
-    args = parser.parse_args()
+  
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
+
+    args = parser.parse_args()
 
     key = 'LSS_BOSS'
     if key not in os.environ:
