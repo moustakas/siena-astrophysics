@@ -17,7 +17,6 @@ import os
 import sys
 import argparse
 import logging as log
-
 import numpy as np
 from astropy.io import fits
 
@@ -54,24 +53,21 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def more_cute():
-    # randomsdir
-    #for item in randomsdir:
-        
-    # loop through each data file doing cute
-    #return end
+    for item in randomsdir:
+        randomfile = item
+        do cute
+        write out unique file names
     return end
 
 def main():
 
     parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
-
-    args = parser.parse_args()
-    # Set up the logger; basic error checking.
-    #log = logging.getLogger()
 
     key = 'LSS_BOSS'
     if key not in os.environ:
@@ -177,8 +173,10 @@ def main():
         #os.system('./CUTE '+paramfile)
 
     if args.qaplots:
+
         import PIL
         import matplotlib.pyplot as plt
+        
         # Make rockin' plots and write out.
         if args.qaplots == 'monopole':
             rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
@@ -187,19 +185,18 @@ def main():
             plt.axis([-5, 155, 0, 120])
             plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
             plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
+            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
             plt.show()
 
         if args.qaplots == '3D_rm':
             mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            rad = np.linspace(2,198,40)
             mono1 = compute_monopole(mu, rad, xi)
             q1 = compute_quadrupole(mu, rad, xi)
             hex1 = compute_hexadecapole(mu, rad, xi)
-            plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
-            plt.imshow(xi.reshape(50, 40)) ; plt.show()
+            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
+            plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
-            plt.show()
+            # plt.show()
             # Make 2x2 matrix of images
         
 if __name__ == "__main__":
