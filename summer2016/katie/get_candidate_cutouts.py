@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 ''' This script will create a set of .jpg files which are cutouts of possible
-Planet nine candidates obtained from the planet9dr3.py script
+Planet Nine candidates obtained from the planet9dr3.py script
 
 '''
 
 import os
 import numpy as np
 from astropy.io import fits
+
+import pdb
 
 
 def main():
@@ -21,10 +23,7 @@ def main():
     
     
 
-
-
-
-    
+    # pdb.set_trace()
 
 
 

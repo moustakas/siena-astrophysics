@@ -61,23 +61,24 @@ def main():
     It rules out objects that are already identified and puts the possible Planet Nine candidates into a .fits file.
 
     '''
+    
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-*.fits')
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-00*.fits')
 
     ncat = len(catfiles)
 
     gfaint = 30.0
     nout = 0
     for ii, thisfile in enumerate(catfiles):
-        # print('Reading {}'.format(thisfile))
+        print('Reading {}'.format(thisfile))
         cat = fits.getdata(thisfile, 1) 
         cand = getcandidates(cat, gfaint=gfaint)
 
         if len(cand) > 0:
             
-            if nout = 0:
+            if nout > 0:
                 out = cat[cand]
                 nout = len(out)
             else:
@@ -87,8 +88,8 @@ def main():
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
         # outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
-        # known = 
-        # ...
+        # known_asteroids = 
+        # idx, d2d, d3d = outcoord.match_to_catalog_sky(known_asteroids)
         # finalout = out[non-matching-objects]
         
         print('Writing {}'.format(outfile))
