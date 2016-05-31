@@ -13,15 +13,23 @@ from astropy.io import fits
 def main():
 
     in_dir = os.path.join(os.environ.get('HOME'), 'planet9-dr3-candidates.fits')
-    out_dir = in_dir + 'candidate_cutouts/'
+    out_dir = os.path.join(in_dir, 'candidate_cutouts/')
     
 
     cutout_size = 20  # number of pixels per side of the cutout
     
-
-
+    
+    
 
 
 
 
     
+
+
+
+
+
+
+if __name__ == '__main__':
+    main()
