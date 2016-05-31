@@ -19,7 +19,11 @@ import logging as log
 
 import numpy as np
 from astropy.io import fits
+<<<<<<< HEAD
 import matplotlib.pyplot as plt
+=======
+#import matplotlib.pyplot as plt
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
 #from mpl_toolkits.mplot3d import Axes3D
 
 def plotmqh(mono1,q1,hx1,rrange):
@@ -57,15 +61,25 @@ def compute_hexadecapole(mu, r, xirm):
 def more_cute():
     # link to the data
     # loop through each data file doing cute
+<<<<<<< HEAD
+    return end
+
+def main():
+=======
+    return done
 
 def main():
 
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
     parser = argparse.ArgumentParser()
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='3D_rm', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default='3D_rm', help='Generate QAplots.')
+<<<<<<< HEAD
     # Add arguments concerning corr_type
+=======
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
 
     args = parser.parse_args()
 
@@ -77,16 +91,63 @@ def main():
         log.fatal('Required ${} environment variable not set'.format(key))
         return 0
 
+<<<<<<< HEAD
+=======
+    CUTEdir = os.path.join(os.getenv('CUTE'))
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
+<<<<<<< HEAD
+=======
+    # names for output and param files
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
 
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
         allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
+<<<<<<< HEAD
+        
+        specz = allspecz[keep]
+        ngal = len(keep)
+        
+        data = np.zeros((ngal,4))
+        
+        data[:,0] = specz['RA']
+        data[:,1] = specz['DEC']
+        data[:,2] = specz['Z']
+        data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        # RETURN FPK WEIGHTS ONCE RANDOMS ARE COMPUTED
+        log.info('Writing {}'.format(datafile))
+        np.savetxt(datafile, data)
+	
+        ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
+          np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
+        keep = np.where(veto==1)[0]
+        nobj = len(keep)
+	
+        rand = np.zeros((nobj,4))
+        rand[:,0] = ra[keep]
+        rand[:,1] = dec[keep]
+        rand[:,2] = z[keep]
+        rand[:,3] = wcp[keep]+wzf[keep]-1
+        # COMPUTE FPK WEIGHTS
+	
+        # plt.figure()
+        # plt.plot(data[:,0],data[:,1],'bo')
+        # plt.show()
+
+        log.info('Writing {}'.format(randomfile))
+        np.savetxt(randomfile, rand)
+
+    if args.docute:
+        # Do stuff; write paramfile; call cute using os.system()
+        # Does the param file have to be in a certain order?
+=======
 
         specz = allspecz[keep]
         ngal = len(keep)
@@ -115,16 +176,13 @@ def main():
 	rand[:,3] = wcp[keep]+wzf[keep]-1
         # COMPUTE FPK WEIGHTS
 	
-        # plt.figure()
-        # plt.plot(data[:,0],data[:,1],'bo')
-        # plt.show()
-
         log.info('Writing {}'.format(randomfile))
 	np.savetxt(randomfile, rand)
 
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
-        # Does the param file have to be in a certain order?
+        # Does the param file have to be in a certain order? Probably not
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
         pfile = open(paramfile,'w')
         pfile.write('data_filename= '+datafile+'\n')
         pfile.write('random_filename= '+randomfile+'\n')
@@ -174,8 +232,15 @@ def main():
             pfile.write('n_pix_sph= 2048\n')
 
         pfile.close()
+<<<<<<< HEAD
         os.system('CUTE '+paramfile)
         #os.system('CUTE-noweights '+paramfile)
+=======
+        # Fix this
+        #os.system(os.path.join('.',CUTEdir,'/CUTE ')+paramfile)
+        #os.system('CUTE-noweights '+paramfile)
+        #os.system('./CUTE '+paramfile)
+>>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
     
     if args.qaplots:
         # Make rockin' plots and write out.
