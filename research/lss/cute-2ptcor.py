@@ -20,9 +20,6 @@ import logging as log
 import numpy as np
 from astropy.io import fits
 
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d import Axes3D
-        
 def plotmqh(mono1,q1,hx1,rrange):
 
     plt.figure()
@@ -56,7 +53,9 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def more_cute():
-    # link to the data
+    # randomsdir
+    for item in randomsdir:
+        
     # loop through each data file doing cute
     return end
 
@@ -83,28 +82,22 @@ def main():
 
     CUTEdir = os.path.join(os.getenv('CUTE'))
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
-    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr,'randoms')
+    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
+    # unique names for output and param files
 
-    allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
-    keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
-    specz = allspecz[keep]
-    ngal = len(keep)
-    
-        
-    # names for output and param files
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
-        # allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
-        # keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
-        # specz = allspecz[keep]
-        # ngal = len(keep)
-        # return specz
+
+        allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
+        keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
+        specz = allspecz[keep]
+        ngal = len(keep)
+
         data = np.zeros((ngal,4))
-        
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
@@ -125,13 +118,11 @@ def main():
         rand[:,2] = z[keep]
         rand[:,3] = wcp[keep]+wzf[keep]-1
         # COMPUTE FPK WEIGHTS
-	
-        # plt.figure()
-        # plt.plot(data[:,0],data[:,1],'bo')
-        # plt.show()
 
         log.info('Writing {}'.format(randomfile))
         np.savetxt(randomfile, rand)
+
+        return specz
 
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
@@ -219,7 +210,6 @@ def main():
         #os.system('CUTE-noweights '+paramfile)
         # Fix this
         #os.system(os.path.join('.',CUTEdir,'/CUTE ')+paramfile)
-        #os.system('CUTE-noweights '+paramfile)
         #os.system('./CUTE '+paramfile)
 
     if args.qaplots:
@@ -246,7 +236,7 @@ def main():
             plt.imshow(xi.reshape(50, 40)) ; plt.show()
             plotmqh(mono1,q1,hex1,rad)
             plt.show()
-            # Make 2x2
+            # Make 2x2 matrix of images
         
 if __name__ == "__main__":
     main()
