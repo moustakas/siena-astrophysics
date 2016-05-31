@@ -21,7 +21,7 @@ import argparse
 import logging as log
 import numpy as np
 from astropy.io import fits
-import astropy.cosmology as cosmo
+from astropy.cosmology import Planck13
 
 
 def plotmqh(mono1,q1,hx1,rrange):
