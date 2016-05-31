@@ -7,6 +7,7 @@ Katie Hoag
 Siena College
 
 '''
+
 import os
 import numpy as np
 from glob import glob
@@ -27,8 +28,8 @@ def getcandidates(cat, gfaint=None):
     det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 5)
     no_z = (cat['decam_flux'][:, 4]*np.sqrt(cat['decam_flux_ivar'][:, 4]) < 1)
 
-    # Remove WISE data.  
-    # Run sigma checker on WISE 1 and 2.  
+    # Remove WISE data and run sigma checker on WISE 1 and 2.   
+
     no_w1 = (cat['wise_flux'][:, 0]*np.sqrt(cat['wise_flux_ivar'][:, 0]) < 5)
     no_w2 = (cat['wise_flux'][:, 1]*np.sqrt(cat['wise_flux_ivar'][:, 1]) < 5)
 
@@ -69,6 +70,8 @@ def main():
 
     ncat = len(catfiles)
 
+    known_asteroids = fits.getdata(os.path.join(datadir, 'asteroids_decals_dr2.fits'), 1)
+    
     gfaint = 30.0
     nout = 0
     for ii, thisfile in enumerate(catfiles):
@@ -87,14 +90,14 @@ def main():
 
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
-        # outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
-        # known_asteroids = 
-        # idx, d2d, d3d = outcoord.match_to_catalog_sky(known_asteroids)
-        # finalout = out[non-matching-objects]
+        outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
+        knowncoord = SkyCoord(ra=known_asteroids['ra'], dec=known_asteroids['dec'])
+        idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
+        finalout = out[non-matching-objects]
         
         print('Writing {}'.format(outfile))
-        out.write(outfile, clobber=True)
-        #finalout.write(outfile, clobber=True)
+        #out.write(outfile, clobber=True)
+        finalout.write(outfile, clobber=True)
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
-''' This script will create a set of .jpg files which are cutouts of possible
-Planet Nine candidates obtained from the planet9dr3.py script
+'''
+Search for Planet 9 in DECaLS/DR3.
+
+Katie Hoag
+2016 May 31
+Siena College
 
 '''
 
@@ -14,18 +18,24 @@ import pdb
 
 def main():
 
-    in_dir = os.path.join(os.environ.get('HOME'), 'planet9-dr3-candidates.fits')
+    ''' This script creates a set of .jpg files which are cutouts of possible Planet Nine candidates obtained from the planet9dr3.py script.
+'''
+
+    in_file = os.path.join(os.environ.get('HOME'), 'planet9-dr3-candidates.fits')
     out_dir = os.path.join(in_dir, 'candidate_cutouts/')
     
-
     cutout_size = 20  # number of pixels per side of the cutout
+
+    
+    
+    for ii in range():
+        print('Working on candidate {}'.format(ii))
+        ra = 
+        dec =
+        
     
     
     
-
-    # pdb.set_trace()
-
-
 
 
 
