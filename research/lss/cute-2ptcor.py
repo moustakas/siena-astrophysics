@@ -54,13 +54,11 @@ def compute_hexadecapole(mu, r, xirm):
 
 def more_cute():
     # randomsdir
-    for item in randomsdir:
+    #for item in randomsdir:
         
     # loop through each data file doing cute
+    #return end
     return end
-
-def main():
-    return done
 
 def main():
 
@@ -122,39 +120,7 @@ def main():
         log.info('Writing {}'.format(randomfile))
         np.savetxt(randomfile, rand)
 
-        return specz
-
     if args.docute:
-        # Do stuff; write paramfile; call cute using os.system()
-        # Does the param file have to be in a certain order?
-        # specz = allspecz[keep]
-        # ngal = len(keep)
-        # data = np.zeros((ngal,4))
-      
-	# data[:,0] = specz['RA']
-	# data[:,1] = specz['DEC']
-	# data[:,2] = specz['Z']
-	# data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # # RETURN FPK WEIGHTS ONCE RANDOMS ARE COMPUTED
-        # log.info('Writing {}'.format(datafile))
-	# np.savetxt(datafile, data)
-	
-	# ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
-	#   np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
-	# keep = np.where(veto==1)[0]
-	# nobj = len(keep)
-	
-	# rand = np.zeros((nobj,4))
-	# rand[:,0] = ra[keep]
-	# rand[:,1] = dec[keep]
-	# rand[:,2] = z[keep]
-	# rand[:,3] = wcp[keep]+wzf[keep]-1
-        # # COMPUTE FPK WEIGHTS
-	
-        # log.info('Writing {}'.format(randomfile))
-	# np.savetxt(randomfile, rand)
-
         # Do stuff; write paramfile; call cute using os.system()
         # Does the param file have to be in a certain order? Probably not
         pfile = open(paramfile,'w')
