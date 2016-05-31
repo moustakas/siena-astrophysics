@@ -66,7 +66,6 @@ def main():
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='3D_rm', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default='3D_rm', help='Generate QAplots.')
-    # Add arguments concerning corr_type
 
     args = parser.parse_args()
 
@@ -78,7 +77,7 @@ def main():
         log.fatal('Required ${} environment variable not set'.format(key))
         return 0
 
-    # Add CUTE dir?
+    CUTEdir = os.path.join(os.getenv('CUTE'))
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
@@ -123,7 +122,7 @@ def main():
 
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
-        # Does the param file have to be in a certain order?
+        # Does the param file have to be in a certain order? Probably not
         pfile = open(paramfile,'w')
         pfile.write('data_filename= '+datafile+'\n')
         pfile.write('random_filename= '+randomfile+'\n')
@@ -173,8 +172,10 @@ def main():
             pfile.write('n_pix_sph= 2048\n')
 
         pfile.close()
-        os.system('CUTE '+paramfile)
+        # Fix this
+        #os.system(os.path.join('.',CUTEdir,'/CUTE ')+paramfile)
         #os.system('CUTE-noweights '+paramfile)
+        #os.system('./CUTE '+paramfile)
     
     if args.qaplots:
         # Make rockin' plots and write out.
