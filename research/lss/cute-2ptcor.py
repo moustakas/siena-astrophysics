@@ -83,7 +83,7 @@ def main():
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms','*.dat')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-    randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
+    randomfile = os.path.join(drdir, args.dr+'_cmass_random')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
     # unique names for output and param files
@@ -120,12 +120,12 @@ def main():
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
             rand[:,3] = wcp[keep]+wzf[keep]-1
-
+            print(randomfile)
             log.info('Writing {}'.format(randomfile))
-            np.savetxt(randomfile, rand)
+            np.savetxt(randomfile+'{}'.format(item), rand)
+            #print('wrote file')
 
     if args.docute:
-
         for item in randomsdir:
 
             randomfile = os.path.join(randomsdir, str(item))
