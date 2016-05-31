@@ -20,7 +20,7 @@ from astropy import units as u
 
 
 def getcandidates(cat, gfaint=None):
-    '''Select Planet 9 candidates from a Tractor catalog.'''
+    '''This script will select Planet 9 candidates from Tractor catalogs.'''
 
     # The sigma checker for g, r, and z filters.  
     det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 5)
@@ -55,31 +55,29 @@ def getcandidates(cat, gfaint=None):
     
     #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
-# use matching catalogs and astropy.coordinates
-    # obj_coord = SkyCoord() # known data  
-    #cat_coord = SkyCoord(cat['ra'], cat['dec'])  # in degrees  
-    #separation = obj_coord.separation(cat_coord)  # Separation might be good to use  
-    #if separation <        # small enough for the objects to overlap
-
 
 def main():
+    '''This script selects possible candidates for Planet Nine from Tractor DR3 catalogs.
+    It rules out objects that are already identified and puts the possible Planet Nine candidates into a .fits file.
 
+    '''
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
-    catfiles = glob(os.path.join(datadir, 'tractor-*.fits'))
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-*.fits')
+
     ncat = len(catfiles)
 
     gfaint = 30.0
     nout = 0
     for ii, thisfile in enumerate(catfiles):
-        print('Reading {}'.format(thisfile))
+        # print('Reading {}'.format(thisfile))
         cat = fits.getdata(thisfile, 1) 
         cand = getcandidates(cat, gfaint=gfaint)
 
         if len(cand) > 0:
             
-            if nout > 0:
+            if nout = 0:
                 out = cat[cand]
                 nout = len(out)
             else:
@@ -89,7 +87,7 @@ def main():
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
         # outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
-        # ...
+        # known = 
         # ...
         # finalout = out[non-matching-objects]
         
