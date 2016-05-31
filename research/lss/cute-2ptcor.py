@@ -19,13 +19,11 @@ import logging as log
 
 import numpy as np
 from astropy.io import fits
-<<<<<<< HEAD
-import matplotlib.pyplot as plt
-=======
 #import matplotlib.pyplot as plt
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
-#from mpl_toolkits.mplot3d import Axes3D
 
+#import matplotlib.pyplot as plt
+#from mpl_toolkits.mplot3d import Axes3D
+        
 def plotmqh(mono1,q1,hx1,rrange):
 
     plt.figure()
@@ -61,28 +59,21 @@ def compute_hexadecapole(mu, r, xirm):
 def more_cute():
     # link to the data
     # loop through each data file doing cute
-<<<<<<< HEAD
     return end
 
 def main():
-=======
     return done
 
 def main():
 
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
     parser = argparse.ArgumentParser()
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
-    parser.add_argument('--docute', type=str, default='3D_rm', help='Run CUTE.')
-    parser.add_argument('--qaplots', type=str, default='3D_rm', help='Generate QAplots.')
-<<<<<<< HEAD
+    parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
+    parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
+
     # Add arguments concerning corr_type
-=======
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
-
     args = parser.parse_args()
-
     # Set up the logger; basic error checking.
     #log = logging.getLogger()
 
@@ -91,28 +82,27 @@ def main():
         log.fatal('Required ${} environment variable not set'.format(key))
         return 0
 
-<<<<<<< HEAD
-=======
     CUTEdir = os.path.join(os.getenv('CUTE'))
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
+    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr,'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random.dat')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
-<<<<<<< HEAD
-=======
-    # names for output and param files
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
 
+    allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
+    keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
+    specz = allspecz[keep]
+    ngal = len(keep)
+    
+        
+    # names for output and param files
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
-        allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
-        keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
-<<<<<<< HEAD
-        
-        specz = allspecz[keep]
-        ngal = len(keep)
+        # allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
+        # keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
+        # specz = allspecz[keep]
+        # ngal = len(keep)
         
         data = np.zeros((ngal,4))
         
@@ -147,12 +137,8 @@ def main():
     if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
         # Does the param file have to be in a certain order?
-=======
-
         specz = allspecz[keep]
         ngal = len(keep)
-        print(specz[1])
-
         data = np.zeros((ngal,4))
       
 	data[:,0] = specz['RA']
@@ -179,10 +165,8 @@ def main():
         log.info('Writing {}'.format(randomfile))
 	np.savetxt(randomfile, rand)
 
-    if args.docute:
         # Do stuff; write paramfile; call cute using os.system()
         # Does the param file have to be in a certain order? Probably not
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
         pfile = open(paramfile,'w')
         pfile.write('data_filename= '+datafile+'\n')
         pfile.write('random_filename= '+randomfile+'\n')
@@ -232,17 +216,16 @@ def main():
             pfile.write('n_pix_sph= 2048\n')
 
         pfile.close()
-<<<<<<< HEAD
         os.system('CUTE '+paramfile)
         #os.system('CUTE-noweights '+paramfile)
-=======
         # Fix this
         #os.system(os.path.join('.',CUTEdir,'/CUTE ')+paramfile)
         #os.system('CUTE-noweights '+paramfile)
         #os.system('./CUTE '+paramfile)
->>>>>>> 4b6b59688c323b7a0bcf27c29506c31c90ae1e5e
-    
+
     if args.qaplots:
+        import PIL
+        import matplotlib.pyplot as plt
         # Make rockin' plots and write out.
         if args.qaplots == 'monopole':
             rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
@@ -254,15 +237,17 @@ def main():
             plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
             plt.show()
 
-        if args.qaplots == '3D.rm':
+        if args.qaplots == '3D_rm':
             mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
             rad = np.linspace(2,198,40)
             mono1 = compute_monopole(mu, rad, xi)
             q1 = compute_quadrupole(mu, rad, xi)
             hex1 = compute_hexadecapole(mu, rad, xi)
+            plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
             plt.imshow(xi.reshape(50, 40)) ; plt.show()
             plotmqh(mono1,q1,hex1,rad)
             plt.show()
+            # Make 2x2
         
 if __name__ == "__main__":
     main()
