@@ -20,6 +20,8 @@ import argparse
 import glob
 import logging as log
 import numpy as np
+import PIL
+import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.cosmology import Planck13
 
@@ -106,7 +108,7 @@ def main():
         np.savetxt(datafile, data)
 	
         for item in range(len(randomslist)):
-            print(randomslist[item])
+            #print(randomslist[item])
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -116,23 +118,23 @@ def main():
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
             rand[:,3] = wcp[keep]+wzf[keep]-1
-            log.info('Writing {}'.format(randomfile))
-            print('Writing file {}'.format(item))
-            with open(randomfile+'{}'.format(item), 'w') as f: # make sure that these are unique names
+            #log.info('Writing {}'.format(randomfile))
+            print('Writing file {} of 4600'.format(item+4001))
+            with open(randomfile+'{}'.format(item+4001), 'w') as f:
                 f.write(rand)
                 f.close()
 
     if args.docute:
         for item in range(len(randomslist)):
 
-            randomfile = randomfile+'{}'.format(item) # check to see what this returns
+            paramfile = paramfile+'{}'.format(item)
 
-            pfile = open(paramfile,'w')
+            pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
+            pfile.write('random_filename= '+randomfile+'{}'.format(item)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
+            pfile.write('output_filename= '+outfile+'{}'.format(item)+'\n')
             pfile.write('corr_type= '+args.docute+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
@@ -176,16 +178,9 @@ def main():
                 pfile.write('n_pix_sph= 2048\n')
             
             pfile.close()
-        
             os.system('CUTE '+paramfile)
-            
-            #os.system('CUTE-noweights '+paramfile)
 
     if args.qaplots:
-
-        import PIL
-        import matplotlib.pyplot as plt
-        
         # Make rockin' plots and write out.
         if args.qaplots == 'monopole':
             rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
