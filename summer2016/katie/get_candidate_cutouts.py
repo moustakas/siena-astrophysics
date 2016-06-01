@@ -29,6 +29,7 @@ def main():
     out_dir = os.path.join(in_file, 'candidate_cutouts/')
 
     cand_info = fits.getdata(in_file, 1)
+    print(cand_info)
     for ii in range(len(in_file)):
         print('Working on candidate {}'.format(ii))
         ra = cand_info['ra']

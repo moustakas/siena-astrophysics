@@ -21,7 +21,7 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 
 
-def getcandidates(cat, gfaint=None):
+def get_candidates(cat, gfaint=None):
     
     """ This script will select Planet 9 candidates from Tractor catalogs."""
 
@@ -37,15 +37,15 @@ def getcandidates(cat, gfaint=None):
     
     # Candidates must comply with the following parameters to be considered.  
     good = (det_g*det_r*no_z*no_w1*no_w2*
-            (cat['brick_primary'] == 'T')*
+            (cat['brick_primary'] == 'True')*
             (cat['decam_nobs'][:, 1] == 1)*
             (cat['decam_nobs'][:, 2] == 1)*
             (cat['decam_nobs'][:, 4] >= 1)*
-            (cat['out_of_bounds'] == 'F')*
+            (cat['out_of_bounds'] == 'False')*
             (cat['decam_anymask'][:, 1] == 0)*
             (cat['decam_anymask'][:, 2] == 0)*
             (cat['decam_anymask'][:, 4] == 0)*
-            (cat['tycho2inblob'] == 'F')*
+            (cat['tycho2inblob'] == 'False')*
             (cat['decam_fracflux'][:, 1] < 0.1)*
             (cat['decam_fracflux'][:, 2] < 0.1)*
             (cat['decam_fracflux'][:, 4] < 0.1)*
@@ -67,20 +67,20 @@ def main():
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-04*.fits')
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-*.fits')
     ncat = len(catfiles)
-
+    print('Number of images to check: ' ncat)
     asteroid_path = os.path.join(datadir, 'asteroids_decals_dr2.fits')
     known_asteroids = fits.getdata(asteroid_path, 1)
     
     gfaint = 30.0
     nout = 0
     
-    for ii, thisfile in enumerate(catfiles):
+    for ii, thisfile in enumerate(catfiles):  # not getting any candidates
+        # maybe parameters are too strict in get_candidates?
         print('Reading {}'.format(thisfile))
-        cat = fits.getdata(thisfile, 1) 
-        cand = getcandidates(cat, gfaint=gfaint)
-
+        cat = fits.getdata(thisfile, 1)
+        cand = get_candidates(cat, gfaint=gfaint)
         if len(cand) > 0:
             
             if nout > 0:
@@ -89,20 +89,20 @@ def main():
             else:
                 out = vstack((out, cat[cand]))
                 nout = len(out)
-
+    #print(nout)
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
         outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
         knowncoord = SkyCoord(ra=known_asteroids['ra'],
                               dec=known_asteroids['dec'])
         idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
-        matches = knowncoord[idx] # do I need this line?
+        matches = knowncoord[idx]  # is this needed?
         # what is non_matching_objects?
         finalout = out[non_matching_objects]
         
         print('Writing {}'.format(outfile))
         finalout.write(outfile, clobber=True)
-
+        print(len(finalout))
     # pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
 
