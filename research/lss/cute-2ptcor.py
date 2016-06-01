@@ -86,7 +86,7 @@ def main():
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-    randomfile = os.path.join(drdir, args.dr+'_cmass_random')
+    randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
