@@ -57,8 +57,10 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_distance(z):
-    volume = Planck13.comoving_volume(z)
+def calc_fkp_distance(zmax, zmin):
+    volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
+    
+
     return weight
 
 def covariance(rad, xi):
@@ -84,7 +86,7 @@ def main():
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-    randomfile = os.path.join(drdir, args.dr+'_cmass_random')
+    randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
