@@ -5,8 +5,7 @@ http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
 
-# r perp para
-# all 600
+# pi sigma
 # monopole vs published
 # implement logging
 # calculate random weights and reimpliment data weights
@@ -22,7 +21,6 @@ import logging as log
 import numpy as np
 from astropy.io import fits
 from astropy.cosmology import Planck13
-
 
 def plotmqh(mono1,q1,hx1,rrange):
 
@@ -58,11 +56,9 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def calc_fkp_distance(z):
-    weight = Planck13.comoving_volume(z)
+    volume = Planck13.comoving_volume(z)
     return weight
 
-
-    
 def main():
 
     parser = argparse.ArgumentParser()
@@ -112,23 +108,20 @@ def main():
         nobj = len(keep)
 
 	for item in randomsdir:
-
-            randomfile = os.path.join(randomsdir, str(item))
-
+            randomfile = randomsdir[item] # test to see what this gives
             rand = np.zeros((nobj,4))
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
             rand[:,3] = wcp[keep]+wzf[keep]-1
-            print(randomfile)
             log.info('Writing {}'.format(randomfile))
-            np.savetxt(randomfile+'{}'.format(item), rand)
-            #print('wrote file')
+            with io.open(randomfile+'{}'.format(item), 'w') as f: # make sure that these are unique names
+                f.write(rand)
 
     if args.docute:
         for item in randomsdir:
 
-            randomfile = os.path.join(randomsdir, str(item))
+            randomfile = randomsdir[item] # check to see what this returns
 
             pfile = open(paramfile,'w')
             pfile.write('data_filename= '+datafile+'\n')
