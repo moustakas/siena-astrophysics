@@ -120,7 +120,7 @@ def main():
             rand[:,3] = wcp[keep]+wzf[keep]-1
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            with open(randomfile+'{}'.format(item+4001), 'w') as f:
+            with open(randomfile+'{}.dat'.format(item+4001), 'w') as f:
                 f.write(rand)
                 f.close()
 
@@ -131,10 +131,10 @@ def main():
 
             pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'{}'.format(item)+'\n')
+            pfile.write('random_filename= '+randomfile+'{}'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'{}'.format(item)+'\n')
+            pfile.write('output_filename= '+outfile+'{}'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.docute+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
