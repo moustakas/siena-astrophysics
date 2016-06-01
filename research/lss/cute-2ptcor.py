@@ -8,7 +8,7 @@ http://data.sdss3.org/sas/dr11/boss/lss/
 # pi sigma
 # monopole vs published
 # implement logging
-# calculate random weights and reimpliment data weights
+# calculate random weights and reimpliment data weights before running on 600 random data points
 # all combinations
 # covariance matrix
 
@@ -23,7 +23,6 @@ from astropy.io import fits
 from astropy.cosmology import Planck13
 
 def plotmqh(mono1,q1,hx1,rrange):
-
     plt.figure()
     plt.subplot(311)
     plt.plot(rrange, mono1*rrange**2, 'ko')
@@ -59,8 +58,10 @@ def calc_fkp_distance(z):
     volume = Planck13.comoving_volume(z)
     return weight
 
-def main():
+def covariance(rad, xi):
+    cov = np.cov(
 
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
@@ -115,6 +116,7 @@ def main():
             rand[:,2] = z[keep]
             rand[:,3] = wcp[keep]+wzf[keep]-1
             log.info('Writing {}'.format(randomfile))
+            print('Writing file {}'.format(item))
             with io.open(randomfile+'{}'.format(item), 'w') as f: # make sure that these are unique names
                 f.write(rand)
 
