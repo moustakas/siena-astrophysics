@@ -120,11 +120,12 @@ def main():
             print('Writing file {}'.format(item))
             with open(randomfile+'{}'.format(item), 'w') as f: # make sure that these are unique names
                 f.write(rand)
+                f.close()
 
     if args.docute:
         for item in range(len(randomslist)):
 
-            randomfile = os.walk(randomsdir[item]) # check to see what this returns
+            randomfile = randomfile+'{}'.format(item) # check to see what this returns
 
             pfile = open(paramfile,'w')
             pfile.write('data_filename= '+datafile+'\n')
