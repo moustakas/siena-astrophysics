@@ -127,7 +127,7 @@ def main():
     if args.docute:
         for item in range(len(randomslist)):
 
-            paramfile = paramfile+'{}'.format(item)
+            paramfile = paramfile+'{}'.format(item+4001)
 
             pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
