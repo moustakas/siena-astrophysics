@@ -108,8 +108,8 @@ def main():
         keep = np.where(veto==1)[0]
         nobj = len(keep)
 
-	for item in randomsdir:
-            randomfile = randomsdir[item] # test to see what this gives
+	for item in os.walk(randomsdir):
+            randomfile = os.walk(randomsdir[item]) # test to see what this gives
             rand = np.zeros((nobj,4))
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
@@ -121,9 +121,9 @@ def main():
                 f.write(rand)
 
     if args.docute:
-        for item in randomsdir:
+        for item in os.walk(randomsdir):
 
-            randomfile = randomsdir[item] # check to see what this returns
+            randomfile = os.walk(randomsdir[item]) # check to see what this returns
 
             pfile = open(paramfile,'w')
             pfile.write('data_filename= '+datafile+'\n')
