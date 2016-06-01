@@ -17,8 +17,11 @@ from __future__ import division, print_function
 import os
 import sys
 import argparse
+import glob
 import logging as log
 import numpy as np
+import PIL
+import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.cosmology import Planck13
 
@@ -59,7 +62,8 @@ def calc_fkp_distance(z):
     return weight
 
 def covariance(rad, xi):
-    cov = np.cov(
+    cov = np.cov(rad)
+    return blah
 
 def main():
     parser = argparse.ArgumentParser()
@@ -78,12 +82,12 @@ def main():
 
     CUTEdir = os.path.join(os.getenv('CUTE'))
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
-    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms','*.dat')
+    randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, args.dr+'_cmass_random')
     outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
-    # unique names for output and param files
+    randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
@@ -99,38 +103,38 @@ def main():
         data[:,2] = specz['Z']
         data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-
+        print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
 	
-        ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
-          np.loadtxt(os.path.join(drdir, 'mock_random_DR11_CMASS_N_PTHALOS_ir4001.dat'), unpack=True)
-        keep = np.where(veto==1)[0]
-        nobj = len(keep)
-
-	for item in os.walk(randomsdir):
-            randomfile = os.walk(randomsdir[item]) # test to see what this gives
+        for item in range(len(randomslist)):
+            #print(randomslist[item])
+            ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
+              np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
+            keep = np.where(veto==1)[0]
+            nobj = len(keep)
             rand = np.zeros((nobj,4))
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
             rand[:,3] = wcp[keep]+wzf[keep]-1
-            log.info('Writing {}'.format(randomfile))
-            print('Writing file {}'.format(item))
-            with io.open(randomfile+'{}'.format(item), 'w') as f: # make sure that these are unique names
+            #log.info('Writing {}'.format(randomfile))
+            print('Writing file {} of 4600'.format(item+4001))
+            with open(randomfile+'{}.dat'.format(item+4001), 'w') as f:
                 f.write(rand)
+                f.close()
 
     if args.docute:
-        for item in os.walk(randomsdir):
+        for item in range(len(randomslist)):
 
-            randomfile = os.walk(randomsdir[item]) # check to see what this returns
+            paramfile = paramfile+'{}'.format(item+4001)
 
-            pfile = open(paramfile,'w')
+            pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'\n')
+            pfile.write('random_filename= '+randomfile+'{}'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'\n')
+            pfile.write('output_filename= '+outfile+'{}'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.docute+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
@@ -174,16 +178,9 @@ def main():
                 pfile.write('n_pix_sph= 2048\n')
             
             pfile.close()
-        
             os.system('CUTE '+paramfile)
-            
-            #os.system('CUTE-noweights '+paramfile)
 
     if args.qaplots:
-
-        import PIL
-        import matplotlib.pyplot as plt
-        
         # Make rockin' plots and write out.
         if args.qaplots == 'monopole':
             rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
