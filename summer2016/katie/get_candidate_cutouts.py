@@ -24,19 +24,15 @@ def main():
     in_file = os.path.join(os.environ.get('HOME'), 'planet9-dr3-candidates.fits')
     out_dir = os.path.join(in_dir, 'candidate_cutouts/')
     
-    cutout_size = 20  # number of pixels per side of the cutout
-
+    cutout_size = 100  # number of pixels per side of the cutout
     
-    
-    for ii in range():
+    for ii in range(len(in_file)):
         print('Working on candidate {}'.format(ii))
         ra = 
         dec =
         
+        jpeg_url = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra='+ra+'&dec='+dec+'&pixscale=0.262&size=100'
     
-    
-    
-
 
 
 

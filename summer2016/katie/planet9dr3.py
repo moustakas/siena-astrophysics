@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 '''
 Search for Planet 9 in DECaLS/DR3.
 
@@ -53,24 +54,25 @@ def getcandidates(cat, gfaint=None):
             (cat['decam_fracmasked'][:, 2] < 0.1)*
             (cat['decam_fracmasked'][:, 4] < 0.1))*1
     return np.where(good)[0]
-    
-    #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
 
 def main():
+    
     '''This script selects possible candidates for Planet Nine from Tractor DR3 catalogs.
     It rules out objects that are already identified and puts the possible Planet Nine candidates into a .fits file.
 
     '''
     
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
-    outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
+    outfile = os.path.join(datadir, 'planet9-dr3-candidates')
 
-    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-00*.fits')
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-04*.fits')
 
     ncat = len(catfiles)
 
-    known_asteroids = fits.getdata(#GET THE ASTEROIDS)
+    asteroid_path = os.path.join(datadir, 'asteroids_decals_dr2.fits')
+    
+    known_asteroids = fits.getdata(asteroid_path, 1)
     
     gfaint = 30.0
     nout = 0
@@ -93,11 +95,12 @@ def main():
         outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
         knowncoord = SkyCoord(ra=known_asteroids['ra'], dec=known_asteroids['dec'])
         idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
-        finalout = out[non-matching-objects]
+        finalout = out[non_matching_objects]
         
         print('Writing {}'.format(outfile))
-        #out.write(outfile, clobber=True)
         finalout.write(outfile, clobber=True)
+
+    pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
 if __name__ == '__main__':
     main()
