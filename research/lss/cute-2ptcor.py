@@ -4,12 +4,9 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-
 # pi sigma
 # monopole vs published
-# implement logging
-# calculate random weights and reimpliment data weights before running on 600 random data points
-# all combinations
+# calculate random weights and reimpliment data weights
 # covariance matrix
 
 from __future__ import division, print_function
@@ -57,10 +54,19 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_distance(zmax, zmin):
+def calc_fkp_weights(z, zmax, zmin):
+    # place each galaxy in one of the bins
+    # calculate the sum of the weights in each bin
+    # calculate the minimum and maximum redshift of each bin
+    # calculate the volume of each bin
+    # divide the sum of the weights in each bin by the volume of the bin
+    NRB = 200
+    dz = zmax - zmin
+    z = 0 # array of redshifts of randoms
+    for ii in z:
+        bin_num = NRB * (z-zmin)/dz
+        
     volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
-    
-
     return weight
 
 def covariance(rad, xi):
@@ -72,7 +78,7 @@ def main():
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
-    parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
+    parser.add_argument('--docute', type=str, default='monopole', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
 
     args = parser.parse_args()
@@ -87,8 +93,8 @@ def main():
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-    outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
-    paramfile = os.path.join(drdir, 'dr11_rad.param')
+    outfile = os.path.join(drdir, 'cuteout', 'dr11_2pt_'+args.docute+'_')
+    paramfile = os.path.join(drdir, 'param', 'dr11_'+args.docute+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
     # Parse the input data and write out CUTE-compatible files.
@@ -110,7 +116,6 @@ def main():
         np.savetxt(datafile, data)
 	
         for item in range(len(randomslist)):
-            #print(randomslist[item])
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -122,21 +127,18 @@ def main():
             rand[:,3] = wcp[keep]+wzf[keep]-1
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            with open(randomfile+'{}.dat'.format(item+4001), 'w') as f:
-                f.write(rand)
-                f.close()
-
+            np.savetxt(randomfile+'{}.dat'.format(item+4001), rand)
+          
     if args.docute:
         for item in range(len(randomslist)):
+            newfile = paramfile+'{}.param'.format(item+4001)
 
-            paramfile = paramfile+'{}'.format(item+4001)
-
-            pfile = open(paramfile, 'w')
+            pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'{}'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'{}'.format(item+4001)+'\n')
+            pfile.write('output_filename= '+outfile+'{}.dat'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.docute+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
@@ -160,7 +162,7 @@ def main():
                 pfile.write('use_pm= 1\n')
                 pfile.write('n_pix_sph= 2048\n')
                 
-            if args.docute == '3D_rm':
+            if (args.docute == '3D_rm' or args.docute == '3D_ps'):
                 pfile.write('input_format= 2\n')
                 pfile.write('np_rand_fact= 9.5217\n')
                 pfile.write('omega_M= 0.3\n')
@@ -178,9 +180,9 @@ def main():
                 pfile.write('radial_aperture= 1\n')
                 pfile.write('use_pm= 0\n')
                 pfile.write('n_pix_sph= 2048\n')
-            
+
             pfile.close()
-            os.system('CUTE '+paramfile)
+            os.system('CUTE '+newfile)
 
     if args.qaplots:
         # Make rockin' plots and write out.
@@ -202,8 +204,16 @@ def main():
             # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
             plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
-            # plt.show()
-            # Make 2x2 matrix of images
-        
+ 
+        if args.qaplots == '3D_ps':
+            pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
+            mono1 = compute_monopole(pi, sigma, xi)
+            q1 = compute_quadrupole(pi, sigma, xi)
+            hex1 = compute_hexadecapole(pi, sigma, xi)
+            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
+            plt.imshow(xi.reshape(50, 40))
+            plotmqh(mono1,q1,hex1,rad)
+ 
+       
 if __name__ == "__main__":
     main()
