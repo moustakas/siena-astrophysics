@@ -60,16 +60,15 @@ def main():
     """ This script selects possible candidates for Planet Nine from
     Tractor DR3 catalogs.
     It rules out objects that are already identified and puts the
-    possible Planet Nine candidates into a .fits file.
-
+    possible Planet Nine candidates into a .fits file
     """
     
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-*.fits')
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-00*.fits')
     ncat = len(catfiles)
-    print('Number of images to check: ' ncat)
+    print('Number of images to check: ', ncat)
     asteroid_path = os.path.join(datadir, 'asteroids_decals_dr2.fits')
     known_asteroids = fits.getdata(asteroid_path, 1)
     
@@ -89,7 +88,7 @@ def main():
             else:
                 out = vstack((out, cat[cand]))
                 nout = len(out)
-    #print(nout)
+        print(nout)
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
         outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
@@ -98,8 +97,10 @@ def main():
         idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
         matches = knowncoord[idx]  # is this needed?
         # what is non_matching_objects?
+        # has to be a missing step
         finalout = out[non_matching_objects]
-        
+
+        print('Number of objects matched to known asteroids: ', len(matches))
         print('Writing {}'.format(outfile))
         finalout.write(outfile, clobber=True)
         print(len(finalout))
