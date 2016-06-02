@@ -4,12 +4,9 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-
 # pi sigma
 # monopole vs published
-# implement logging
-# calculate random weights and reimpliment data weights before running on 600 random data points
-# all combinations
+# calculate random weights and reimpliment data weights
 # covariance matrix
 
 from __future__ import division, print_function
@@ -60,6 +57,7 @@ def compute_hexadecapole(mu, r, xirm):
 def calc_fkp_weights(z, zmax, zmin):
     NRB = 200
     dz = zmax - zmin
+    # bin = NRB * (z-zmin)/dz
     volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
     return weight
 
