@@ -25,9 +25,9 @@ def get_candidates(cat, gfaint=None):
     
     """ This script will select Planet 9 candidates from Tractor catalogs."""
 
-    # The sigma checker for g, r, and z filters.  
-    det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 5)
-    det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 5)
+    # The sigma checker for g, r, and z filters.
+    det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 3)
+    det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 3)
     no_z = (cat['decam_flux'][:, 4]*np.sqrt(cat['decam_flux_ivar'][:, 4]) < 1)
 
     # Remove WISE data and run sigma checker on WISE 1 and 2.   
@@ -35,13 +35,12 @@ def get_candidates(cat, gfaint=None):
     no_w2 = (cat['wise_flux'][:, 1]*np.sqrt(cat['wise_flux_ivar'][:, 1]) < 5)
 
     
-    # Candidates must comply with the following parameters to be considered.  
+    # Candidates must comply with the following parameters to be considered.
     good = (det_g*det_r*no_z*no_w1*no_w2*
             (cat['brick_primary'] == 'True')*
             (cat['decam_nobs'][:, 1] == 1)*
             (cat['decam_nobs'][:, 2] == 1)*
             (cat['decam_nobs'][:, 4] >= 1)*
-            (cat['out_of_bounds'] == 'False')*
             (cat['decam_anymask'][:, 1] == 0)*
             (cat['decam_anymask'][:, 2] == 0)*
             (cat['decam_anymask'][:, 4] == 0)*
@@ -51,7 +50,8 @@ def get_candidates(cat, gfaint=None):
             (cat['decam_fracflux'][:, 4] < 0.1)*
             (cat['decam_fracmasked'][:, 1] < 0.1)*
             (cat['decam_fracmasked'][:, 2] < 0.1)*
-            (cat['decam_fracmasked'][:, 4] < 0.1))*1
+            (cat['decam_fracmasked'][:, 4] < 0.1))*1            
+    
     return np.where(good)[0]
 
 
@@ -66,9 +66,9 @@ def main():
     datadir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(datadir, 'planet9-dr3-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-00*.fits')
+    catfiles = glob('/global/work/decam/release/dr3/tractor/*/tractor-0*.fits')
     ncat = len(catfiles)
-    print('Number of images to check: ', ncat)
+    
     asteroid_path = os.path.join(datadir, 'asteroids_decals_dr2.fits')
     known_asteroids = fits.getdata(asteroid_path, 1)
     
@@ -88,7 +88,11 @@ def main():
             else:
                 out = vstack((out, cat[cand]))
                 nout = len(out)
-        print(nout)
+        if nout > 0:
+                print(nout)
+        else:
+            print('No candidates yet.')
+    print('Number of images checked: ', ncat)
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
         outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
