@@ -57,10 +57,10 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_distance(zmax, zmin):
+def calc_fkp_weights(z, zmax, zmin):
+    NRB = 200
+    dz = zmax - zmin
     volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
-    
-
     return weight
 
 def covariance(rad, xi):
@@ -87,7 +87,7 @@ def main():
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-    outfile = os.path.join(drdir, 'dr11_2pt_rad.dat')
+    outfile = os.path.join(drdir, 'dr11_2pt_'+args.docute+'_')
     paramfile = os.path.join(drdir, 'dr11_rad.param')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
@@ -110,7 +110,6 @@ def main():
         np.savetxt(datafile, data)
 	
         for item in range(len(randomslist)):
-            #print(randomslist[item])
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -133,10 +132,10 @@ def main():
 
             pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'{}'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'{}'.format(item+4001)+'\n')
+            pfile.write('output_filename= '+outfile+'{}.dat'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.docute+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
