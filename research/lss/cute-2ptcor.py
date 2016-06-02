@@ -55,9 +55,17 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def calc_fkp_weights(z, zmax, zmin):
+    # place each galaxy in one of the bins
+    # calculate the sum of the weights in each bin
+    # calculate the minimum and maximum redshift of each bin
+    # calculate the volume of each bin
+    # divide the sum of the weights in each bin by the volume of the bin
     NRB = 200
     dz = zmax - zmin
-    # bin = NRB * (z-zmin)/dz
+    z = 0 # array of redshifts of randoms
+    for ii in z:
+        bin_num = NRB * (z-zmin)/dz
+        
     volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
     return weight
 
@@ -197,8 +205,6 @@ def main():
             # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
             plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
-            # plt.show()
-            # Make 2x2 matrix of images
         
 if __name__ == "__main__":
     main()
