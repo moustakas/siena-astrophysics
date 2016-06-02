@@ -193,7 +193,7 @@ def main():
             plt.axis([-5, 155, 0, 120])
             plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
             plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf'))
+            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf'))
             plt.show()
 
         if args.qaplots == '3D_rm':
@@ -201,7 +201,7 @@ def main():
             mono1 = compute_monopole(mu, rad, xi)
             q1 = compute_quadrupole(mu, rad, xi)
             hex1 = compute_hexadecapole(mu, rad, xi)
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
+            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
             plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
  
@@ -210,7 +210,7 @@ def main():
             mono1 = compute_monopole(pi, sigma, xi)
             q1 = compute_quadrupole(pi, sigma, xi)
             hex1 = compute_hexadecapole(pi, sigma, xi)
-            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
+            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
             plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
  
