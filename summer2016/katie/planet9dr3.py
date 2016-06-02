@@ -26,8 +26,8 @@ def get_candidates(cat, gfaint=None):
     """ This script will select Planet 9 candidates from Tractor catalogs."""
 
     # The sigma checker for g, r, and z filters.
-    det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 3)
-    det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 3)
+    det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 5)
+    det_r = (cat['decam_flux'][:, 2]*np.sqrt(cat['decam_flux_ivar'][:, 2]) > 5)
     no_z = (cat['decam_flux'][:, 4]*np.sqrt(cat['decam_flux_ivar'][:, 4]) < 1)
 
     # Remove WISE data and run sigma checker on WISE 1 and 2.   
