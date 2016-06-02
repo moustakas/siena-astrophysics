@@ -177,7 +177,7 @@ def main():
                 pfile.write('n_pix_sph= 2048\n')
             
             pfile.close()
-            os.system('CUTE '+paramfile)
+            os.system('CUTE '+newfile)
 
     if args.qaplots:
         # Make rockin' plots and write out.
