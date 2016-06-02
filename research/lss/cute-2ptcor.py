@@ -72,7 +72,7 @@ def main():
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
-    parser.add_argument('--docute', type=str, default=None, help='Run CUTE.')
+    parser.add_argument('--docute', type=str, default='monopole', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
 
     args = parser.parse_args()
@@ -88,7 +88,7 @@ def main():
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
     outfile = os.path.join(drdir, 'dr11_2pt_'+args.docute+'_')
-    paramfile = os.path.join(drdir, 'dr11_rad.param')
+    paramfile = os.path.join(drdir, 'dr11_rad_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
     # Parse the input data and write out CUTE-compatible files.
@@ -121,14 +121,12 @@ def main():
             rand[:,3] = wcp[keep]+wzf[keep]-1
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            with open(randomfile+'{}.dat'.format(item+4001), 'w') as f:
-                f.write(rand)
-                f.close()
-
+            np.savetxt(randomfile+'{}.dat'.format(item+4001), rand)
+          
     if args.docute:
         for item in range(len(randomslist)):
 
-            paramfile = paramfile+'{}'.format(item+4001)
+            paramfile = paramfile+'{}.param'.format(item+4001)
 
             pfile = open(paramfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
