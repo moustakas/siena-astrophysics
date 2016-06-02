@@ -131,7 +131,6 @@ def main():
           
     if args.docute:
         for item in range(len(randomslist)):
-
             newfile = paramfile+'{}.param'.format(item+4001)
 
             pfile = open(newfile, 'w')
@@ -163,7 +162,7 @@ def main():
                 pfile.write('use_pm= 1\n')
                 pfile.write('n_pix_sph= 2048\n')
                 
-            if args.docute == '3D_rm':
+            if (args.docute == '3D_rm' or args.docute == '3D_ps'):
                 pfile.write('input_format= 2\n')
                 pfile.write('np_rand_fact= 9.5217\n')
                 pfile.write('omega_M= 0.3\n')
@@ -181,7 +180,7 @@ def main():
                 pfile.write('radial_aperture= 1\n')
                 pfile.write('use_pm= 0\n')
                 pfile.write('n_pix_sph= 2048\n')
-            
+
             pfile.close()
             os.system('CUTE '+newfile)
 
@@ -205,6 +204,16 @@ def main():
             # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
             plt.imshow(xi.reshape(50, 40))
             plotmqh(mono1,q1,hex1,rad)
-        
+ 
+        if args.qaplots == '3D_ps':
+            pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
+            mono1 = compute_monopole(pi, sigma, xi)
+            q1 = compute_quadrupole(pi, sigma, xi)
+            hex1 = compute_hexadecapole(pi, sigma, xi)
+            # plt.savefig(os.path.join('/home/work/projects/lss-boss/dr11', 'xi-with-weights.pdf')) 
+            plt.imshow(xi.reshape(50, 40))
+            plotmqh(mono1,q1,hex1,rad)
+ 
+       
 if __name__ == "__main__":
     main()
