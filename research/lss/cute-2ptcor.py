@@ -87,8 +87,8 @@ def main():
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-    outfile = os.path.join(drdir, 'dr11_2pt_'+args.docute+'_')
-    paramfile = os.path.join(drdir, 'dr11_rad_')
+    outfile = os.path.join(drdir, 'cuteout', 'dr11_2pt_'+args.docute+'_')
+    paramfile = os.path.join(drdir, 'param', 'dr11_'+args.docute+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
     # Parse the input data and write out CUTE-compatible files.
@@ -126,9 +126,9 @@ def main():
     if args.docute:
         for item in range(len(randomslist)):
 
-            paramfile = paramfile+'{}.param'.format(item+4001)
+            newfile = paramfile+'{}.param'.format(item+4001)
 
-            pfile = open(paramfile, 'w')
+            pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
             pfile.write('random_filename= '+randomfile+'{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
