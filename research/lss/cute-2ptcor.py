@@ -70,7 +70,7 @@ def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin a
         if ii >= 1:
             red_vol.append((Planck13.comoving_volume(red_markers[ii]).value-Planck13.comoving_volume(red_markers[ii-1]).value)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
     for ii in range(len(z)):
-        bin_num.append(np.floor(NRB * (z[ii]-zmin)/dz)) # assigns a bin number to each galaxy
+        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
         #print(bin_num)
     bin_num = np.asarray(bin_num)
     for ii in range(NRB):
@@ -78,8 +78,9 @@ def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin a
     bin_sum = np.asarray(bin_sum)
     red_vol = np.asarray(red_vol)
     nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
-    for ii in range(len(z))
-        wfkp = 1/(1+20000*nbar_slice) # finds the fkp weight of each source
+    for ii in range(len(z)):
+        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]])) # finds the fkp weight of each source
+        #print(ii)
     return wfkp
 
 def covariance(rad, xi):
