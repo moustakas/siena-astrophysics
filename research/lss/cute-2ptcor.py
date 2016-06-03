@@ -64,10 +64,17 @@ def calc_fkp_weights(z, zmax, zmin):
     NRB = 200
     dz = zmax - zmin
     z = 0 # array of redshifts of randoms
+    red_interval = dz/NRB
+    for ii in range(len(NRB)):
+        red_markers = zmin + NRB*red_interval
+        #zmin+red_interval(i), zmin+red_interval(i+1)
     for ii in z:
-        bin_num = NRB * (z-zmin)/dz
+        bin_num = NRB * (z-zmin)/dz # assigns a bin number to each galaxy
+        bin_sum = sum(np.where(bin_num==ii)) # finds the number of galaxies in each bin
+        red_vol = (Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin))*(SURVEY_SIZE/FULL_AREA) # finds the volme of each redslice
+        nbar_slice = redslice/red_vol
+        wfkp = 1/(1+20000*nbar_slice)
         
-    volume = Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin)
     return weight
 
 def covariance(rad, xi):
