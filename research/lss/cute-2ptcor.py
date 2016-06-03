@@ -4,9 +4,9 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-# pi sigma
 # monopole vs published
 # calculate random weights and reimpliment data weights
+# figure out the image
 # covariance matrix
 
 from __future__ import division, print_function
@@ -55,10 +55,11 @@ def compute_hexadecapole(mu, r, xirm):
     return hx1
 
 def calc_fkp_weights(z, zmax, zmin):
-    # place each galaxy in one of the bins
-    # calculate the sum of the weights in each bin
+    # define the number of redshift bins
     # calculate the minimum and maximum redshift of each bin
-    # calculate the volume of each bin
+    # place each galaxy into one of the bins based on redshift
+    # count the number of sources in each bin
+    # calculate the volume of each bin, based on redshift
     # divide the sum of the weights in each bin by the volume of the bin
     NRB = 200
     dz = zmax - zmin
@@ -80,6 +81,7 @@ def main():
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='monopole', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
+    parser.add_argument('--fkp', action='store_true', help='Calculate the fkp weights of the randoms.')
 
     args = parser.parse_args()
 
@@ -97,6 +99,9 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.docute+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
+    if args.fkp:
+        calc_fkp_weights()
+        
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
 
