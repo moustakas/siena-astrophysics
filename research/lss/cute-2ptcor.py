@@ -60,16 +60,23 @@ def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin a
     FULL_AREA = 41253 # full area of the sky, square degrees
     dz = zmax - zmin # difference in redshift
     red_interval = dz/NRB # redshift width of each slice
+    red_markers = []
+    red_vol = []
+    bin_num = []
+    bin_sum = []
     for ii in range(NRB+1):
-        red_markers = zmin + ii*red_interval # slice
+        red_markers.append(zmin + ii*red_interval) # slice
         if ii >= 1:
-            red_vol = (Planck13.comoving_volume(red_markers[ii])-Planck13.comoving_volume(red_markers[ii-1]))*(SURVEY_SIZE/FULL_AREA) # find the volme of each slice
-    for ii in z:
-        bin_num = NRB * (z-zmin)/dz # assigns a bin number to each galaxy
-        bin_sum = sum(np.where(bin_num==ii)) # finds the number of galaxies in each bin
+            red_vol.append((Planck13.comoving_volume(red_markers[ii])-Planck13.comoving_volume(red_markers[ii-1]))*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+    for ii in range(len(z)):
+        bin_num.append(np.floor(NRB * (z[ii]-zmin)/dz)) # assigns a bin number to each galaxy
+        #print(bin_num)
+    bin_num = np.asarray(bin_num)
+    for ii in range(NRB):
+        bin_sum.append(len(np.where(bin_num==ii)[0])) # finds the number of galaxies in each bin
     nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
     wfkp = 1/(1+20000*nbar_slice) # finds the fkp weight of each source
-    return weight
+    return wfkp
 
 def covariance(rad, xi):
     cov = np.cov(rad)
@@ -121,7 +128,7 @@ def main():
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
 	
-        for item in range(len(randomslist)):
+        for item in range(1):#len(randomslist)):
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -130,11 +137,11 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            calc_fkp_weights(rand[:,2], 0.43, 0.7)
-            rand[:,3] = wcp[keep]+wzf[keep]-1
+            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            np.savetxt(randomfile+'{}.dat'.format(item+4001), rand)
+            np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand)
           
     if args.docute == True and args.qaplots != None:
         for item in range(len(randomslist)):
