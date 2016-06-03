@@ -54,27 +54,21 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmax, zmin):
-    # define the number of redshift bins
-    # calculate the minimum and maximum redshift of each bin
-    # place each galaxy into one of the bins based on redshift
-    # count the number of sources in each bin
-    # calculate the volume of each bin, based on redshift
-    # divide the sum of the weights in each bin by the volume of the bin
-    NRB = 200
-    dz = zmax - zmin
-    z = 0 # array of redshifts of randoms
-    red_interval = dz/NRB
-    for ii in range(len(NRB)):
-        red_markers = zmin + NRB*red_interval
-        #zmin+red_interval(i), zmin+red_interval(i+1)
+def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin are constants
+    NRB = 200 # Number of redshift 
+    SURVEY_SIZE = 8500 # dr11 survey size, square degrees
+    FULL_AREA = 41253 # full area of the sky, square degrees
+    dz = zmax - zmin # difference in redshift
+    red_interval = dz/NRB # redshift width of each slice
+    for ii in range(NRB+1):
+        red_markers = zmin + ii*red_interval # slice
+        if ii >= 1:
+            red_vol = (Planck13.comoving_volume(red_markers[ii])-Planck13.comoving_volume(red_markers[ii-1]))*(SURVEY_SIZE/FULL_AREA) # find the volme of each slice
     for ii in z:
         bin_num = NRB * (z-zmin)/dz # assigns a bin number to each galaxy
         bin_sum = sum(np.where(bin_num==ii)) # finds the number of galaxies in each bin
-        red_vol = (Planck13.comoving_volume(zmax)-Planck13.comoving_volume(zmin))*(SURVEY_SIZE/FULL_AREA) # finds the volme of each redslice
-        nbar_slice = redslice/red_vol
-        wfkp = 1/(1+20000*nbar_slice)
-        
+    nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
+    wfkp = 1/(1+20000*nbar_slice) # finds the fkp weight of each source
     return weight
 
 def covariance(rad, xi):
@@ -136,6 +130,7 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
+            calc_fkp_weights(rand[:,2], 0.43, 0.7)
             rand[:,3] = wcp[keep]+wzf[keep]-1
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
