@@ -20,7 +20,7 @@ import numpy as np
 import PIL
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from astropy.cosmology import Planck13
+from astropy.cosmology import Planck15
 
 def plotmqh(mono1,q1,hx1,rrange):
     plt.figure()
@@ -54,9 +54,11 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin are constants
-    NRB = 200 # Number of redshift 
-    SURVEY_SIZE = 8500 # dr11 survey size, square degrees
+def calc_fkp_weights(z, zmin, zmax): # z is a list of redshifts, zmax and zmin are constants
+    NRB = 200 # Number of redshift
+    NGC = 6308
+    SGC = 2069
+    SURVEY_SIZE = NGC # dr11 survey size, square degrees
     FULL_AREA = 41253 # full area of the sky, square degrees
     dz = zmax - zmin # difference in redshift
     red_interval = dz/NRB # redshift width of each slice
@@ -65,27 +67,35 @@ def calc_fkp_weights(z, zmax, zmin): # z is a list of redshifts, zmax and zmin a
     bin_num = []
     bin_sum = []
     wfkp = []
+
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) # slice
         if ii >= 1:
-            red_vol.append((Planck13.comoving_volume(red_markers[ii]).value-Planck13.comoving_volume(red_markers[ii-1]).value)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+            #red_vol.append((4/3)*np.pi*(Planck15.comoving_distance(red_markers[ii]).value**3-Planck15.comoving_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+            red_vol.append((4/3)*np.pi*(Planck15.lookback_distance(red_markers[ii]).value**3-Planck15.lookback_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
         #print(bin_num)
+
     bin_num = np.asarray(bin_num)
+
     for ii in range(NRB):
         bin_sum.append(len(np.where(bin_num==ii)[0])) # finds the number of galaxies in each bin
+
     bin_sum = np.asarray(bin_sum)
     red_vol = np.asarray(red_vol)
     nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
+
     for ii in range(len(z)):
         wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]])) # finds the fkp weight of each source
         #print(ii)
-    return wfkp
+        
+    return red_markers, red_vol, bin_num, bin_sum, wfkp
 
-def covariance(rad, xi):
-    cov = np.cov(rad)
-    return blah
+#def covariance(rad, xi):
+#    cov = np.cov(rad)
+#    return blah
 
 def main():
     parser = argparse.ArgumentParser()
@@ -94,8 +104,7 @@ def main():
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', type=str, default='monopole', help='Run CUTE.')
     parser.add_argument('--qaplots', type=str, default=None, help='Generate QAplots.')
-    parser.add_argument('--fkp', action='store_true', help='Calculate the fkp weights of the randoms.')
-
+   
     args = parser.parse_args()
 
     key = 'LSS_BOSS'
@@ -112,9 +121,6 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.docute+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
-    if args.fkp:
-        calc_fkp_weights()
-        
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
 
@@ -127,8 +133,7 @@ def main():
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
-        data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        data[:,3] = specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)#specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
@@ -142,19 +147,19 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
             rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
             np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand)
-          
-    if args.docute == True and args.qaplots != None:
-        for item in range(len(randomslist)):
-            newfile = paramfile+'{}.param'.format(item+4001)
+                      
+    if args.docute: #== True and args.qaplots != None:
+        for item in range(1):#len(randomslist)):
+            newfile = paramfile+'_fkp_{}.param'.format(item+4001)
 
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'{}.dat'.format(item+4001)+'\n')
@@ -206,14 +211,15 @@ def main():
     if args.qaplots:
             # Make rockin' plots and write out.
             if args.qaplots == 'monopole':
-                for item in range(len(randomslist)):
+                for item in range(1):#len(randomslist)):
                     thisout = outfile+'{}.dat'.format(item+4001)
                     rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                     plt.scatter(rad, xi*rad**2)
-                    plt.axis([-5, 155, 0, 120])
+                    #plt.axis([-5, 155, 0, 120])
                     plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
                     plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
                     plt.savefig(os.path.join(drdir, 'qaplots', 'power_spectrum_monopole_{}.png'.format(item+4001)))
+                    plt.show()
                     
             if args.qaplots == '3D_rm':
                 for item in range(len(randomslist)):
