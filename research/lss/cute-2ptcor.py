@@ -129,7 +129,7 @@ def main():
             print('Writing file {} of 4600'.format(item+4001))
             np.savetxt(randomfile+'{}.dat'.format(item+4001), rand)
           
-    if args.docute:
+    if args.docute == True and args.qaplots != None:
         for item in range(len(randomslist)):
             newfile = paramfile+'{}.param'.format(item+4001)
 
@@ -185,35 +185,37 @@ def main():
             os.system('CUTE '+newfile)
 
     if args.qaplots:
-        # Make rockin' plots and write out.
-        if args.qaplots == 'monopole':
-            rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            plt.figure()
-            plt.scatter(rad, xi*rad**2)
-            plt.axis([-5, 155, 0, 120])
-            plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-            plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf'))
-            plt.show()
+            # Make rockin' plots and write out.
+            if args.qaplots == 'monopole':
+                for item in range(len(randomslist)):
+                    thisout = outfile+'{}.dat'.format(item+4001)
+                    rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                    plt.scatter(rad, xi*rad**2)
+                    plt.axis([-5, 155, 0, 120])
+                    plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
+                    plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
+                    plt.savefig(os.path.join(drdir, 'qaplots', 'power_spectrum_monopole_{}.png'.format(item+4001)))
+                    
+            if args.qaplots == '3D_rm':
+                for item in range(len(randomslist)):
+                    mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                    mono1 = compute_monopole(mu, rad, xi)
+                    q1 = compute_quadrupole(mu, rad, xi)
+                    hex1 = compute_hexadecapole(mu, rad, xi)
+                    # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
+                    plt.imshow(xi.reshape(50, 40))
+                    plotmqh(mono1,q1,hex1,rad)
+                    
+            if args.qaplots == '3D_ps':
+                for item in range(len(randomslist)):
+                    pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                    mono1 = compute_monopole(pi, sigma, xi)
+                    q1 = compute_quadrupole(pi, sigma, xi)
+                    hex1 = compute_hexadecapole(pi, sigma, xi)
+                    # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
+                    plt.imshow(xi.reshape(50, 40))
+                    plotmqh(mono1,q1,hex1,rad)
 
-        if args.qaplots == '3D_rm':
-            mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            mono1 = compute_monopole(mu, rad, xi)
-            q1 = compute_quadrupole(mu, rad, xi)
-            hex1 = compute_hexadecapole(mu, rad, xi)
-            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
-            plt.imshow(xi.reshape(50, 40))
-            plotmqh(mono1,q1,hex1,rad)
- 
-        if args.qaplots == '3D_ps':
-            pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(outfile, unpack=True)
-            mono1 = compute_monopole(pi, sigma, xi)
-            q1 = compute_quadrupole(pi, sigma, xi)
-            hex1 = compute_hexadecapole(pi, sigma, xi)
-            # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
-            plt.imshow(xi.reshape(50, 40))
-            plotmqh(mono1,q1,hex1,rad)
- 
        
 if __name__ == "__main__":
     main()
