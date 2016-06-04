@@ -71,8 +71,8 @@ def calc_fkp_weights(z, zmin, zmax): # z is a list of redshifts, zmax and zmin a
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) # slice
         if ii >= 1:
-            #red_vol.append((4/3)*np.pi*(Planck15.comoving_distance(red_markers[ii]).value**3-Planck15.comoving_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
-            red_vol.append((4/3)*np.pi*(Planck15.lookback_distance(red_markers[ii]).value**3-Planck15.lookback_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+            red_vol.append((4/3)*np.pi*(Planck15.comoving_distance(red_markers[ii]).value**3-Planck15.comoving_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+            #red_vol.append((4/3)*np.pi*(Planck15.lookback_distance(red_markers[ii]).value**3-Planck15.lookback_distance(red_markers[ii-1]).value**3)*(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
 
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
@@ -88,7 +88,7 @@ def calc_fkp_weights(z, zmin, zmax): # z is a list of redshifts, zmax and zmin a
     nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
 
     for ii in range(len(z)):
-        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]])) # finds the fkp weight of each source
+        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]])) # finds the fkp weight of each source nbar_slice of the bin that the galaxy is in
         #print(ii)
         
     return red_markers, red_vol, bin_num, bin_sum, wfkp
