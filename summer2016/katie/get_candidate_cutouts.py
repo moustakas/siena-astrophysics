@@ -28,28 +28,42 @@ def main():
     out_dir = os.path.join(os.environ.get('HOME'), 'candidate_cutouts/')
 
     cand_info = fits_table(in_file)
+    # Pre-select asteroids in the ra, dec box you know they exist.
+    ramin = ... # pick me!
+    ramax =
+    decmin =
+    decmax = 
+    these = np.where((cand_info.ra0>ramin)*(cand_info.ra0<ramax)*(cand_info.dec0>decmin)*(cand_info.dec0<decmax))
 
     urls = []
-    for ii in range(20):
+    jpgfiles = []
+    for ii in range(50):
         print('Working on candidate {}'.format(ii))
-        ra = cand_info.ra0
-        dec = cand_info.dec0
+        ra = cand_info.ra0[ii]
+        dec = cand_info.dec0[ii]
         
-        jpg_url = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra=%.4f&dec=%.4f&pixscale=0.262&size=200' % (ra, dec)
-
-        urls.append(jpg_url)
-
-        images = []
-        for ii,(jpg_url) in enumerate(urls):
-            out_jpgs = 'obj-%03i.jpg' % ii
-            if not os.path.exists(out_jpgs):
-                grab = 'wget --continue -O "%s" "%s"' % (out_jpgs, urls)
-                #print(grab)
-                os.system(grab)
-            images.append(out_jpgs)
+        jpgurl = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra={:.4f}&dec={:.4f}&pixscale=0.262&size=200'.format(ra, dec)
+        
+        jpgfile = 'obj-{:03d}.jpg'.format(ii)
+        grab = 'wget --continue -O "%s" "%s"' % (jpgfile, jpgurl)
+        
+        os.system(grab)
+        if os.stat(jpgfile).st_size == 0:
+            os.remove(jpgfile)
+        else:
+            print(jpgurl)
+            jpgfiles.append(jpgfile)
+            urls.append(jpgurl)
 
     print('<html><body>')
-    for ii,(jpg_url,fn) in enumerate(zip(urls,images)):
+    for thisurl, thisjpg in zip(urls, jpgfiles):
+        print('<a {}"><img src="{:s}"></a>'.format(thisurl, thisjpg))
+    print('</body></html>')
+
+    pdb.set_trace()  # Runs Python Debugger on code up to this line.
+
+    print('<html><body>')
+    for ii,(jpg_url,fn) in enumerate(zip(goodurls, images)):
         print('<a href="http://legacysurvey.org/viewer/?ra=%.4f&dec=%.4f"><img src="%s"></a>' % (ra, dec, fn))
     print('</body></html>')
 
