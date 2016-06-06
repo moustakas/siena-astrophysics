@@ -122,13 +122,6 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.type+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
-    if args.cosmo==1:
-        omega_M = 0.3
-        omega_L = 0.7
-    if args.cosmo==2:
-        omega_M = 0.274
-        omega_L = 0.7
-
 
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
@@ -166,6 +159,14 @@ def main():
             np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
+    
+        if args.cosmo==1:
+            omega_M = 0.3
+            omega_L = 0.7
+        if args.cosmo==2:
+            omega_M = 0.274
+            omega_L = 0.7
+    
         for item in range(2):#len(randomslist)):
             newfile = paramfile+'_fkp_{}.param'.format(item+4001)
 
