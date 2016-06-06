@@ -1,51 +1,62 @@
+
 from astropy import units as u
 from astropy.coordinates import SkyCoord, search_around_sky
 import matplotlib.pyplot as plt
 import numpy as np
 
-seed = 123
+seed = None
 rand = np.random.RandomState(seed)
 nobj = 100
 ra = rand.uniform(0, 0.25, nobj)
 dec = rand.uniform(0, 0.25, nobj)
 
-coord1 = SkyCoord(ra=ra*u.degree, dec=dec*u.degree)
-rad = 20*u.arcsec
-indx1, indx2, sep, _ = search_around_sky(coord1, coord1, rad)
+ngood = 0
+while ngood<nobj:
 
-npts = len(indx1)
+    ra = rand.uniform(0, 0.25, nobj)
+    dec = rand.uniform(0, 0.25, nobj)
+    coord1 = SkyCoord(ra=ra*u.degree, dec=dec*u.degree)
+    rad = 20*u.arcsec
+    indx1, indx2, sep, _ = search_around_sky(coord1, coord1, rad)
+    npts = len(indx1)
+    doubles = []
+    for i in range(0,npts-1):
+        if indx1[i+1] == indx1[i]:
+            doubles.append(indx1[i])
+    newra = np.delete(ra,doubles)
+    newdec = np.delete(dec,doubles)
+    ng = len(newra)
+    ngood = ng + ngood
+    
+print(ngood)
 
-doubles = []
-for i in range(0,npts-1):
-    if indx1[i+1] == indx1[i]:
-        doubles.append(indx1[i])
-        
-newra = np.delete(ra,doubles)
-newdec = np.delete(dec,doubles)
-
+newraa = newra[:nobj]
+newdecc = newdec[:nobj]
 plt.scatter(newra, newdec, c='orange')
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 '''
 plt.scatter(ra, dec, c='orange')
 plt.show() 
 plt.plot(ra[28], dec[28], 'bx', markersize=10)
 plt.plot(ra[74], dec[74], 'rx', markersize=10)
-'''
 
 
-
-
-
-
-
-
-
-
-
-
-
-'''
 indx3 = set(indx1)
 print indx3
 indx4 = np.where(indx1 != indx2)[0]
