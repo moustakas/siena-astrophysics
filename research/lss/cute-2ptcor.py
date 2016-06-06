@@ -4,9 +4,7 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-# monopole vs published
-# calculate random weights and reimpliment data weights
-# figure out the image
+# add monopole and quadrupole
 # covariance matrix
 
 from __future__ import division, print_function
@@ -17,17 +15,18 @@ import argparse
 import glob
 import logging as log
 import numpy as np
-#import PIL
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.cosmology import WMAP7 #Planck15
 
-def plotmqh(mono1,q1,hx1,rrange):
+def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.figure()
     plt.subplot(311)
     plt.plot(rrange, mono1*rrange**2, 'ko')
+    plt.plot(rad2, mono2*rad2**2, 'r-')
     plt.subplot(312)
     plt.plot(rrange, q1*rrange**2, 'ko')
+    plt.plot(rad2, quad2*rad2**2, 'r-')
     plt.subplot(313)
     plt.plot(rrange, hx1*rrange**2, 'ko')
     plt.show()
@@ -37,7 +36,6 @@ def compute_monopole(mu, r, xirm):
     Bxirm = np.reshape(xirm,[40,50])
     xr = 0.025
     mono1 = xr*np.trapz(Bxirm)
-    print(len(mono1))
     return mono1
 
 def compute_quadrupole(mu, r, xirm):
@@ -54,14 +52,14 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmin, zmax): # z is a list of redshifts, zmax and zmin are constants
-    NRB = 200 # Number of redshift
+def calc_fkp_weights(z, zmin, zmax): 
+    NRB = 200 
     NGC = 6308
     SGC = 2069
-    SURVEY_SIZE = NGC#+SGC # dr11 survey size, square degrees
-    FULL_AREA = 41253 # full area of the sky, square degrees
-    dz = zmax - zmin # difference in redshift
-    red_interval = dz/NRB # redshift width of each slice
+    SURVEY_SIZE = NGC
+    FULL_AREA = 41253
+    dz = zmax - zmin 
+    red_interval = dz/NRB
     red_markers = []
     red_vol = []
     bin_num = []
@@ -75,11 +73,8 @@ def calc_fkp_weights(z, zmin, zmax): # z is a list of redshifts, zmax and zmin a
                                         WMAP7.comoving_distance(red_markers[ii-1]).value**3)
                                         *(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
          
-
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
-        #print(bin_num)
-
     bin_num = np.asarray(bin_num)
 
     for ii in range(NRB):
@@ -156,7 +151,7 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            #red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
             rand[:,3] = wcp[keep]+wzf[keep]-1
             #wfkp*(wcp[keep]+wzf[keep]-1)
             #log.info('Writing {}'.format(randomfile))
@@ -234,8 +229,6 @@ def main():
                     thisout = outfile+'{}.dat'.format(item+4001)
                     rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                     plt.scatter(rad, xi*rad**2)
-                    #x,y,yerr = np.loadtxt(os.path.join(drdir,'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat'),unpack=True)
-                    #plt.errorbar(x,y*x*x,yerr=yerr*x*x,fmt='r-',label='Anderson')
                     #plt.axis([-5, 155, 0, 120])
                     plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
                     plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
@@ -243,25 +236,31 @@ def main():
                     plt.show()
                     
             if args.type == '3D_rm':
-                for item in range(len(randomslist)):
+                for item in range(2):#len(randomslist)):
                     thisout = outfile+'{}.dat'.format(item+4001)
                     mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                    rad2,mono2,quad2 = np.loadtxt(os.path.join(drdir,'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat'),unpack=True)
+                    print(rad2, mono2)
+                    
+                    
+
+                    rad = np.linspace(2, 198, 40)
                     mono1 = compute_monopole(mu, rad, xi)
                     q1 = compute_quadrupole(mu, rad, xi)
                     hex1 = compute_hexadecapole(mu, rad, xi)
-                    # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
-                    plt.imshow(xi.reshape(50, 40))
-                    plotmqh(mono1,q1,hex1,rad)
+                    #import pdb ; pdb.set_trace()
+                    #plt.imshow(xi.reshape(50, 40))
+                    plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
                     
             if args.type == '3D_ps':
-                for item in range(len(randomslist)):
+                for item in range(2):#len(randomslist)):
                     thisout = outfile+'{}.dat'.format(item+4001)
                     pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                     mono1 = compute_monopole(pi, sigma, xi)
                     q1 = compute_quadrupole(pi, sigma, xi)
                     hex1 = compute_hexadecapole(pi, sigma, xi)
-                    # plt.savefig(os.path.join('drdir, 'xi-with-weights.pdf')) 
                     plt.imshow(xi.reshape(50, 40))
+                    plt.show()
                     #plotmqh(mono1,q1,hex1,rad)
 
        
