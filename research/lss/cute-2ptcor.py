@@ -4,9 +4,6 @@
 http://data.sdss3.org/sas/dr11/boss/lss/
 
 """
-# add monopole and quadrupole
-# covariance matrix
-
 from __future__ import division, print_function
 
 import os
@@ -17,7 +14,7 @@ import logging as log
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from astropy.cosmology import WMAP7 #Planck15
+from astropy.cosmology import WMAP7 
 
 def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.figure()
@@ -25,8 +22,8 @@ def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.plot(rrange, mono1*rrange**2, 'ko')
     plt.plot(rad2, mono2*rad2**2, 'r-')
     plt.subplot(312)
-    plt.plot(rrange, q1*rrange**2, 'ko')
-    plt.plot(rad2, quad2*rad2**2, 'r-')
+    plt.plot(rrange, -q1*rrange**2, 'ko')
+    plt.plot(rad2, -quad2*rad2**2, 'r-')
     plt.subplot(313)
     plt.plot(rrange, hx1*rrange**2, 'ko')
     plt.show()
@@ -67,31 +64,30 @@ def calc_fkp_weights(z, zmin, zmax):
     wfkp = []
 
     for ii in range(NRB+1):
-        red_markers.append(zmin + ii*red_interval) # slice
+        red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
             red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
                                         WMAP7.comoving_distance(red_markers[ii-1]).value**3)
-                                        *(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
+                                        *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
-        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
+        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
     bin_num = np.asarray(bin_num)
 
     for ii in range(NRB):
-        bin_sum.append(len(np.where(bin_num==ii)[0])) # finds the number of galaxies in each bin
+        bin_sum.append(len(np.where(bin_num==ii)[0])) 
 
     bin_sum = np.asarray(bin_sum)
     red_vol = np.asarray(red_vol)
-    nbar_slice = bin_sum/red_vol # finds the mean number density of galaxies in a redslice
+    nbar_slice = bin_sum/red_vol
 
     for ii in range(len(z)):
         wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
-        # finds the fkp weight of each source nbar_slice of the bin that the galaxy is in
-                
+                 
     return wfkp
 
-#def covariance(rad, xi):
-#    cov = np.cov(rad)
-#    return blah
+def covariance(rad, xi):
+   cov = np.cov(rad)
+   return blah
 
 def main():
 
@@ -101,7 +97,7 @@ def main():
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
     parser.add_argument('--docute', action='store_true', help='Run CUTE.')
     parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
-    parser.add_argument('--type', type=str, default='monopole', help='Specify Correlation Type')
+    parser.add_argument('--type', type=str, default='monopole', help='Specify Correlation Type.')
     parser.add_argument('--cosmo', type=int, default=1, help='Select cosmology')
 
     args = parser.parse_args()
@@ -223,40 +219,45 @@ def main():
 
     if args.qaplots:
 
+        anderson1 = os.path.join(drdir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
+        rad2,mono2,quad2 = np.loadtxt(anderson1, unpack=True)
+
             # Make rockin' plots and write out.
-            if args.type == 'monopole':
-                for item in range(2):#len(randomslist)):
-                    thisout = outfile+'{}.dat'.format(item+4001)
-                    rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                    plt.scatter(rad, xi*rad**2)
-                    #plt.axis([-5, 155, 0, 120])
-                    plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-                    plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-                    #plt.savefig(os.path.join(drdir, 'qaplots', 'power_spectrum_monopole_{}.png'.format(item+4001)))
-                    plt.show()
-                    
-            if args.type == '3D_rm':
-                for item in range(2):#len(randomslist)):
-                    thisout = outfile+'{}.dat'.format(item+4001)
-                    mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                    rad2,mono2,quad2 = np.loadtxt(os.path.join(drdir,'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat'),unpack=True)
-                    rad = np.linspace(2, 198, 40)
-                    mono1 = compute_monopole(mu, rad, xi)
-                    q1 = compute_quadrupole(mu, rad, xi)
-                    hex1 = compute_hexadecapole(mu, rad, xi)
-                    #plt.imshow(xi.reshape(50, 40))
-                    plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
-                    
-            if args.type == '3D_ps':
-                for item in range(2):#len(randomslist)):
-                    thisout = outfile+'{}.dat'.format(item+4001)
-                    pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                    mono1 = compute_monopole(pi, sigma, xi)
-                    q1 = compute_quadrupole(pi, sigma, xi)
-                    hex1 = compute_hexadecapole(pi, sigma, xi)
-                    plt.imshow(xi.reshape(50, 40))
-                    plt.show()
-                    #plotmqh(mono1,q1,hex1,rad)
-       
+        if args.type == 'monopole':
+            for item in range(2):#len(randomslist)):
+                thisout = outfile+'{}.dat'.format(item+4001)
+                rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                plt.scatter(rad, xi*rad**2)
+                #plt.axis([-5, 155, 0, 120])
+                plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
+                plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
+                plt.savefig(os.path.join(drdir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
+                plt.show()
+                
+        if args.type == '3D_rm':
+            for item in range(2):#len(randomslist)):
+                thisout = outfile+'{}.dat'.format(item+4001)
+                mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                rad = np.linspace(2, 198, 40)
+                mono1 = compute_monopole(mu, rad, xi)
+                q1 = compute_quadrupole(mu, rad, xi)
+                hex1 = compute_hexadecapole(mu, rad, xi)
+                # added = mono1+q1 
+                # plt.plot(rad, added*rad**2, 'bo')
+                # plt.show()
+                # plt.imshow(xi.reshape(50, 40))
+                plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
+                
+        if args.type == '3D_ps':
+            for item in range(2):#len(randomslist)):
+                thisout = outfile+'{}.dat'.format(item+4001)
+                pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                mono1 = compute_monopole(pi, sigma, xi)
+                q1 = compute_quadrupole(pi, sigma, xi)
+                hex1 = compute_hexadecapole(pi, sigma, xi)
+                plt.imshow(xi.reshape(50, 40))
+                plt.show()
+                #plotmqh(mono1,q1,hex1,rad)
+
 if __name__ == "__main__":
     main()
