@@ -15,6 +15,7 @@ import numpy as np
 import pdb  # python debugger
 
 from astropy.io import fits
+from astrometry.util.fits import fits_table
 
 
 def main():
@@ -23,29 +24,36 @@ def main():
     possible Planet Nine candidates obtained from the planet9dr3.py script.
     """
 
-    in_file = os.path.join(os.environ.get('HOME'),
-                           'planet9-dr3-candidates.fits')
+    in_file = ('/home/desi2/candidatesp9/asteroids_decals_dr2.fits')
     out_dir = os.path.join(os.environ.get('HOME'), 'candidate_cutouts/')
 
-    cand_info = fits.getdata(in_file, 1)
-    print(cand_info)
-    for ii in range(len(in_file)):
+    cand_info = fits_table(in_file)
+
+    urls = []
+    for ii in range(20):
         print('Working on candidate {}'.format(ii))
-        ra = cand_info['ra']
-        dec = cand_info['dec']
-        candidate = 
+        ra = cand_info.ra0
+        dec = cand_info.dec0
         
-        jpeg_url = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra='+ra+'&dec='+dec+'&pixscale=0.100&size=300'
-        # fits url?
-        # model jpeg url?
-        # model fits url?
+        jpg_url = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra=%.4f&dec=%.4f&pixscale=0.262&size=200' % (ra, dec)
 
-        os.system('wget "'+jpeg_url+'" -O '+out_dir+ra+dec+'.jpg')
-        # os.system for fits
-        # os.system for model
-        # os.system for fits model
+        urls.append(jpg_url)
 
-     #pdb.set_trace()  # Runs Python Debugger on code up to this line.
+        images = []
+        for ii,(jpg_url) in enumerate(urls):
+            out_jpgs = 'obj-%03i.jpg' % ii
+            if not os.path.exists(out_jpgs):
+                grab = 'wget --continue -O "%s" "%s"' % (out_jpgs, urls)
+                #print(grab)
+                os.system(grab)
+            images.append(out_jpgs)
+
+    print('<html><body>')
+    for ii,(jpg_url,fn) in enumerate(zip(urls,images)):
+        print('<a href="http://legacysurvey.org/viewer/?ra=%.4f&dec=%.4f"><img src="%s"></a>' % (ra, dec, fn))
+    print('</body></html>')
+
+    pdb.set_trace()  # Runs Python Debugger on code up to this line.
 
 
 if __name__ == '__main__':
