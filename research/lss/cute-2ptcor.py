@@ -72,7 +72,6 @@ def calc_fkp_weights(z, zmin, zmax):
             red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
                                         WMAP7.comoving_distance(red_markers[ii-1]).value**3)
                                         *(SURVEY_SIZE/FULL_AREA)) # find the volme of each slice
-         
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) # assigns a bin number to each galaxy
     bin_num = np.asarray(bin_num)
@@ -88,13 +87,14 @@ def calc_fkp_weights(z, zmin, zmax):
         wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
         # finds the fkp weight of each source nbar_slice of the bin that the galaxy is in
                 
-    return red_markers, red_vol, bin_num, bin_sum, wfkp
+    return wfkp
 
 #def covariance(rad, xi):
 #    cov = np.cov(rad)
 #    return blah
 
 def main():
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
@@ -120,7 +120,6 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.type+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
-
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
 
@@ -128,10 +127,7 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-
-        red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
-        #import pdb ; pdb.set_trace()
-
+        wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
@@ -159,7 +155,8 @@ def main():
             np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
-    
+
+        # Select the cosmological parameters
         if args.cosmo==1:
             omega_M = 0.3
             omega_L = 0.7
@@ -168,8 +165,10 @@ def main():
             omega_L = 0.7
     
         for item in range(2):#len(randomslist)):
+            # Create a unique filename for each parameeter file
             newfile = paramfile+'_fkp_{}.param'.format(item+4001)
 
+            # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
             pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n')
@@ -219,6 +218,7 @@ def main():
                 pfile.write('n_pix_sph= 2048\n')
 
             pfile.close()
+            # Run CUTE, passing the newly created parameter file
             os.system('CUTE '+newfile)
 
     if args.qaplots:
@@ -240,15 +240,10 @@ def main():
                     thisout = outfile+'{}.dat'.format(item+4001)
                     mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                     rad2,mono2,quad2 = np.loadtxt(os.path.join(drdir,'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat'),unpack=True)
-                    print(rad2, mono2)
-                    
-                    
-
                     rad = np.linspace(2, 198, 40)
                     mono1 = compute_monopole(mu, rad, xi)
                     q1 = compute_quadrupole(mu, rad, xi)
                     hex1 = compute_hexadecapole(mu, rad, xi)
-                    #import pdb ; pdb.set_trace()
                     #plt.imshow(xi.reshape(50, 40))
                     plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
                     
@@ -262,7 +257,6 @@ def main():
                     plt.imshow(xi.reshape(50, 40))
                     plt.show()
                     #plotmqh(mono1,q1,hex1,rad)
-
        
 if __name__ == "__main__":
     main()
