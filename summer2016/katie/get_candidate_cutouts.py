@@ -46,10 +46,11 @@ def main():
         
         jpgurl = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra={:.4f}&dec={:.4f}&pixscale=0.262&size=200'.format(ra, dec)
         
-        jpgfile = os.path.join(out_dir, 'obj-{:03d}.jpg'.format(ii))
+        jpgfile = 'obj-{:03d}.jpg'.format(ii)
+        jpgfile = os.path.join(out_dir, jpgfile)
         grab = 'wget --continue -O {:s} {:s}' .format(jpgfile, jpgurl)
         print(grab)
-        pdb.set_trace()  # Runs Python Debugger on code up to this line.   
+   
         os.system(grab)
         if os.stat(jpgfile).st_size == 0:
             os.remove(jpgfile)
@@ -57,10 +58,15 @@ def main():
             print(jpgurl)
             jpgfiles.append(jpgfile)
             urls.append(jpgurl)
-
-    print('<html><body>')
+    pdb.set_trace()  # Runs Python Debugger on code up to this line.
+    print('<html>')
+    print('<head> Planet Nine Candidates </head>')
+    print('<body>')
     for thisurl, thisjpg in zip(urls, jpgfiles):
-        print('<a {}"><img src="{:s}"></a>'.format(thisurl, thisjpg))
+        print('<div class="image">')
+        print('<a href="{}"><img src="{:s}"></a>'.format(thisurl, thisjpg))
+        print('<div class="caption"> Image of {:s} </div>' .format(thisjpg))
+        print('</div>')
     print('</body></html>')
 
 
