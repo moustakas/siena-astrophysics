@@ -9,12 +9,8 @@ import glob
 import logging as log
 import numpy as np
 
-
+# create directory and environment variable
 CosmoMC = os.path.join(os.getenv('COSMOMC'))
-drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
-randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
-datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-outfile = os.path.join(drdir, 'cuteout', 'dr11_2pt_'+args.type+'_')
-paramfile = os.path.join(drdir, 'param', 'dr11_'+args.type+'_')
-randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
+outdir = os.path.join(Cosmo, 'cosmoMCout')
+paramfile = os.path.join(Cosmo, 'param')
+
