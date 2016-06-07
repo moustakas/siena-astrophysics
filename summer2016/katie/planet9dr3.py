@@ -105,7 +105,6 @@ def main():
         #idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
         #matches = knowncoord[idx]  # is this needed?
         # what is non_matching_objects?
-        # has to be a missing step
         #finalout = out[non_matching_objects]
         #print('Number of objects matched to known asteroids: ', len(matches))
 
