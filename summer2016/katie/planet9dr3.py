@@ -23,7 +23,9 @@ from astropy import units as u
 
 def get_candidates(cat, gfaint=None):
     
-    """ This script will select Planet 9 candidates from Tractor catalogs."""
+    """ This script will select candidates for Planet 9 fromthe DECaLS DR3
+    Tractor catalogs.
+    """
 
     # The sigma checker for g, r, and z filters.
     det_g = (cat['decam_flux'][:, 1]*np.sqrt(cat['decam_flux_ivar'][:, 1]) > 5)
