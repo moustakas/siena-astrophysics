@@ -30,7 +30,7 @@ def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
 
 def compute_monopole(mu, r, xirm):
     xirm = xirm*1.0
-    Bxirm = np.reshape(xirm,[40,50])
+    Bxirm = np.reshape(xirm,[40,50])# generalize
     xr = 0.025
     mono1 = xr*np.trapz(Bxirm)
     return mono1
@@ -53,7 +53,7 @@ def calc_fkp_weights(z, zmin, zmax):
     NRB = 200 
     NGC = 6308
     SGC = 2069
-    SURVEY_SIZE = NGC
+    SURVEY_SIZE = SGC
     FULL_AREA = 41253
     dz = zmax - zmin 
     red_interval = dz/NRB
@@ -134,7 +134,7 @@ def main():
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
 	
-        for item in range(2):#len(randomslist)):
+        for item in range(1):#len(randomslist)):
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -144,11 +144,11 @@ def main():
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
             #red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
-            rand[:,3] = wcp[keep]+wzf[keep]-1
+            rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             #wfkp*(wcp[keep]+wzf[keep]-1)
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand)
+            np.savetxt(randomfile+'_'+args.type'_nofkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
 
@@ -160,7 +160,7 @@ def main():
             omega_M = 0.274
             omega_L = 0.7
     
-        for item in range(2):#len(randomslist)):
+        for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
             newfile = paramfile+'_fkp_{}.param'.format(item+4001)
 
@@ -235,7 +235,7 @@ def main():
                 plt.show()
                 
         if args.type == '3D_rm':
-            for item in range(2):#len(randomslist)):
+            for item in range(len(randomslist)):
                 thisout = outfile+'{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
