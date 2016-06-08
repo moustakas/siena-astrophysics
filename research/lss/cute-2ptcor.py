@@ -18,14 +18,14 @@ from astropy.cosmology import WMAP7
 
 def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.figure()
-    plt.subplot(311)
+    plt.subplot(211)
     plt.plot(rrange, mono1*rrange**2, 'ko')
     plt.plot(rad2, mono2*rad2**2, 'r-')
-    plt.subplot(312)
+    plt.subplot(212)
     plt.plot(rrange, -q1*rrange**2, 'ko')
     plt.plot(rad2, -quad2*rad2**2, 'r-')
-    plt.subplot(313)
-    plt.plot(rrange, hx1*rrange**2, 'ko')
+    #plt.subplot(313)
+    #plt.plot(rrange, hx1*rrange**2, 'ko')
     plt.show()
 
 def compute_monopole(mu, r, xirm):
@@ -49,41 +49,41 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmin, zmax): 
-    NRB = 200 
-    NGC = 6308
-    SGC = 2069
-    SURVEY_SIZE = SGC
-    FULL_AREA = 41253
-    dz = zmax - zmin 
-    red_interval = dz/NRB
-    red_markers = []
-    red_vol = []
-    bin_num = []
-    bin_sum = []
-    wfkp = []
+# def calc_fkp_weights(z, zmin, zmax, item): 
+#     NRB = 200 
+#     NGC = 6308
+#     SGC = 2069
+#     SURVEY_SIZE = NGC
+#     FULL_AREA = 41253
+#     dz = zmax - zmin 
+#     red_interval = dz/NRB
+#     red_markers = []
+#     red_vol = []
+#     bin_num = []
+#     bin_sum = []
+#     wfkp = []
 
-    for ii in range(NRB+1):
-        red_markers.append(zmin + ii*red_interval) 
-        if ii >= 1:
-            red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
-                                        WMAP7.comoving_distance(red_markers[ii-1]).value**3)
-                                        *(SURVEY_SIZE/FULL_AREA))
-    for ii in range(len(z)):
-        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
-    bin_num = np.asarray(bin_num)
+#     for ii in range(NRB+1):
+#         red_markers.append(zmin + ii*red_interval) 
+#         if ii >= 1:
+#             red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
+#                                         WMAP7.comoving_distance(red_markers[ii-1]).value**3)
+#                                         *(SURVEY_SIZE/FULL_AREA))
+#     for ii in range(len(z)):
+#         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
+#     bin_num = np.asarray(bin_num)
 
-    for ii in range(NRB):
-        bin_sum.append(len(np.where(bin_num==ii)[0])) 
+#     for ii in range(NRB):
+#         bin_sum.append(len(np.where(bin_num==ii)[0])) 
 
-    bin_sum = np.asarray(bin_sum)
-    red_vol = np.asarray(red_vol)
-    nbar_slice = bin_sum/red_vol
+#     bin_sum = np.asarray(bin_sum)
+#     red_vol = np.asarray(red_vol)
+#     nbar_slice = bin_sum/red_vol
 
-    for ii in range(len(z)):
-        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
+#     for ii in range(len(z)):
+#         wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
                  
-    return wfkp
+#     return wfkp
 
 def covariance(rad, xi):
    cov = np.cov(rad)
@@ -123,18 +123,17 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-        wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
+        #wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
-        data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        ##specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1) #specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
 	
-        for item in range(1):#len(randomslist)):
+        for item in range(len(randomslist)):
             ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
               np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
             keep = np.where(veto==1)[0]
@@ -143,12 +142,11 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            #red_markers, red_vol, bin_num, bin_sum, wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
-            rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
-            #wfkp*(wcp[keep]+wzf[keep]-1)
+            #wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7, item)
+            rand[:,3] = wcp[keep]+wzf[keep]-1 #wfkp*(wcp[keep]+wzf[keep]-1)
             #log.info('Writing {}'.format(randomfile))
             print('Writing file {} of 4600'.format(item+4001))
-            np.savetxt(randomfile+'_'+args.type'_nofkp_{}.dat'.format(item+4001), rand)
+            np.savetxt(randomfile+'_'+args.type+'_nofkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
 
@@ -162,12 +160,12 @@ def main():
     
         for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
-            newfile = paramfile+'_fkp_{}.param'.format(item+4001)
+            newfile = paramfile+'_nofkp_{}.param'.format(item+4001)
 
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_nofkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'{}.dat'.format(item+4001)+'\n')
@@ -218,20 +216,21 @@ def main():
             os.system('CUTE '+newfile)
 
     if args.qaplots:
+        
 
         anderson1 = os.path.join(drdir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
         rad2,mono2,quad2 = np.loadtxt(anderson1, unpack=True)
 
             # Make rockin' plots and write out.
         if args.type == 'monopole':
-            for item in range(2):#len(randomslist)):
+            for item in range(1):#len(randomslist)):
                 thisout = outfile+'{}.dat'.format(item+4001)
                 rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 plt.scatter(rad, xi*rad**2)
                 #plt.axis([-5, 155, 0, 120])
                 plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
                 plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-                plt.savefig(os.path.join(drdir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
+                #plt.savefig(os.path.join(drdir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
                 plt.show()
                 
         if args.type == '3D_rm':
@@ -239,6 +238,7 @@ def main():
                 thisout = outfile+'{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
+                #rad = rad.reshape((50,40))
                 mono1 = compute_monopole(mu, rad, xi)
                 q1 = compute_quadrupole(mu, rad, xi)
                 hex1 = compute_hexadecapole(mu, rad, xi)
