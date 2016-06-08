@@ -49,45 +49,42 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-# def calc_fkp_weights(z, zmin, zmax, item): 
-#     NRB = 200 
-#     NGC = 6308
-#     SGC = 2069
-#     SURVEY_SIZE = NGC
-#     FULL_AREA = 41253
-#     dz = zmax - zmin 
-#     red_interval = dz/NRB
-#     red_markers = []
-#     red_vol = []
-#     bin_num = []
-#     bin_sum = []
-#     wfkp = []
+def calc_fkp_weights(z, zmin, zmax, item): 
+    NRB = 200 
+    NGC = 6308
+    SGC = 2069
+    SURVEY_SIZE = NGC+SGC
+    FULL_AREA = 41253
+    dz = zmax - zmin 
+    red_interval = dz/NRB
+    red_markers = []
+    red_vol = []
+    bin_num = []
+    bin_sum = []
+    wfkp = []
 
-#     for ii in range(NRB+1):
-#         red_markers.append(zmin + ii*red_interval) 
-#         if ii >= 1:
-#             red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
-#                                         WMAP7.comoving_distance(red_markers[ii-1]).value**3)
-#                                         *(SURVEY_SIZE/FULL_AREA))
-#     for ii in range(len(z)):
-#         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
-#     bin_num = np.asarray(bin_num)
+    for ii in range(NRB+1):
+        red_markers.append(zmin + ii*red_interval) 
+        if ii >= 1:
+            red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
+                                        WMAP7.comoving_distance(red_markers[ii-1]).value**3)
+                                        *(SURVEY_SIZE/FULL_AREA))
+    for ii in range(len(z)):
+        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
+    bin_num = np.asarray(bin_num)
 
-#     for ii in range(NRB):
-#         bin_sum.append(len(np.where(bin_num==ii)[0])) 
+    for ii in range(NRB):
+        bin_sum.append(len(np.where(bin_num==ii)[0])) 
 
-#     bin_sum = np.asarray(bin_sum)
-#     red_vol = np.asarray(red_vol)
-#     nbar_slice = bin_sum/red_vol
+    bin_sum = np.asarray(bin_sum)
+    red_vol = np.asarray(red_vol)
+    nbar_slice = bin_sum/red_vol
 
-#     for ii in range(len(z)):
-#         wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
+    for ii in range(len(z)):
+        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
                  
-#     return wfkp
+    return wfkp
 
-def covariance(rad, xi):
-   cov = np.cov(rad)
-   return blah
 
 def main():
 
@@ -217,7 +214,6 @@ def main():
 
     if args.qaplots:
         
-
         anderson1 = os.path.join(drdir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
         rad2,mono2,quad2 = np.loadtxt(anderson1, unpack=True)
 
