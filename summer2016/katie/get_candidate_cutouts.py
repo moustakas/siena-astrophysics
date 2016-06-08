@@ -55,7 +55,6 @@ def main():
         os.system(grab)
         #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
         if os.stat(jpgfile).st_size < 18000:  # Remove partial or empty images
-            # How to remove duplicate images? Or do we want to keep them?
             # The cut on filesize takes care of most of the bad images but
             # leaves some behind. If the restriction is any larger,
             # it can remove some valid files.
