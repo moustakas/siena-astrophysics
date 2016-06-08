@@ -50,6 +50,7 @@ def main():
 
         urls = []
         jpgfiles = []
+        jpgannotfiles = []
         radius = 15  # radius for putting a circle around central pixel.
         for ii in range(100):
             print('Working on candidate {}'.format(ii))
@@ -76,10 +77,10 @@ def main():
                 # Draw a circle around the object.
                 image = Image.open(jpgfile)
                 draw = ImageDraw.Draw(image)
-                draw.ellipse((100 - radius, 100 - radius, 100 + radius, 100 + radius), outline=66FF00)
-                jpg_annot_file = 'obj-{:03d}-annot.jpg'.format(ii)
-                jpg_annot_file = os.path.join(out_dir, jpg_annot_file)
-                pdb.set_trace()  # Runs Python Debugger on code up to this line.
+                draw.ellipse((100 - radius, 100 - radius, 100 + radius, 100 + radius), outline="#66FF00")
+                jpg_annot_file = image.save('/home/desi2/asteroid_cutouts/obj-{:03d}-annot.jpg'.format(ii), 'JPEG')
+                jpgannotfiles.append(jpg_annot_file)
+                #pdb.set_trace()  # Runs Python Debugger on code up to this line.
                 
     # ---------------------------------------------------------
     # Create/update the webpage.
@@ -90,10 +91,10 @@ def main():
         html.write('<html><body>/n')
         html.write('<h1> Planet Nine Candidates </h1>/n')
         html.write('<table>/n')
-        for thisurl, thisjpg in zip(urls, jpgfiles):
+        for thisurl, thisannotjpg in zip(urls, jpgannotfiles):
             # add RA, DEC?
             html.write('<tr>/n')
-            html.write('<td><a href="{}"><img src="{:s}"></a></td>/n'.format(thisurl, thisjpg))
+            html.write('<td><a href="{}"><img src="{:s}"></a></td>/n'.format(thisurl, thisannotjpg))
             html.write('</tr>/n')
         html.write('</table></html>')
         html.close()
