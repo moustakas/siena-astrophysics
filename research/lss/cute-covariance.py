@@ -28,9 +28,6 @@ def main():
         mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
         covarance = np.cov()
         
-        
-    
-
 if __name__ == "__main__":
     main()
     

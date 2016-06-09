@@ -14,7 +14,7 @@ import logging as log
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from astropy.cosmology import WMAP7 
+from astropy.cosmology import WMAP5
 
 def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.figure()
@@ -53,7 +53,7 @@ def calc_fkp_weights(z, zmin, zmax, item):
     NRB = 200 
     NGC = 6308
     SGC = 2069
-    SURVEY_SIZE = NGC+SGC
+    SURVEY_SIZE = NGC
     FULL_AREA = 41253
     dz = zmax - zmin 
     red_interval = dz/NRB
@@ -66,8 +66,8 @@ def calc_fkp_weights(z, zmin, zmax, item):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*(WMAP7.comoving_distance(red_markers[ii]).value**3-
-                                        WMAP7.comoving_distance(red_markers[ii-1]).value**3)
+            red_vol.append((4/3)*np.pi*(WMAP5.comoving_distance(red_markers[ii]).value**3-
+                                        WMAP5.comoving_distance(red_markers[ii-1]).value**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
@@ -120,7 +120,7 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-        #wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
+        #wfkp3 = calc_fkp_weights(specz['Z'], 0.43, 0.7, item)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
