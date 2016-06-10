@@ -31,17 +31,22 @@ def main():
     
     if args.cov:
 
-        for ii in range(len(allfiles)):
+        for ii in range(1):#len(allfiles)):
             xi.append(np.loadtxt(allfiles[ii])[:,2])
             print(ii)
 
-        xi = np.asarray(xi)
+        xi = np.reshape(xi, [40,50])
+        #xi = np.asarray(xi)
 
         for ii in range(len(xi)):
             ximeans.append(np.mean(xi[ii]))
 
-        for ii, jj in range(np.shape(xi)):
-            
+        for mm in range(len(allfiles)):
+            for ii in np.shape(xi)[0]:
+                for jj in np.shape(xi)[1]:
+                    total += ((xi[mm][ii]-xibar)*(xi[mm][jj]-xibar))
+
+        cov = total/(len(allfiles)-1)
 if __name__ == "__main__":
     main()
     
