@@ -26,46 +26,21 @@ def main():
     allfiles = glob.glob(os.path.join(datadir, '*.dat'))
     outdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'covariance')
 
-    rad = []
-    mu = []
     xi = []
-    covariance = []
     ximeans = []
-    vectors = []
     
     if args.cov:
 
         for ii in range(len(allfiles)):
-            mu.append(np.loadtxt(allfiles[ii])[:,0])
-            rad.append(np.loadtxt(allfiles[ii])[:,1])
             xi.append(np.loadtxt(allfiles[ii])[:,2])
             print(ii)
 
         xi = np.asarray(xi)
-        radbar = np.mean(rad)
-        mubar = np.mean(mu)
 
         for ii in range(len(xi)):
             ximeans.append(np.mean(xi[ii]))
 
-        #mean = np.mean(ximeans)
-        
-        for ii in range(xi.shape[0]):
-            if ii >= 1:
-                solution = np.cov(xi[ii-1], xi[ii])
-                matrix =  np.matrix(solution)
-                covariance.append(matrix)
-
-        for ii in range(len(covariance)):
-            vector, value = np.linalg.eig(covariance[ii])
-            vectors.append(vector)
-
-        for ii in range(len(vectors)):
-            plt.scatter(vectors[ii][0], vectors[ii][1])
-
-        plt.show()
-        pylab.pcolor(np.corrcoef(mu));pylab.colorbar();plt.show()
-            
+        for ii, jj in range(np.shape(xi)):
             
 if __name__ == "__main__":
     main()

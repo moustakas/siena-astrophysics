@@ -14,7 +14,7 @@ import logging as log
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from astropy.cosmology import WMAP5
+from astropy.cosmology import WMAP7
 
 def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
     plt.figure()
@@ -66,8 +66,8 @@ def calc_fkp_weights(z, zmin, zmax, item):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*(WMAP5.comoving_distance(red_markers[ii]).value**3-
-                                        WMAP5.comoving_distance(red_markers[ii-1]).value**3)
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.7)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.7)**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
@@ -125,7 +125,7 @@ def main():
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
-        data[:,3] = specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1) #specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        data[:,3] = specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
@@ -139,11 +139,12 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            #wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7, item)
+            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7, item)
             rand[:,3] = wcp[keep]+wzf[keep]-1 #wfkp*(wcp[keep]+wzf[keep]-1)
-            #log.info('Writing {}'.format(randomfile))
-            print('Writing file {} of 4600'.format(item+4001))
-            np.savetxt(randomfile+'_'+args.type+'_nofkp_{}.dat'.format(item+4001), rand)
+            log.info('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
+            print('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
+            #print('Writing file {} of 4600'.format(item+4001))
+            np.savetxt(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
 
@@ -162,10 +163,10 @@ def main():
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_nofkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'{}.dat'.format(item+4001)+'\n')
+            pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.type+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
@@ -219,7 +220,7 @@ def main():
 
             # Make rockin' plots and write out.
         if args.type == 'monopole':
-            for item in range(1):#len(randomslist)):
+            for item in range(len(randomslist)):
                 thisout = outfile+'{}.dat'.format(item+4001)
                 rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 plt.scatter(rad, xi*rad**2)
@@ -231,7 +232,7 @@ def main():
                 
         if args.type == '3D_rm':
             for item in range(len(randomslist)):
-                thisout = outfile+'{}.dat'.format(item+4001)
+                thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
                 #rad = rad.reshape((50,40))
@@ -246,7 +247,7 @@ def main():
                 
         if args.type == '3D_ps':
             for item in range(2):#len(randomslist)):
-                thisout = outfile+'{}.dat'.format(item+4001)
+                thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 mono1 = compute_monopole(pi, sigma, xi)
                 q1 = compute_quadrupole(pi, sigma, xi)
