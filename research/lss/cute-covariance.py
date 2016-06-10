@@ -7,6 +7,8 @@ import sys
 import argparse
 import glob
 import numpy as np
+import matplotlib.pyplot as plt
+import pylab
 
 def main():
     
@@ -21,13 +23,25 @@ def main():
 
     # convenience variables
     datadir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'cuteout', args.type)
-    outdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'covariance'
+    allfiles = glob.glob(os.path.join(datadir, '*.dat'))
+    outdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'covariance')
 
-    if args.cov:
+    xi = []
+    ximeans = []
     
-        mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-        covarance = np.cov()
-        
+    if args.cov:
+
+        for ii in range(len(allfiles)):
+            xi.append(np.loadtxt(allfiles[ii])[:,2])
+            print(ii)
+
+        xi = np.asarray(xi)
+
+        for ii in range(len(xi)):
+            ximeans.append(np.mean(xi[ii]))
+
+        for ii, jj in range(np.shape(xi)):
+            
 if __name__ == "__main__":
     main()
     
