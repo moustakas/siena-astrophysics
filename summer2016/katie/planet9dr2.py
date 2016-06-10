@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-'''
+"""
 Search for Planet 9 in DECaLS/DR2.
 
 Katie Hoag
 2016 June 9
 Siena College
 
-'''
+"""
 
 import os
 import numpy as np
@@ -23,8 +23,9 @@ from astropy import units as u
 
 def get_candidates(cat, gfaint=None):
     
-    """ This script will select candidates for Planet 9 fromthe DECaLS DR2
+    """ This script will select candidates for Planet 9 from the DECaLS DR2
     Tractor catalogs.
+    
     """
 
     # The sigma checker for g, r, and z filters.
@@ -38,11 +39,11 @@ def get_candidates(cat, gfaint=None):
 
     # Candidates must comply with the following parameters to be considered.
     good = (det_g*det_r*no_z*no_w1*no_w2*\
-      (cat['brick_primary'] == 'True')*\
-      #(cat['decam_nobs'][:, 1] == 1)*\
-      #(cat['decam_nobs'][:, 2] == 1)*\
-      #(cat['decam_nobs'][:, 4] >= 1)*\
-      (cat['tycho2inblob'] == 'False')*\
+      #(cat['brick_primary'] == 'True')*\
+      (cat['decam_nobs'][:, 1] == 1)*\
+      (cat['decam_nobs'][:, 2] == 1)*\
+      (cat['decam_nobs'][:, 4] >= 1)*\
+      #(cat['tycho2inblob'] == 'False')*\
       (cat['out_of_bounds'] == 'False')*\
       (cat['decam_anymask'][:, 1] == 0)*\
       (cat['decam_anymask'][:, 2] == 0)*\
@@ -63,13 +64,14 @@ def main():
     """ This script selects possible candidates for Planet Nine from
     Tractor DR2 catalogs.
     It rules out objects that are already identified and puts the
-    possible Planet Nine candidates into a .fits file
+    possible Planet Nine candidates into a .fits file.
+    
     """
     
     data_dir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(data_dir, 'planet9-dr2-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor*.fits')
+    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-00*.fits')
     ncat = len(catfiles)
     
     asteroid_path = os.path.join(data_dir, 'asteroids_decals_dr2.fits')
@@ -89,7 +91,6 @@ def main():
                 nout = len(out)
             else:
                 out = vstack((out, cat[cand]))
-                print(cat[cand])
                 nout = len(out)
         if nout > 0:
                 print('Number of candidates so far: ', nout)
@@ -97,25 +98,28 @@ def main():
             print('No candidates yet.')
             
     print('Number of images checked: ', ncat)
-    #if nout > 0:
+    out.write(outfile, overwrite=True)
+    """
+    if nout > 0:
         # Match candidate catalog (out) against known asteroids
-        #outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
-        #knowncoord = SkyCoord(ra=known_asteroids['ra'],
-        #                      dec=known_asteroids['dec'])
-        #idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
+        outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
+        knowncoord = SkyCoord(ra=known_asteroids['ra'],
+                              dec=known_asteroids['dec'])
+        idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
         #matches = knowncoord[idx]  # is this needed?
+        # remove matches
         # what is non_matching_objects?
         #finalout = out[non_matching_objects]
-        #print('Number of objects matched to known asteroids: ', len(matches))
+        #print("Number of objects matched to known asteroids: ", len(matches))
 
         #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
         #print('Writing {}'.format(outfile))
-        #out.write(outfile, clobber=True)
+        out.write(outfile, overwrite=True)
         #print(len(out))
-        #finalout.write(outfile, clobber=True)
-        #print(len(finalout))
-
+        #finalout.write(outfile, overwrite=True)
+        #print("Total Number of Candidates: ", len(finalout))
+"""
         #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
 if __name__ == '__main__':
