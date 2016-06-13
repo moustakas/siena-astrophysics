@@ -49,7 +49,7 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmin, zmax, item): 
+def calc_fkp_weights(z, zmin, zmax): 
     NRB = 200 
     NGC = 6308
     SGC = 2069
@@ -109,7 +109,7 @@ def main():
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
     randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-    outfile = os.path.join(drdir, 'cuteout', 'dr11_2pt_'+args.type+'_')
+    outfile = os.path.join(drdir, 'cuteout', args.type, 'dr11_2pt_'+args.type+'_')
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.type+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
@@ -120,12 +120,13 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-        #wfkp3 = calc_fkp_weights(specz['Z'], 0.43, 0.7, item)
+        wfkp2 = calc_fkp_weights(specz['Z'], 0.43, 0.7)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
-        data[:,3] = specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        data[:,3] = wfkp2*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+                    #specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
         np.savetxt(datafile, data)
@@ -139,11 +140,10 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7, item)
-            rand[:,3] = wcp[keep]+wzf[keep]-1 #wfkp*(wcp[keep]+wzf[keep]-1)
+            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             log.info('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
             print('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
-            #print('Writing file {} of 4600'.format(item+4001))
             np.savetxt(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001), rand)
                       
     if args.docute:
@@ -154,11 +154,11 @@ def main():
             omega_L = 0.7
         if args.cosmo==2:
             omega_M = 0.274
-            omega_L = 0.7
+            omega_L = 1 - omega_M
     
         for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
-            newfile = paramfile+'_nofkp_{}.param'.format(item+4001)
+            newfile = paramfile+'_fkp_{}.param'.format(item+4001)
 
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
@@ -231,7 +231,7 @@ def main():
                 plt.show()
                 
         if args.type == '3D_rm':
-            for item in range(len(randomslist)):
+            for item in range(30):#len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
