@@ -40,9 +40,9 @@ def main():
         for ii in range(len(xi)):
             xibars.append(np.mean(xi[ii]))
 
-        for mm in range(len(allfiles)):
-            for ii in range(np.shape(xi)[1]):
-                for jj in range(np.shape(xi)[2]):
+        for mm in range(len(allfiles)): # loop through each file
+            for ii in range(np.shape(xi)[1]): # loop through each ...
+                for jj in range(np.shape(xi)[2]): # loop through each ...
                     covlist.append((xi[mm][ii]-xibars[mm])*(xi[mm][jj]-xibars[mm]))
 
 if __name__ == "__main__":
