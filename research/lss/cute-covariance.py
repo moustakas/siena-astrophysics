@@ -27,47 +27,26 @@ def main():
     corrfiles = glob.glob(os.path.join(datadir, '*_fkp_????.dat'))
     outdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'covariance')
 
-    # Read one correlation function and get the 40, 50 dimensions.
     corrfiles = corrfiles[:20] # testing!
-
     ncorr = len(corrfiles)
-    #allcorr = np.zeros((ncorr, 40, 50))
-    allcorr = np.zeros((ncorr, 2000))
+    xi = np.zeros((ncorr, 2, 2000))
+
     for ii, cfile in enumerate(corrfiles):
         print('Reading {}'.format(cfile))
-        corr = np.loadtxt(cfile)#.reshape(40, 50, 7)
-        allcorr[ii, :] = corr[:,2] # grab xi
-        #allcorr[ii, :, :] = corr[:, :, 2] # grab xi
+        data = np.loadtxt(cfile)
+        xi[:,ii] = data[:,2] # grab xi
 
-    #cov = np.zeros((40, 50))
     cov = np.zeros((20, 2000))
-    meancorr = np.mean(allcorr, axis=1)
-    for mm, corrf in enumerate(allcorr):
-        for ii in corrf:
-            for jj in range(2000):
-                cov[mm, jj] = (ii-meancorr[mm])*(corrf[jj]-meancorr[mm])
+    xibar = np.mean(xi, axis=0)
+
+    for mm, corrf in enumerate(xi): # (0, thing[0])
+        for jj, _ in enumerate(corrf):
+            if jj < 1999:
+                cov[mm, jj] = (corrf[jj]-xibar[mm])*(corrf[jj+1]-xibar[mm])
     pdb.set_trace()
         
     # sys.exit(1)
-
-    # xi = []
-    # xibars = []
-    # covlist = []
-    
     # if args.cov:
-
-    #     for ii in range(len(allfiles)):
-    #         xi.append(np.loadtxt(allfiles[ii])[:,2])
-    #         xi[ii] = np.reshape(xi[ii], [40,50])
-    #         print(ii)
-            
-    #     for ii in range(len(xi)):
-    #         xibars.append(np.mean(xi[ii]))
-            
-    #     for mm in range(np.shape(xi)[0]): # loop through each file
-    #         for ii in range(np.shape(xi)[1]): # loop through each ...
-    #             for jj in range(np.shape(xi)[2]): # loop through each ...
-    #                 covlist.append((xi[mm][ii]-xibars[mm])*(xi[mm][jj]-xibars[mm]))
                     
 if __name__ == "__main__":
     main()

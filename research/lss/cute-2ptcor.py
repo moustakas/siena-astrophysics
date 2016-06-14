@@ -17,16 +17,16 @@ from astropy.io import fits
 from astropy.cosmology import WMAP7
 
 def plotmqh(mono1,q1,hx1,rrange,rad2,mono2,quad2):
-    plt.figure()
-    plt.subplot(211)
+    #plt.figure()
+    #plt.subplot(111)
     plt.plot(rrange, mono1*rrange**2, 'ko')
-    plt.plot(rad2, mono2*rad2**2, 'r-')
-    plt.subplot(212)
-    plt.plot(rrange, -q1*rrange**2, 'ko')
-    plt.plot(rad2, -quad2*rad2**2, 'r-')
+    #plt.plot(rad2, mono2*rad2**2, 'r-')
+    #plt.subplot(212)
+    #plt.plot(rrange, -q1*rrange**2, 'ko')
+    #plt.plot(rad2, -quad2*rad2**2, 'r-')
     #plt.subplot(313)
     #plt.plot(rrange, hx1*rrange**2, 'ko')
-    plt.show()
+    #plt.show()
 
 def compute_monopole(mu, r, xirm):
     xirm = xirm*1.0
@@ -66,8 +66,8 @@ def calc_fkp_weights(z, zmin, zmax):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.7)**3-
-                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.7)**3)
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.704)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.704)**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
@@ -231,10 +231,12 @@ def main():
                 plt.show()
                 
         if args.type == '3D_rm':
-            for item in range(30):#len(randomslist)):
+            #rad = np.linspace(2, 198, 40)
+            for item in range(20):#len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
+                # rad = np.linspace(2, 198, 40)
                 #rad = rad.reshape((50,40))
                 mono1 = compute_monopole(mu, rad, xi)
                 q1 = compute_quadrupole(mu, rad, xi)
@@ -244,6 +246,8 @@ def main():
                 # plt.show()
                 # plt.imshow(xi.reshape(50, 40))
                 plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
+            plt.plot(rad2, mono2*rad2**2, 'r-')
+            plt.show()
                 
         if args.type == '3D_ps':
             for item in range(2):#len(randomslist)):
