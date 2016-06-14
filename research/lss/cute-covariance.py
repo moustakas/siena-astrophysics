@@ -38,6 +38,10 @@ def main():
 
     cov = np.zeros((20, 2000))
     xibar = np.mean(xi, axis=0)
+    for mm in range(ncorr): # (0, thing[0])
+        for ii in range(2000):
+            for jj in range(2000):
+                cov[mm, ii, jj] = (xi[mm][ii]-xibar[jj])*(xi[mm][jj]-xibar[jj])
 
     for mm, corrf in enumerate(xi): # (0, thing[0])
         for jj, _ in enumerate(corrf):
