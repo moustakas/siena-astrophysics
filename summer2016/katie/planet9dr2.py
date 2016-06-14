@@ -12,7 +12,6 @@ Siena College
 import os
 import numpy as np
 from glob import glob
-import argparse # split matching into a different argument?
 
 import pdb
 
@@ -74,7 +73,7 @@ def main():
     data_dir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(data_dir, 'planet9-dr2-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-[0-2]*.fits')
+    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-000*.fits')
     ncat = len(catfiles)
     
     asteroid_path = os.path.join(data_dir, 'asteroids_decals_dr2.fits')
@@ -83,7 +82,7 @@ def main():
     gfaint = 30.0
     nout = 0
     
-    for ii, thisfile in enumerate(catfiles):  # not getting any candidates
+    for ii, thisfile in enumerate(catfiles):
         print('Reading {}'.format(thisfile))
         cat = Table(fits.getdata(thisfile, 1))
         cand = get_candidates(cat, gfaint=gfaint)
@@ -101,19 +100,20 @@ def main():
             print('No candidates yet.')
             
     print('Number of images checked: ', ncat)
-    out.write(outfile, overwrite=True)
+    #out.write(outfile, overwrite=True)
+
+    pdb.set_trace()
 
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
 
-        m1, m2, distance = match_radec(known_asteroids['ra'], known_asteroids['dec'], out['ra'], out['dec'], 1.0/3600.0) # matches within 1 arcsecond
+        m1, m2, distance = match_radec(known_asteroids['RA0'], known_asteroids['DEC0'], out['ra'], out['dec'], 1.0/3600.0) # matches within 1 arcsecond
         keep = np.delete(np.arange(nout), m2)
-        #finalout = out[keep] or finalout = keep ???
-        #print("Total Number of Candidates: ", len(finalout))
-        #print('Writing {}'.format(outfile))
-        #finalout.write(outfile, overwrite=True)
+        finalout = out[keep] #finalout = keep ???
+        print("Total Number of Candidates: ", len(finalout))
+        print('Writing {}'.format(outfile))
+        finalout.write(outfile, overwrite=True)
 
-        #pdb.set_trace()
 
 if __name__ == '__main__':
     main()
