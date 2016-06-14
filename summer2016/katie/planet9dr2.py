@@ -19,6 +19,7 @@ from astropy.io import fits
 from astropy.table import vstack, Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astrometry.libkd.spherematch import match_radec
 
 
 def get_candidates(cat, gfaint=None):
@@ -38,13 +39,14 @@ def get_candidates(cat, gfaint=None):
     no_w2 = (cat['wise_flux'][:, 1]*np.sqrt(cat['wise_flux_ivar'][:, 1]) < 5)
 
     # Candidates must comply with the following parameters to be considered.
+    #pdb.set_trace()
     good = (det_g*det_r*no_z*no_w1*no_w2*\
-      #(cat['brick_primary'] == 'True')*\
+      (cat['brick_primary']*1)*\
       (cat['decam_nobs'][:, 1] == 1)*\
       (cat['decam_nobs'][:, 2] == 1)*\
       (cat['decam_nobs'][:, 4] >= 1)*\
-      #(cat['tycho2inblob'] == 'False')*\
-      (cat['out_of_bounds'] == 'False')*\
+      (cat['tycho2inblob']*1 == 0)*\
+      (cat['out_of_bounds']*1 == 0)*\
       (cat['decam_anymask'][:, 1] == 0)*\
       (cat['decam_anymask'][:, 2] == 0)*\
       (cat['decam_anymask'][:, 4] == 0)*\
@@ -53,7 +55,7 @@ def get_candidates(cat, gfaint=None):
       (cat['decam_fracflux'][:, 4] < 0.1)*\
       (cat['decam_fracmasked'][:, 1] < 0.1)*\
       (cat['decam_fracmasked'][:, 2] < 0.1)*\
-      (cat['decam_fracmasked'][:, 4] < 0.1))*1  
+      (cat['decam_fracmasked'][:, 4] < 0.1))*1 
     #good = (det_g*det_r*no_z*no_w1*no_w2)*1
     #pdb.set_trace()
 
@@ -71,7 +73,7 @@ def main():
     data_dir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(data_dir, 'planet9-dr2-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-00*.fits')
+    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-000*.fits')
     ncat = len(catfiles)
     
     asteroid_path = os.path.join(data_dir, 'asteroids_decals_dr2.fits')
@@ -80,7 +82,7 @@ def main():
     gfaint = 30.0
     nout = 0
     
-    for ii, thisfile in enumerate(catfiles):  # not getting any candidates
+    for ii, thisfile in enumerate(catfiles):
         print('Reading {}'.format(thisfile))
         cat = Table(fits.getdata(thisfile, 1))
         cand = get_candidates(cat, gfaint=gfaint)
@@ -98,29 +100,20 @@ def main():
             print('No candidates yet.')
             
     print('Number of images checked: ', ncat)
-    out.write(outfile, overwrite=True)
-    """
+    #out.write(outfile, overwrite=True)
+
+    pdb.set_trace()
+
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
-        outcoord = SkyCoord(ra=out['ra'], dec=out['dec'])
-        knowncoord = SkyCoord(ra=known_asteroids['ra'],
-                              dec=known_asteroids['dec'])
-        idx, d2d, d3d = outcoord.match_to_catalog_sky(knowncoord)
-        #matches = knowncoord[idx]  # is this needed?
-        # remove matches
-        # what is non_matching_objects?
-        #finalout = out[non_matching_objects]
-        #print("Number of objects matched to known asteroids: ", len(matches))
 
-        #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
+        m1, m2, distance = match_radec(known_asteroids['RA0'], known_asteroids['DEC0'], out['ra'], out['dec'], 1.0/3600.0) # matches within 1 arcsecond
+        keep = np.delete(np.arange(nout), m2)
+        finalout = out[keep] #finalout = keep ???
+        print("Total Number of Candidates: ", len(finalout))
+        print('Writing {}'.format(outfile))
+        finalout.write(outfile, overwrite=True)
 
-        #print('Writing {}'.format(outfile))
-        out.write(outfile, overwrite=True)
-        #print(len(out))
-        #finalout.write(outfile, overwrite=True)
-        #print("Total Number of Candidates: ", len(finalout))
-"""
-        #pdb.set_trace()  # Runs Python Debugger on code up to this line.   
 
 if __name__ == '__main__':
     main()
