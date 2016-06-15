@@ -233,7 +233,7 @@ def main():
                 
         if args.type == '3D_rm':
             #rad = np.linspace(2, 198, 40)
-            for item in range(20):#len(randomslist)):
+            for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 rad = np.linspace(2, 198, 40)
@@ -242,12 +242,14 @@ def main():
                 mono1 = compute_monopole(mu, rad, xi)
                 q1 = compute_quadrupole(mu, rad, xi)
                 hex1 = compute_hexadecapole(mu, rad, xi)
-                # added = mono1+q1 
+                added = mono1+q1 
                 # plt.plot(rad, added*rad**2, 'bo')
                 # plt.show()
                 # plt.imshow(xi.reshape(50, 40))
                 plotmqh(mono1,q1,hex1,rad,rad2,mono2,quad2)
-            plt.plot(rad2, mono2*rad2**2, 'r-')
+                plt.xlabel('$\mathrm{\ r \ (Mpc \,  h^{-1})}$')
+                plt.ylabel(r'$\mathrm{\ r^2 \xi(r)}$')
+            plt.plot(rad2, (mono2)*rad2**2, 'r-')
             plt.show()
                 
         if args.type == '3D_ps':
