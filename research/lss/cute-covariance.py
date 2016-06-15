@@ -41,12 +41,8 @@ def main():
     for mm in range(ncorr): # (0, thing[0])
         for ii in range(2000):
             for jj in range(2000):
-                cov[mm, ii, jj] = (xi[mm][ii]-xibar[jj])*(xi[mm][jj]-xibar[jj])
+                cov[mm, ii, jj] = (xi[mm][ii]-xibar[ii])*(xi[mm][jj]-xibar[jj])
 
-    for mm, corrf in enumerate(xi): # (0, thing[0])
-        for jj, _ in enumerate(corrf):
-            if jj < 1999:
-                cov[mm, jj] = (corrf[jj]-xibar[mm])*(corrf[jj+1]-xibar[mm])
     pdb.set_trace()
         
     # sys.exit(1)
