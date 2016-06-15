@@ -27,22 +27,29 @@ def main():
     corrfiles = glob.glob(os.path.join(datadir, '*_fkp_????.dat'))
     outdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'covariance')
 
-    corrfiles = corrfiles[:20] # testing!
+    #corrfiles = corrfiles[:20] # testing!
     ncorr = len(corrfiles)
-    xi = np.zeros((ncorr, 2000))
+    xi = np.zeros((ncorr, 40, 50))
+    cov = []
 
     for ii, cfile in enumerate(corrfiles):
         print('Reading {}'.format(cfile))
         data = np.loadtxt(cfile)
-        xi[ii, :] = data[:,2] # grab xi
-
-    cov = np.zeros((2000))
+        xi[ii, :] = data[:,2].reshape(40,50) # grab xi
+        
+    rad = np.unique(np.loadtxt(cfile)[:,1])
+    mu = np.unique(np.loadtxt(cfile)[:,0])
+    cov = np.zeros((50,40))
     xibar = np.mean(xi, axis=0)
-    for mm in range(ncorr):
-        for ii in range(2000):
-            for jj in range(2000):
-                cov[jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
 
+    for mm in range(ncorr):
+        for ii in range(0, 50):
+            for jj in range(0, 40):
+                cov[ii,jj] += (xibar[mm, ii] - xii[ii])*(xibar[mm, jj] - xij[jj])
+                #cov[ii,jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
+                
+    cov = cov/(ncorr-1)
+    aa = np.tile(rad*rad, (1, 50)).reshape(50,40)
     pdb.set_trace()
         
     # sys.exit(1)

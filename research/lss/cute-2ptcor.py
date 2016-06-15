@@ -67,8 +67,8 @@ def calc_mock_fkp_weights(z, zmin, zmax):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value)**3-
-                                        (WMAP7.comoving_distance(red_markers[ii-1]).value)**3)
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.704)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.704)**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
@@ -90,7 +90,7 @@ def calc_data_fkp_weights(z, zmin, zmax):
     NRB = 200 
     NGC = 6308
     SGC = 2069
-    SURVEY_SIZE = NGC+SGC
+    SURVEY_SIZE = NGC#+SGC
     FULL_AREA = 41253
     dz = zmax - zmin 
     red_interval = dz/NRB
@@ -103,8 +103,8 @@ def calc_data_fkp_weights(z, zmin, zmax):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value)**3-
-                                        (WMAP7.comoving_distance(red_markers[ii-1]).value)**3)
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.704)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.704)**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
