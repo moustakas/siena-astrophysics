@@ -50,7 +50,7 @@ def compute_hexadecapole(mu, r, xirm):
     hx1 = xr*np.trapz(Bxirm)
     return hx1
 
-def calc_fkp_weights(z, zmin, zmax): 
+def calc_mock_fkp_weights(z, zmin, zmax): 
     NRB = 200 
     NGC = 6308
     SGC = 2069
@@ -67,8 +67,44 @@ def calc_fkp_weights(z, zmin, zmax):
     for ii in range(NRB+1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
-            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.704)**3-
-                                        (WMAP7.comoving_distance(red_markers[ii-1]).value*0.704)**3)
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value)**3)
+                                        *(SURVEY_SIZE/FULL_AREA))
+    for ii in range(len(z)):
+        bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
+    bin_num = np.asarray(bin_num)
+
+    for ii in range(NRB):
+        bin_sum.append(len(np.where(bin_num==ii)[0])) 
+
+    bin_sum = np.asarray(bin_sum)
+    red_vol = np.asarray(red_vol)
+    nbar_slice = bin_sum/red_vol
+
+    for ii in range(len(z)):
+        wfkp.append(1/(1+20000*nbar_slice[bin_num[ii]]))
+                 
+    return wfkp
+
+def calc_data_fkp_weights(z, zmin, zmax): 
+    NRB = 200 
+    NGC = 6308
+    SGC = 2069
+    SURVEY_SIZE = NGC+SGC
+    FULL_AREA = 41253
+    dz = zmax - zmin 
+    red_interval = dz/NRB
+    red_markers = []
+    red_vol = []
+    bin_num = []
+    bin_sum = []
+    wfkp = []
+
+    for ii in range(NRB+1):
+        red_markers.append(zmin + ii*red_interval) 
+        if ii >= 1:
+            red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value)**3-
+                                        (WMAP7.comoving_distance(red_markers[ii-1]).value)**3)
                                         *(SURVEY_SIZE/FULL_AREA))
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
@@ -121,7 +157,7 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-        wfkp2 = calc_fkp_weights(specz['Z'], 0.43, 0.7)
+        wfkp2 = calc_data_fkp_weights(specz['Z'], 0.43, 0.7)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
@@ -141,7 +177,7 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            wfkp = calc_mock_fkp_weights(rand[:,2], 0.43, 0.7)
             rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             log.info('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
             print('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
