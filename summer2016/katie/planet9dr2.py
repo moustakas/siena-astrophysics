@@ -73,7 +73,7 @@ def main():
     data_dir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(data_dir, 'planet9-dr2-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-000*.fits')
+    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-*.fits')
     ncat = len(catfiles)
     
     asteroid_path = os.path.join(data_dir, 'asteroids_decals_dr2.fits')
@@ -107,7 +107,7 @@ def main():
     if nout > 0:
         # Match candidate catalog (out) against known asteroids
 
-        m1, m2, distance = match_radec(known_asteroids['RA0'], known_asteroids['DEC0'], out['ra'], out['dec'], 1.0/3600.0) # matches within 1 arcsecond
+        m1, m2, distance = match_radec(known_asteroids['RA0'], known_asteroids['DEC0'], out['ra'], out['dec'], 1.0/3600.0) # matches within 1 arcsecond (good?)
         keep = np.delete(np.arange(nout), m2)
         finalout = out[keep] #finalout = keep ???
         print("Total Number of Candidates: ", len(finalout))
