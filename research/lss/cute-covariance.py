@@ -29,12 +29,12 @@ def main():
 
     corrfiles = corrfiles[:20] # testing!
     ncorr = len(corrfiles)
-    xi = np.zeros((ncorr, 2, 2000))
+    xi = np.zeros((ncorr, 1, 2000))
 
     for ii, cfile in enumerate(corrfiles):
         print('Reading {}'.format(cfile))
         data = np.loadtxt(cfile)
-        xi[:,ii] = data[:,2] # grab xi
+        xi[ii, 0, :] = data[:,2] # grab xi
 
     cov = np.zeros((20, 2000))
     xibar = np.mean(xi, axis=0)
