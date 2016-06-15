@@ -29,19 +29,19 @@ def main():
 
     corrfiles = corrfiles[:20] # testing!
     ncorr = len(corrfiles)
-    xi = np.zeros((ncorr, 1, 2000))
+    xi = np.zeros((ncorr, 2000))
 
     for ii, cfile in enumerate(corrfiles):
         print('Reading {}'.format(cfile))
         data = np.loadtxt(cfile)
-        xi[ii, 0, :] = data[:,2] # grab xi
+        xi[ii, :] = data[:,2] # grab xi
 
-    cov = np.zeros((20, 2000))
+    cov = np.zeros((2000))
     xibar = np.mean(xi, axis=0)
-    for mm in range(ncorr): # (0, thing[0])
+    for mm in range(ncorr):
         for ii in range(2000):
             for jj in range(2000):
-                cov[mm, ii, jj] = (xi[mm][ii]-xibar[ii])*(xi[mm][jj]-xibar[jj])
+                cov[jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
 
     pdb.set_trace()
         
