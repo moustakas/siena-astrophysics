@@ -111,6 +111,13 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_'+args.type+'_')
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
+    if args.type == '3D_ps':
+        npibins = 150
+        nsigbins = 150
+        maxpi = 150
+        maxsig = 150
+            
+
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
 
@@ -215,10 +222,10 @@ def main():
                 pfile.write('w= -1\n')
                 pfile.write('log_bin= 0\n')
                 pfile.write('n_logint= 0\n')
-                pfile.write('dim1_max= 150\n') # Maximum Radial Separation
-                pfile.write('dim1_nbin= 75\n')
-                pfile.write('dim2_max= 150\n') # Maximum Transverse Separation
-                pfile.write('dim2_nbin= 75\n')
+                pfile.write('dim1_max= {}\n'.format(maxsig)) # Maximum Radial Separation
+                pfile.write('dim1_nbin= {}\n'.format(nsigbins))
+                pfile.write('dim2_max= {}\n'.format(maxpi))) # Maximum Transverse Separation
+                pfile.write('dim2_nbin= {}\n'.format(npibins))
                 pfile.write('dim3_min= 0.4\n')
                 pfile.write('dim3_max= 0.7\n')
                 pfile.write('dim3_nbin= 1\n')
@@ -262,24 +269,21 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            xi = np.zeros((len(randomslist), 75, 75))
+            xi = np.zeros((len(randomslist), nsigbins, npibins))
             for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                xi = thisxi.reshape(75,75)
+                xi = thisxi.reshape(nsigbins, npibins)
             xi = np.mean(xi)
-            bigxi = np.zeros((75*2, 75*2))
+            bigxi = np.zeros((nsigbins*2, npibins*2))
             xi2d = xi.reshape(75, 75)
-            bigxi[:75, :75] = np.fliplr(np.flipud(xi2d))
-            bigxi[75:150, :75] = np.fliplr(xi2d)
-            bigxi[:75, 75:150] = np.flipud(xi2d)
-            bigxi[75:150, 75:150] = xi2d
-            pi2d = np.tile(np.arange(-149, 150, 2), (1, 150)).reshape(150, 150)
+            bigxi[:nsigbins, :npibins] = np.fliplr(np.flipud(xi2d))
+            bigxi[nsigbins:2*nsigbins, :npibins] = np.fliplr(xi2d)
+            bigxi[:nsigbins, npibins:2*npibins] = np.flipud(xi2d)
+            bigxi[nsigbins:2*nsigbins, npibins:2*npibins] = xi2d
+            pi2d = np.tile(np.arange(-(2*npibins-1), 2*npibins, 2), (1, 2*npibins)).reshape(2*npibins, 2*npibins)
             sig2d = np.rot90(pi2d)
             plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm()) ; plt.colorbar() ; plt.show()      
-            # plt.imshow(xi,cmap='jet')
-            # plt.colorbar()
-            # plt.show()
-                
+                            
 if __name__ == "__main__":
     main()
