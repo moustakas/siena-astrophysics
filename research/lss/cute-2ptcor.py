@@ -116,12 +116,12 @@ def main():
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
-        wfkp2 = calc_fkp_weights(specz['Z'], 0.43, 0.7)
+        my_data_wfkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
         data = np.zeros((ngal,4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
-        data[:,3] = wfkp2*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
+        data[:,3] = my_data_wfkp*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
                     # specz['WEIGHT_FKP']*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
         print('Writing {}'.format(datafile))
         log.info('Writing {}'.format(datafile))
@@ -159,7 +159,7 @@ def main():
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_3D_rm_fkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_3D_rm_fkp_{}.dat'.format(item+4001)+'\n') # get rid of 3D_rm name
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
@@ -260,10 +260,12 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            for item in range(1):#len(randomslist)):
+            xi = np.zeros((50, 50))
+            for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
-                pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                plt.imshow(xi.reshape(50, 50))
+                pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                xi += thisxi.reshape(50,50)
+            plt.imshow(xi)
             plt.colorbar()
             plt.show()
                 
