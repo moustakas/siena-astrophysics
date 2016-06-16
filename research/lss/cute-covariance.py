@@ -45,8 +45,8 @@ def main():
     for mm in range(ncorr):
         for ii in range(0, 50):
             for jj in range(0, 40):
-                cov[ii,jj] += (xibar[mm, ii] - xii[ii])*(xibar[mm, jj] - xij[jj])
-                #cov[ii,jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
+                # cov[ii,jj] += (xibar[mm, ii] - xii[ii])*(xibar[mm, jj] - xij[jj])
+                # cov[ii,jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
                 
     cov = cov/(ncorr-1)
     aa = np.tile(rad*rad, (1, 50)).reshape(50,40)
