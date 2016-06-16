@@ -173,7 +173,7 @@ def main():
                 pfile.write('omega_M= {}\n'.format(omega_M))
                 pfile.write('omega_L= {}\n'.format(omega_L))
                 pfile.write('w= -1\n')
-                pfile.write('log_bin= 0\n')
+                pfile.write('log_bin= 1\n') # changed from 0 to 1
                 pfile.write('n_logint= 10\n')
                 pfile.write('dim1_max= 150\n')
                 pfile.write('dim1_nbin= 75\n')
@@ -186,7 +186,26 @@ def main():
                 pfile.write('use_pm= 1\n')
                 pfile.write('n_pix_sph= 2048\n')
                 
-            if (args.type == '3D_rm' or args.type == '3D_ps'):
+            if args.type == '3D_rm':
+                pfile.write('input_format= 2\n')
+                pfile.write('np_rand_fact= 9.5217\n')
+                pfile.write('omega_M= {}\n'.format(omega_M))
+                pfile.write('omega_L= {}\n'.format(omega_L))
+                pfile.write('w= -1\n')
+                pfile.write('log_bin= 1\n') # changed from 0 to 1
+                pfile.write('n_logint= 0\n')
+                pfile.write('dim1_max= 200\n')
+                pfile.write('dim1_nbin= 50\n')
+                pfile.write('dim2_max= 1\n')
+                pfile.write('dim2_nbin= 40\n')
+                pfile.write('dim3_min= 0.4\n')
+                pfile.write('dim3_max= 0.7\n')
+                pfile.write('dim3_nbin= 1\n')
+                pfile.write('radial_aperture= 1\n')
+                pfile.write('use_pm= 0\n')
+                pfile.write('n_pix_sph= 2048\n')
+
+            if args.type == '3D_ps':
                 pfile.write('input_format= 2\n')
                 pfile.write('np_rand_fact= 9.5217\n')
                 pfile.write('omega_M= {}\n'.format(omega_M))
@@ -194,10 +213,10 @@ def main():
                 pfile.write('w= -1\n')
                 pfile.write('log_bin= 0\n')
                 pfile.write('n_logint= 0\n')
-                pfile.write('dim1_max= 200\n')
+                pfile.write('dim1_max= 150\n') # Maximum Radial Separation
                 pfile.write('dim1_nbin= 50\n')
-                pfile.write('dim2_max= 1\n')
-                pfile.write('dim2_nbin= 40\n')
+                pfile.write('dim2_max= 150\n') # Maximum Transverse Separation
+                pfile.write('dim2_nbin= 50\n')
                 pfile.write('dim3_min= 0.4\n')
                 pfile.write('dim3_max= 0.7\n')
                 pfile.write('dim3_nbin= 1\n')
