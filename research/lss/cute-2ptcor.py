@@ -154,12 +154,12 @@ def main():
     
         for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
-            newfile = paramfile+'_fkp_{}.param'.format(item+4001)
+            newfile = paramfile+'fkp_{}.param'.format(item+4001)
 
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_3D_rm_fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
@@ -260,10 +260,10 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            for item in range(170):#len(randomslist)):
+            for item in range(1):#len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                plt.imshow(xi.reshape(50, 40))
+                plt.imshow(xi.reshape(50, 50))
             plt.colorbar()
             plt.show()
                 
