@@ -11,11 +11,13 @@ import sys
 import argparse
 import glob
 import logging as log
+import pdb
 
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.cosmology import WMAP7
+from matplotlib.colors import LogNorm
 
 def plotmqh(mono1,q1,hx1,rrange):
     #plt.figure()
@@ -29,7 +31,7 @@ def compute_monopole(mu, r, xirm):
     xirm = xirm*1.0
     Bxirm = np.reshape(xirm,[40,50])# generalize
     xr = 0.025
-    mono1 = xr*np.trapz(Bxirm)
+    mono1 = xr*np.trapz(Bxirm, axis=0)
     return mono1
 
 def compute_quadrupole(mu, r, xirm):
@@ -152,7 +154,7 @@ def main():
             omega_M = 0.274
             omega_L = 1 - omega_M
     
-        for item in range(len(randomslist)):
+        for item in range(1):#len(randomslist)):
             # Create a unique filename for each parameeter file
             newfile = paramfile+'fkp_{}.param'.format(item+4001)
 
@@ -214,9 +216,9 @@ def main():
                 pfile.write('log_bin= 0\n')
                 pfile.write('n_logint= 0\n')
                 pfile.write('dim1_max= 150\n') # Maximum Radial Separation
-                pfile.write('dim1_nbin= 50\n')
+                pfile.write('dim1_nbin= 75\n')
                 pfile.write('dim2_max= 150\n') # Maximum Transverse Separation
-                pfile.write('dim2_nbin= 50\n')
+                pfile.write('dim2_nbin= 75\n')
                 pfile.write('dim3_min= 0.4\n')
                 pfile.write('dim3_max= 0.7\n')
                 pfile.write('dim3_nbin= 1\n')
@@ -260,14 +262,24 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            xi = np.zeros((50, 50))
+            xi = np.zeros((len(randomslist), 75, 75))
             for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                xi += thisxi.reshape(50,50)
-            plt.imshow(xi)
-            plt.colorbar()
-            plt.show()
+                xi = thisxi.reshape(75,75)
+            xi = np.mean(xi)
+            bigxi = np.zeros((75*2, 75*2))
+            xi2d = xi.reshape(75, 75)
+            bigxi[:75, :75] = np.fliplr(np.flipud(xi2d))
+            bigxi[75:150, :75] = np.fliplr(xi2d)
+            bigxi[:75, 75:150] = np.flipud(xi2d)
+            bigxi[75:150, 75:150] = xi2d
+            pi2d = np.tile(np.arange(-149, 150, 2), (1, 150)).reshape(150, 150)
+            sig2d = np.rot90(pi2d)
+            plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm()) ; plt.colorbar() ; plt.show()      
+            # plt.imshow(xi,cmap='jet')
+            # plt.colorbar()
+            # plt.show()
                 
 if __name__ == "__main__":
     main()

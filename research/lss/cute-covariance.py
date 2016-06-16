@@ -30,8 +30,7 @@ def main():
     #corrfiles = corrfiles[:20] # testing!
     ncorr = len(corrfiles)
     xi = np.zeros((ncorr, 40, 50))
-    cov = []
-
+    
     for ii, cfile in enumerate(corrfiles):
         print('Reading {}'.format(cfile))
         data = np.loadtxt(cfile)
@@ -39,18 +38,23 @@ def main():
         
     rad = np.unique(np.loadtxt(cfile)[:,1])
     mu = np.unique(np.loadtxt(cfile)[:,0])
-    cov = np.zeros((50,40))
+    cov = np.zeros((40,40))
     xibar = np.mean(xi, axis=0)
 
+    #xi = np.reshape(xi,[40,50])# generalize
+    xr = 0.025
+    xibar = np.mean(np.mean(xi, axis=2), axis=0)
+    mono1 = xr*np.trapz(xi, axis=1)
+
     for mm in range(ncorr):
-        for ii in range(0, 50):
+        for ii in range(0, 40):
             for jj in range(0, 40):
                 # cov[ii,jj] += (xibar[mm, ii] - xii[ii])*(xibar[mm, jj] - xij[jj])
-                # cov[ii,jj] += (xi[mm, ii] - xibar[ii])*(xi[mm, jj] - xibar[jj])
+                cov[ii,jj] += (mono1[mm, ii] - xibar[ii])*(mono1[mm, jj] - xibar[jj])
                 
     cov = cov/(ncorr-1)
-    aa = np.tile(rad*rad, (1, 50)).reshape(50,40)
-    pdb.set_trace()
+    aa = np.tile(rad[0:40]*rad[0:40], (1, 40)).reshape(40,40)
+    # pdb.set_trace()
         
     # sys.exit(1)
                         
