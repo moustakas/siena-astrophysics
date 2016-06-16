@@ -181,7 +181,7 @@ def main():
             rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
             log.info('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
             print('Writing {}'.format(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)))
-            np.savetxt(randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001), rand)
+            np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand) # rename all of the randomefile+3D_rm files
                       
     if args.docute:
 
@@ -200,7 +200,7 @@ def main():
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_'+args.type+'_fkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
@@ -289,14 +289,15 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            for item in range(2):#len(randomslist)):
+            for item in range(170):#len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                mono1 = compute_monopole(pi, sigma, xi)
-                q1 = compute_quadrupole(pi, sigma, xi)
-                hex1 = compute_hexadecapole(pi, sigma, xi)
+                #mono1 = compute_monopole(pi, sigma, xi)
+                #q1 = compute_quadrupole(pi, sigma, xi)
+                #hex1 = compute_hexadecapole(pi, sigma, xi)
                 plt.imshow(xi.reshape(50, 40))
-                plt.show()
+            plt.colorbar()
+            plt.show()
                 #plotmqh(mono1,q1,hex1,rad)
 
 if __name__ == "__main__":
