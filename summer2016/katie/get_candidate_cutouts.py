@@ -68,7 +68,7 @@ def main():
                 image = Image.open(jpgfile)
                 draw = ImageDraw.Draw(image)
                 draw.ellipse((100 - radius, 100 - radius, 100 + radius, 100 + radius), outline="#66FF00")
-                jpg_annot_file = image.save('/home/desi2/candidatesp9/candidate_cutouts/cand-{:04d}-annot.jpg'.format(ii), 'JPEG')
+                jpg_annot_file = image.save('/home/desi2/candidatesp9/candidate_cutouts/annotated_cutouts/cand-{:04d}-annot.jpg'.format(ii), 'JPEG')
                 jpgannotfiles.append(jpg_annot_file)
                 #pdb.set_trace()  # Runs Python Debugger on code up to this line.
                 
@@ -80,8 +80,8 @@ def main():
         html = open("/home/desi2/candidatesp9/index.html", 'w')
         html.write('<html><body>\n')
         html.write('<a name="top"></a>\n')
-        html.write('<h1> Possible Planet 9 Candidates from DR2 with Z </h1>\n')
-        html.write('<h4> These candidates were obtained by passing data through strict requirements. Candidates are not yet matched against known asteroids and objects.</h4>')
+        html.write('<h1> Possible Planet 9 Candidates from DR2</h1>\n')
+        html.write('<h4> These candidates were obtained by passing data through strict requirements. Candidates are not yet matched against known asteroids.</h4>')
         html.write('<table border="1" style="width:60%">\n')
 
         for ii in range(len(cand_info)):
@@ -92,7 +92,7 @@ def main():
             jpgurl = 'http://legacysurvey.org/viewer/jpeg-cutout-decals-dr2?ra={:.6f}&dec={:.6f}&pixscale=0.262&size=200'.format(ra, dec)
             viewerurl = 'http://legacysurvey.org/viewer/?ra={:.6f}&dec={:.6f}&zoom=16'.format(ra,dec)
         
-            jpgfile = os.path.join('candidate_cutouts/', 'cand-{:04d}-annot.jpg'.format(ii))
+            jpgfile = os.path.join('candidate_cutouts/annotated_cutouts/', 'cand-{:04d}-annot.jpg'.format(ii))
             if os.path.exists('/home/desi2/candidatesp9/'+jpgfile):
                 html.write('<tr>\n')
                 html.write('<td align=center>Image {:d}<br/>Candidate with RA={:.6f} <br/>and DEC={:.6f} </td>\n'.format(ii+1, ra, dec))

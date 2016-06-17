@@ -13,8 +13,6 @@ import os
 import numpy as np
 from glob import glob
 
-import pdb
-
 from astropy.io import fits
 from astropy.table import vstack, Table
 from astropy.coordinates import SkyCoord
@@ -57,7 +55,6 @@ def get_candidates(cat, gfaint=None):
       (cat['decam_fracmasked'][:, 2] < 0.1)*\
       (cat['decam_fracmasked'][:, 4] < 0.1))*1 
     #good = (det_g*det_r*no_z*no_w1*no_w2)*1
-    #pdb.set_trace()
 
     return np.where(good)[0]
 
@@ -73,7 +70,7 @@ def main():
     data_dir = os.path.join(os.environ.get('HOME'), 'candidatesp9')
     outfile = os.path.join(data_dir, 'planet9-dr2-candidates.fits')
 
-    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-*.fits')
+    catfiles = glob('/global/work/decam/release/dr2/tractor/*/tractor-3*.fits')
     ncat = len(catfiles)
     
     asteroid_path = os.path.join(data_dir, 'asteroids_decals_dr2.fits')
