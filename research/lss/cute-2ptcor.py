@@ -138,8 +138,8 @@ def main():
             rand[:,0] = ra[keep]
             rand[:,1] = dec[keep]
             rand[:,2] = z[keep]
-            wfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
-            rand[:,3] = wfkp*(wcp[keep]+wzf[keep]-1)
+            randfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
+            rand[:,3] = randfkp*(wcp[keep]+wzf[keep]-1)
             log.info('Writing {}'.format(randomfile+'_'+args.corrtype+'_fkp_{}.dat'.format(item+4001)))
             print('Writing {}'.format(randomfile+'_'+args.corrtype+'_fkp_{}.dat'.format(item+4001)))
             np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand) # rename all of the randomefile+3D_rm files
@@ -261,15 +261,9 @@ def main():
             plt.plot(and_rad, (and_mono)*and_rad**2, 'r-')
             plt.show()
                 
-<<<<<<< HEAD
-        if args.type == '3D_ps':
-            #xi = np.zeros((len(randomslist), nsigbins, npibins))
-            for item in range(1):#len(randomslist)):
-=======
         if args.corrtype == '3D_ps':
             xi = np.zeros((len(randomslist), nsigbins, npibins))
             for item in range(len(randomslist)):
->>>>>>> 35c28a8a49b305b7b3c0bfa8a1899407dbcfef49
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 xi = thisxi.reshape(nsigbins, npibins)
