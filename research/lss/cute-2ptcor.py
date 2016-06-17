@@ -168,7 +168,7 @@ def main():
             # Write the parameter file; constants, and then conditionals
             pfile = open(newfile, 'w')
             pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_3D_rm_fkp_{}.dat'.format(item+4001)+'\n') # get rid of 3D_rm name
+            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n') # get rid of 3D_rm name
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
             pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
@@ -224,7 +224,7 @@ def main():
                 pfile.write('n_logint= 0\n')
                 pfile.write('dim1_max= {}\n'.format(maxsig)) # Maximum Radial Separation
                 pfile.write('dim1_nbin= {}\n'.format(nsigbins))
-                pfile.write('dim2_max= {}\n'.format(maxpi))) # Maximum Transverse Separation
+                pfile.write('dim2_max= {}\n'.format(maxpi)) # Maximum Transverse Separation
                 pfile.write('dim2_nbin= {}\n'.format(npibins))
                 pfile.write('dim3_min= 0.4\n')
                 pfile.write('dim3_max= 0.7\n')
@@ -269,14 +269,14 @@ def main():
             plt.show()
                 
         if args.type == '3D_ps':
-            xi = np.zeros((len(randomslist), nsigbins, npibins))
-            for item in range(len(randomslist)):
+            #xi = np.zeros((len(randomslist), nsigbins, npibins))
+            for item in range(1):#len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
                 pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
                 xi = thisxi.reshape(nsigbins, npibins)
-            xi = np.mean(xi)
+            #xi = np.mean(xi)
             bigxi = np.zeros((nsigbins*2, npibins*2))
-            xi2d = xi.reshape(75, 75)
+            xi2d = xi.reshape(nsigbins, npibins)
             bigxi[:nsigbins, :npibins] = np.fliplr(np.flipud(xi2d))
             bigxi[nsigbins:2*nsigbins, :npibins] = np.fliplr(xi2d)
             bigxi[:nsigbins, npibins:2*npibins] = np.flipud(xi2d)
