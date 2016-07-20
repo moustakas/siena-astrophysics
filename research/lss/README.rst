@@ -27,7 +27,7 @@ catalogs we adopt the `PTHalo mocks`_ from Manera et al. 2013, 2015.
 Install Required Dependencies
 -----------------------------
 
-First, clone the `siena-astrophysics` repository somewhere convenient (or just
+First, clone the ``siena-astrophysics`` repository somewhere convenient (or just
 grab the script ``cute-2ptcor.py``, as there are no other internal dependencies)
 and, for convenience, create an alias (which you may choose to put in your
 startup file):
@@ -35,13 +35,16 @@ startup file):
 .. code:: bash
           
           git clone git@github.com:moustakas/siena-astrophysics.git
-          alias cute-2ptcor=`python /path/to/lss/cute-2ptcor.py'
+          alias cute-2ptcor=`python /path/to/sienarepo/lss/cute-2ptcor.py'
 
 Next, download `CUTE`_, skim the documentation, compile it, and put the
 executable in your path.  When compiling be sure to compile *with* the
-``-D_WITH_WEIGHTS`` option.  Note: we do not use the ``CUDA`` version of the
-code and ``CUTE`` can be compiled either with or without MPI support, depending
-on the machine you're planning to use to run the code.
+``-D_WITH_WEIGHTS`` option.  Note: 
+
+- We do not use the ``CUDA`` version of the
+code.
+- ``CUTE`` can be compiled either with or without MPI support, depending on the
+machine you're planning to use to run the code.
 
 Finally, the code also depends on various standard Python libraries like
 ``numpy`` and ``matplotlib``.
@@ -80,6 +83,27 @@ otherwise you're ready to go!
 
 Examples
 --------
+
+``cute-2ptcor`` is a simple command-line script which interfaces with CUTE in a
+convenient way (for example, by generating the required parameter files
+on-the-fly).  It provides a non-exhaustive set of options for computing the
+correlation function, and more options can be added as needed.  To get the full
+set of available options 
+
+.. code:: bash
+
+          usage: cute-2ptcor.py [-h] [--dr DR] [--parse] [--docute] [--qaplots]
+                      [--corrtype CORRTYPE] [--cosmo COSMO]
+
+          optional arguments:
+            -h, --help           show this help message and exit
+            --dr DR              Specify the SDSS data release.
+            --parse              Parse the input datafiles (do just once).
+            --docute             Run CUTE.
+            --qaplots            Generate QAplots.
+            --corrtype CORRTYPE  Specify correlation type (monopole|3D_ps|3D_rm).
+            --cosmo COSMO        Adopted cosmology (1|2)
+
 
 Compute and Plot the Monopole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

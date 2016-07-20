@@ -90,6 +90,9 @@ def main():
     parser.add_argument('--cosmo', type=int, default=1, help='Adopted cosmology (1|2)')
 
     args = parser.parse_args()
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
 
     key = 'LSS_BOSS'
     if key not in os.environ:
