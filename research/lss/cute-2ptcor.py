@@ -83,11 +83,11 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
-    parser.add_argument('--parse', action='store_true', help='Parse the input datafiles.')
+    parser.add_argument('--parse', action='store_true', help='Parse the input datafiles (do just once).')
     parser.add_argument('--docute', action='store_true', help='Run CUTE.')
     parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
-    parser.add_argument('--corrtype', type=str, default='monopole', help='Specify Correlation Type.')
-    parser.add_argument('--cosmo', type=int, default=1, help='Select cosmology')
+    parser.add_argument('--corrtype', type=str, default='monopole', help='Specify correlation type (monopole|3D_ps|3D_rm).')
+    parser.add_argument('--cosmo', type=int, default=1, help='Adopted cosmology (1|2)')
 
     args = parser.parse_args()
 
@@ -100,13 +100,12 @@ def main():
     drdir = os.path.join(os.getenv('LSS_BOSS'), args.dr)
     randomsdir = os.path.join(os.getenv('LSS_BOSS'), args.dr, 'randoms')
     datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-    randomfile = os.path.join(drdir, 'parsed', args.dr+'_cmass_random')
-    outfile = os.path.join(drdir, 'cuteout', args.corrtype, 'dr11_2pt_'+args.corrtype+'_')
-    paramfile = os.path.join(drdir, 'param', 'dr11_'+args.corrtype+'_')
+    randomfile = os.path.join(drdir, 'parsed', '{}_cmass_random'.format(args.dr))
+    baseoutfile = os.path.join(drdir, 'cuteout', args.corrtype, 'dr11_2pt_{}'.format(args.corrtype))
+    paramfile = os.path.join(drdir, 'param', 'dr11_{}_'.format(args.corrtype))
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
     if args.corrtype == '3D_ps':
-
         npibins = 150
         nsigbins = 150
         maxpi = 150
@@ -114,13 +113,12 @@ def main():
 
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
-
         allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
         keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
         specz = allspecz[keep]
         ngal = len(keep)
         datafkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
-        data = np.zeros((ngal,4))
+        data = np.zeros((ngal, 4))
         data[:,0] = specz['RA']
         data[:,1] = specz['DEC']
         data[:,2] = specz['Z']
@@ -147,12 +145,15 @@ def main():
     if args.docute:
 
         # Select the cosmological parameters
-        if args.cosmo==1:
+        if args.cosmo == 1:
             omega_M = 0.3
             omega_L = 0.7
-        if args.cosmo==2:
+            ww = -1
+            
+        if args.cosmo == 2:
             omega_M = 0.274
-            omega_L = 1 - omega_M
+            omega_L = 1.0 - omega_M
+            ww = -1
     
         for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
@@ -164,7 +165,7 @@ def main():
             pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n') # get rid of 3D_rm name
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+outfile+'fkp_{}.dat'.format(item+4001)+'\n')
+            pfile.write('output_filename= '+baseoutfile+'_fkp_{}.dat'.format(item+4001)+'\n')
             pfile.write('corr_type= '+args.corrtype+'\n')
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
@@ -174,7 +175,7 @@ def main():
                 pfile.write('np_rand_fact= 8\n')
                 pfile.write('omega_M= {}\n'.format(omega_M))
                 pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= -1\n')
+                pfile.write('w= {}\n'.format(ww))
                 pfile.write('log_bin= 1\n') # changed from 0 to 1
                 pfile.write('n_logint= 23\n')
                 pfile.write('dim1_max= 150\n')
@@ -193,7 +194,7 @@ def main():
                 pfile.write('np_rand_fact= 9.5217\n')
                 pfile.write('omega_M= {}\n'.format(omega_M))
                 pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= -1\n')
+                pfile.write('w= {}\n'.format(ww))
                 pfile.write('log_bin= 1\n') # changed from 0 to 1
                 pfile.write('n_logint= 0\n')
                 pfile.write('dim1_max= 160\n')
@@ -212,7 +213,7 @@ def main():
                 pfile.write('np_rand_fact= 9.5217\n')
                 pfile.write('omega_M= {}\n'.format(omega_M))
                 pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= -1\n')
+                pfile.write('w= {}\n'.format(ww))
                 pfile.write('log_bin= 0\n')
                 pfile.write('n_logint= 0\n')
                 pfile.write('dim1_max= {}\n'.format(maxsig)) # Maximum Radial Separation
