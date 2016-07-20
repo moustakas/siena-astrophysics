@@ -33,6 +33,7 @@ and, for convenience, create an alias (which you may choose to put in your
 startup file):
 
 .. code:: bash
+          
           git clone git@github.com:moustakas/siena-astrophysics.git
           alias cute-2ptcor=`python /path/to/lss/cute-2ptcor.py'
 
