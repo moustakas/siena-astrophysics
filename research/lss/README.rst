@@ -42,11 +42,9 @@ Next, download `CUTE`_, read or skim the documentation, compile it, and put the
 executable in your path.  When compiling be sure to compile *with* the
 ``-D_WITH_WEIGHTS`` option.  Note:
 
-- ``CUTE`` can be compiled either with or without MPI support, depending on the
-machine you're planning to use to run it.
+- ``CUTE`` can be compiled either with or without MPI support, depending on the machine you're planning to use to run it.
 
-- We do not yet support the ``CUDA`` version of ``CUTE``, so that version does
-  not have to be compiled.
+- We do not yet support the ``CUDA`` version of ``CUTE``, so that version does not have to be compiled.
 
 Finally, the code also depends on various standard Python libraries like
 ``numpy`` and ``matplotlib``.
