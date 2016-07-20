@@ -8,6 +8,7 @@ from __future__ import division, print_function
 
 import os
 import sys
+import pdb
 import argparse
 import glob
 import logging as log
@@ -78,16 +79,24 @@ def calc_fkp_weights(z, zmin, zmax):
                  
     return wfkp
 
+def _parse_datafile():
+    '''Parse the spectroscopic redshift catalog.'''
+
+    
+    
+
+
 def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dr', type=str, default='dr11', help='Specify the SDSS data release.')
+    parser.add_argument('--dr', type=str, default='dr11', help='SDSS Data Release (currently only dr11).')
+    parser.add_argument('--omegaM', type=float, default='0.3', help='Omega_matter (note: Omega_Lambda = 1-Omega_Matter)')
+    parser.add_argument('--w', type=float, default='-1.0', help='w parameter (choose w=-1.0 for cosmological constant)')
+    parser.add_argument('--corrtype', type=str, default='monopole', help='Specify correlation type (monopole|3D_ps|3D_rm).')
     parser.add_argument('--parse', action='store_true', help='Parse the input datafiles (do just once).')
     parser.add_argument('--docute', action='store_true', help='Run CUTE.')
     parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
-    parser.add_argument('--corrtype', type=str, default='monopole', help='Specify correlation type (monopole|3D_ps|3D_rm).')
-    parser.add_argument('--cosmo', type=int, default=1, help='Adopted cosmology (1|2)')
 
     args = parser.parse_args()
     if len(sys.argv) == 1:
@@ -108,12 +117,18 @@ def main():
     paramfile = os.path.join(drdir, 'param', 'dr11_{}_'.format(args.corrtype))
     randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
 
+    # Choose the correlation function.
     if args.corrtype == '3D_ps':
         npibins = 150
         nsigbins = 150
         maxpi = 150
         maxsig = 150
 
+    # Initialize the cosmology
+    omega_M = args.omegaM
+    omega_L = 1-omega_M
+    ww = args.w
+        
     # Parse the input data and write out CUTE-compatible files.
     if args.parse:
         allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
@@ -147,17 +162,8 @@ def main():
                       
     if args.docute:
 
-        # Select the cosmological parameters
-        if args.cosmo == 1:
-            omega_M = 0.3
-            omega_L = 0.7
-            ww = -1
-            
-        if args.cosmo == 2:
-            omega_M = 0.274
-            omega_L = 1.0 - omega_M
-            ww = -1
-    
+        
+
         for item in range(len(randomslist)):
             # Create a unique filename for each parameeter file
             newfile = paramfile+'fkp_{}.param'.format(item+4001)
