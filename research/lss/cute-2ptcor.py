@@ -11,7 +11,7 @@ import sys
 import pdb
 import logging
 import argparse
-import glob
+from glob import glob
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +26,7 @@ def plotmqh(monopole,quadrupole,hexadecapole,rrange):
     plt.plot(rrange, monopole*rrange**2, 'ko')
 
 def compute_monopole(mu, r, xirm):
+    '''Compute the monopole from the xi(r, mu) correlation function.'''
     xirm = xirm*1.0
     Bxirm = np.reshape(xirm,[40,50]) # generalize
     xr = 0.025 # find out about this factor (factor of 1/40)
@@ -33,6 +34,7 @@ def compute_monopole(mu, r, xirm):
     return monopole
 
 def compute_quadrupole(mu, r, xirm):
+    '''Compute the quadrapole from the xi(r, mu) correlation function.'''
     xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
     Bxirm = np.reshape(xirm,[40,50])
     xr = 0.025
@@ -40,19 +42,21 @@ def compute_quadrupole(mu, r, xirm):
     return quadrupole
 
 def compute_hexadecapole(mu, r, xirm):
+    '''Compute the hexadecapole from the xi(r, mu) correlation function.'''
     xirm = xirm*(35*(mu*mu*mu*mu)-(30*mu*mu)+3)/8
     Bxirm = np.reshape(xirm,[40,50])
     xr = 0.025
     hexadecapole = xr*np.trapz(Bxirm)
     return hexadecapole
 
-def calc_fkp_weights(z, zmin, zmax): 
+def calc_fkp_weights(z, zmin, zmax, area=1.0):
+    '''Compute the FKP statistical weights.'''
+
     NRB = 200 
-    NGC = 6308
-    SGC = 2069
-    SURVEY_SIZE = NGC
-    FULL_AREA = 41253
-    dz = zmax - zmin 
+    dz = zmax - zmin
+
+    omega = area/(4*np.pi*(180.0/np.pi)**2)
+    
     red_interval = dz/NRB
     red_markers = []
     red_vol = []
@@ -60,12 +64,12 @@ def calc_fkp_weights(z, zmin, zmax):
     bin_sum = []
     wfkp = []
 
-    for ii in range(NRB+1):
+    for ii in range(NRB + 1):
         red_markers.append(zmin + ii*red_interval) 
         if ii >= 1:
             red_vol.append((4/3)*np.pi*((WMAP7.comoving_distance(red_markers[ii]).value*0.704)**3-
                                         (WMAP7.comoving_distance(red_markers[ii-1]).value*0.704)**3)
-                                        *(SURVEY_SIZE/FULL_AREA))
+                                        *omega)
     for ii in range(len(z)):
         bin_num.append(int(np.floor(NRB * (z[ii]-zmin)/dz))) 
     bin_num = np.asarray(bin_num)
@@ -83,8 +87,8 @@ def calc_fkp_weights(z, zmin, zmax):
     return wfkp
 
 def _dr11_cmass_north_zminmax():
-    '''Return minimum and maximum redshifts for this sample.'''
-    return 0.43, 0.7
+    '''Return minimum and maximum redshifts and the survey area (deg^2).'''
+    return 0.43, 0.7, 6308.0
 
 def _parse_speczcat(sample='dr11_cmass_north', clobber=False):
     '''Parse the spectroscopic redshift catalog for a give sample.'''
@@ -92,7 +96,7 @@ def _parse_speczcat(sample='dr11_cmass_north', clobber=False):
     sampledir = os.path.join(os.getenv('LSS_CUTE'), sample)
 
     if sample == 'dr11_cmass_north':
-        zmin, zmax = _dr11_cmass_north_zminmax()
+        zmin, zmax, area = _dr11_cmass_north_zminmax()
         datafile = os.path.join(sampledir, 'cutefiles', '{}_specz.dat'.format(sample))
         
         if not os.path.isfile(datafile) or clobber:
@@ -108,7 +112,7 @@ def _parse_speczcat(sample='dr11_cmass_north', clobber=False):
             specz = allspecz[keep]
 
             log.info('Calculating FKP weights.')
-            fkp = calc_fkp_weights(specz['Z'], zmin, zmax)
+            fkp = calc_fkp_weights(specz['Z'], zmin, zmax, area)
             data = np.zeros((len(keep), 4))
             data[:, 0] = specz['RA']
             data[:, 1] = specz['DEC']
@@ -135,7 +139,7 @@ def _parse_randomcat(sample='dr11_cmass_north', infile=None, outfile=None, clobb
         return 0
 
     if sample == 'dr11_cmass_north':
-        zmin, zmax = _dr11_cmass_north_zminmax()
+        zmin, zmax, area = _dr11_cmass_north_zminmax()
         for infile1, outfile1 in zip([infile], [outfile]):
             if not os.path.isfile(outfile1) or clobber:
                 log.info('Reading {}'.format(infile1))
@@ -148,7 +152,7 @@ def _parse_randomcat(sample='dr11_cmass_north', infile=None, outfile=None, clobb
                 rand[:, 2] = z[keep]
 
                 #log.info('  Calculating FKP weights.')
-                randfkp = calc_fkp_weights(rand[:, 2], zmin, zmax)
+                randfkp = calc_fkp_weights(rand[:, 2], zmin, zmax, area)
                 rand[:, 3] = randfkp * (wcp[keep]+wzf[keep]-1)
 
                 log.info('Writing {}'.format(outfile1))
@@ -183,7 +187,7 @@ def main():
     # Choose the sample.
     if args.sample == 'dr11_cmass_north':
         sample = args.sample
-        zmin, zmax = _dr11_cmass_north_zminmax()
+        zmin, zmax, area = _dr11_cmass_north_zminmax()
     else:
         log.warning('Unrecognized sample {}'.format(args.sample))
         return 0
@@ -204,7 +208,7 @@ def main():
     omega_L = 1-omega_M
     ww = args.w
 
-    # Sensibly hard-code some parameters specific to each correlation function. 
+    # Sensibly hard-code some parameters specific to each correlation function.
     if args.corrtype == 'monopole':
         log_bin = 0    # logarithmic binning? [should also try 1]
         n_logint = 25  # number of logarithmic bins
@@ -213,8 +217,7 @@ def main():
         dim1_nbin = 75  # number of bins
         dim2_max = 150  # used? [Mpc]
         dim2_nbin = 75  # number of bins
-        
-    if args.corrtype == '3D_ps':
+    elif args.corrtype == '3D_ps':
         log_bin = 0   # no logarithmic binning
         n_logint = 1  # dummy variable; not used
 
@@ -222,8 +225,7 @@ def main():
         dim1_nbin = 150  # number of "pi" bins
         dim2_max = 150   # maximum "sigma" value [Mpc]
         dim2_nbin = 150  # number of "sigma" bins
-
-    if args.corrtype == '3D_rm':
+    elif args.corrtype == '3D_rm':
         log_bin = 0    # logarithmic binning? [should also try 1]
         n_logint = 25  # number of logarithmic bins
 
@@ -231,28 +233,34 @@ def main():
         dim1_nbin = 150  # number of "r" bins
         dim2_max = 1     # maximum "mu" value [Mpc]
         dim2_nbin = 20   # number of "mu" bins
+    else:
+        log.fatal('Unrecognized or unsupported correlation type {}'.format(args.corrtype))
 
+    # Make the subdirectories we need.
+    newdir = ['cutefiles', 'qaplots']
+    for dd in newdir:
+        try:
+            os.stat(os.path.join(sampledir, dd))
+        except:
+            os.mkdir(os.path.join(sampledir, dd))
+    qadir = os.path.join(sampledir, 'qaplots')
+    cutefiledir = os.path.join(sampledir, 'cutefiles')
+             
     ##########
     # Run CUTE.
     if args.docute:
 
-        # Make the subdirectories we need.
-        newdir = ['cutefiles']
-        for dd in newdir:
-            try:
-                os.stat(os.path.join(sampledir, dd))
-            except:
-                os.mkdir(os.path.join(sampledir, dd))
-        cutefiledir = os.path.join(sampledir, 'cutefiles')
-             
         # Parse the spectroscopic data file (unless it exists).
         speczfile = _parse_speczcat(sample, clobber=args.clobber)
 
-        # Call CUTE using each random catalog in turn.
-        allrandomfile = np.array(glob.glob(os.path.join(randomdir, '*')))
+        # Call CUTE using each random catalog in turn, optionally restricting to
+        # a smaller number of random catalogs.
+        allrandomfile = glob(os.path.join(randomdir, '*'))
         if len(allrandomfile) == 0:
             log.fatal('No random catalogs in {} found!'.format(randomdir))
             return 0
+        if args.nrandom != 'all':
+            allrandomfile = allrandomfile[:int(args.nrandom)]
 
         for ii, randomfile in enumerate(allrandomfile):
 
@@ -297,26 +305,31 @@ def main():
             # Run CUTE, passing the newly created parameter file
             os.system('CUTE {}'.format(paramfile))
 
-            pdb.set_trace()
-
     ##########
-    # Run CUTE.
+    # Generate QAplots.
     if args.qaplots:
-        
-        anderson1 = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
-        and_rad,and_mono,and_quad = np.loadtxt(anderson1, unpack=True)
+        log.info('Building {} QAplots.'.format(args.corrtype))
 
         if args.corrtype == 'monopole':
-            for item in range(len(randomslist)):
-                thisout = outfile+'{}.dat'.format(item+4001)
-                rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                plt.scatter(rad, xi*rad**2)
-                #plt.axis([-5, 155, 0, 120])
-                plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
-                plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-                #plt.savefig(os.path.join(sampledir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
-                plt.show()
-                
+            allcorrfile = glob(os.path.join(cutefiledir, '{}_?????_{}.dat'.format(sample, args.corrtype)))
+
+            qafile = os.path.join(qadir, '{}_monopole.pdf'.format(sample))
+            fig, ax = plt.subplots(figsize=(8, 6))
+            for corrfile in allcorrfile:
+                rad, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
+                ax.scatter(rad, xi*rad*rad)
+            ax.set_xlabel(r'$r$ (Mpc)')
+            ax.set_ylabel(r'$r^2 \xi$')
+            ax.margins(0.05)
+
+            plt.subplots_adjust(bottom=0.15, top=0.88)
+
+            log.info('Writing {}'.format(qafile))
+            plt.savefig(qafile)
+
+        #anderson1 = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
+        #and_rad,and_mono,and_quad = np.loadtxt(anderson1, unpack=True)
+
         if args.corrtype == '3D_rm':
             for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)

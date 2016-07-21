@@ -88,37 +88,50 @@ otherwise you're ready to go!
 Examples
 --------
 
-``cute-2ptcor`` is a simple command-line script which interfaces with CUTE in a
-convenient way (for example, by generating the required parameter files
+``cute-2ptcor`` is a simple command-line script which interfaces with ``CUTE``
+in a convenient way (for example, by generating the required parameter files
 on-the-fly).  It provides a non-exhaustive set of options for computing the
-correlation function, and more options can be added as needed.  To get the full
-set of available options 
+correlation function and uses sensible defaults whenever possible; more options
+can be added as needed.
+
+The optional inputs to the code can be inspected by executing ``cute-2ptcor -h``
+from the command line, or by calling the code without any inputs.  Here is the
+current output:
 
 .. code:: bash
 
-          usage: cute-2ptcor.py [-h] [--dr DR] [--parse] [--docute] [--qaplots]
-                      [--corrtype CORRTYPE] [--cosmo COSMO]
-
-          optional arguments:
-            -h, --help           show this help message and exit
-            --dr DR              Specify the SDSS data release.
-            --parse              Parse the input datafiles (do just once).
-            --docute             Run CUTE.
-            --qaplots            Generate QAplots.
-            --corrtype CORRTYPE  Specify correlation type (monopole|3D_ps|3D_rm).
-            --cosmo COSMO        Adopted cosmology (1|2)
+	usage: cute-2ptcor.py [-h] [--sample SAMPLE] [--omegaM OMEGAM] [--w W]
+	                      [--corrtype CORRTYPE] [--nrandom NRANDOM] [--docute]
+	                      [--qaplots] [--clobber]
+	
+	optional arguments:
+	  -h, --help           show this help message and exit
+	  --sample SAMPLE      Dataset to use (currently only dr11_cmass_north is
+	                       supported).
+	  --omegaM OMEGAM      Omega_matter (note: Omega_Lambda = 1-Omega_Matter)
+	  --w W                w parameter (choose w=-1.0 for cosmological constant)
+	  --corrtype CORRTYPE  Specify correlation type (monopole|3D_ps|3D_rm).
+	  --nrandom NRANDOM    Number of random catalogs to use (integer number|all)
+	  --docute             Generate the individual correlation functions using
+	                       CUTE.
+	  --qaplots            Generate QAplots.
+	  --clobber            Regenerate the parsed data/random files, even if they
+	                       exist.
 
 
 Compute and Plot the Monopole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The first time the code is run it reads in the spectroscopic catalog as well as
-the random catalogs (or a subset thereof) and parses them.
+To compute and generate a plot of the simple monopole correlation function using
+a single random catalog and all other defaults do:
 
-.. code:: python
-          stuff
+.. code:: cute-2ptcor --corrtype monopole --nrandom 1 --docute --qaplots
 
-You can also choose from among two possible cosmologies:
+The first time the code is run it reads in the data and (needed) random catalogs
+and parses them into the format read by ``CUTE``; in subsequent calls the code
+only regenerate these catalogs if the optional input ``--clobber`` is set.
+
+The output file is written to the ``qaplots`` directory.
 
 
 Compute the 2D Correlation Function
@@ -129,18 +142,15 @@ Next, compute the 2D correlation function in pi-mu space.
 .. code:: python
           stuff
 
-Compare with the literature.
-
-
-
+Compare with the literature...
 
 Contributors
 ------------
 
-- Elijah Beaudin (2016)
+- Elijah Beaudin (Class of 2016)
   
-- Kevin Napier (2018)
+- Kevin Napier (Class of 2018)
   
-- Prof. John Moustakas (Physics)
-  
-- Prof. Matt Bellis (Physics)
+- Prof. Matt Bellis (Siena College)
+
+- Prof. John Moustakas (Siena College)
