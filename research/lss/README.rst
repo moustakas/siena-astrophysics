@@ -61,18 +61,14 @@ that directory.  For example, in bash,
         mkdir /path/to/lss-cute
         export LSS_CUTE=/path/to/lss-cute
 
-Next, create all the sample-specific subdirectory we need.  Here, we give
-instructions for handling just the CMASS/North DR11 sample.
+Next, create the sample-specific subdirectory we need, and download the binary
+FITS table containing the BOSS/DR11 large-scale structure catalog (approximately
+100M).  Here, we give instructions for handling just the CMASS/North DR11
+sample.
 
 .. code::
 
         mkdir $LSS_CUTE/dr11_cmass_north
-
-Third, download the binary FITS table containing the BOSS/DR11 large-scale
-structure catalog (approximately 100M):
-
-.. code::
-          
         cd $LSS_CUTE/dr11_cmass_north
         wget http://data.sdss3.org/sas/dr11/boss/lss/galaxy_DR11v1_CMASS_North.fits.gz
 

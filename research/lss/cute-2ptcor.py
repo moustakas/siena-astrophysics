@@ -82,28 +82,32 @@ def calc_fkp_weights(z, zmin, zmax):
                  
     return wfkp
 
-def _parse_datafile(dr='dr11', sample='dr11_cmass_north', clobber=False):
-    '''Parse the spectroscopic redshift catalog.'''
+def _dr11_cmass_north_zminmax():
+    '''Return minimum and maximum redshifts for this sample.'''
+    return 0.43, 0.7
 
-    drdir = os.path.join(os.getenv('LSS_CUTE'), dr)
+def _parse_speczcat(sample='dr11_cmass_north', clobber=False):
+    '''Parse the spectroscopic redshift catalog for a give sample.'''
+
+    sampledir = os.path.join(os.getenv('LSS_CUTE'), sample)
 
     if sample == 'dr11_cmass_north':
-        zmin = 0.43
-        zmax = 0.7
-        datafile = os.path.join(drdir, 'cutefiles', 'cmass_north_{}_specz.dat'.format(dr))
+        zmin, zmax = _dr11_cmass_north_zminmax()
+        datafile = os.path.join(sampledir, 'cutefiles', '{}_specz.dat'.format(sample))
         
         if not os.path.isfile(datafile) or clobber:
 
-            speczfile = os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz')
+            speczfile = os.path.join(sampledir, 'galaxy_DR11v1_CMASS_North.fits.gz')
             if not os.path.isfile(speczfile):
                 log.fatal('Spectroscopic redshift catalog {} not found!'.format(speczfile))
                 return 0
 
+            log.info('Reading {}.'.format(speczfile))
             allspecz = fits.getdata(speczfile, 1)
             keep = np.where((allspecz['Z'] > zmin) * (allspecz['Z'] < zmax))[0]
             specz = allspecz[keep]
 
-            log.info('Calculating FKP weights')
+            log.info('Calculating FKP weights.')
             fkp = calc_fkp_weights(specz['Z'], zmin, zmax)
             data = np.zeros((len(keep), 4))
             data[:, 0] = specz['RA']
@@ -113,11 +117,45 @@ def _parse_datafile(dr='dr11', sample='dr11_cmass_north', clobber=False):
             
             log.info('Writing {}'.format(datafile))
             np.savetxt(datafile, data)
-            return datafile
-
+            
+        return datafile
+    
     else:
         log.fatal('Unrecognized sample {}.'.format(sample))
         return 0
+
+def _parse_randomcat(sample='dr11_cmass_north', infile=None, outfile=None, clobber=False):
+    '''Parse a given random catalog.
+
+    infile/outfile can both be arrays.
+
+    '''
+    if infile is None or outfile is None:
+        log.fatal('Input and output file names must be provided')
+        return 0
+
+    if sample == 'dr11_cmass_north':
+        zmin, zmax = _dr11_cmass_north_zminmax()
+        for infile1, outfile1 in zip([infile], [outfile]):
+            if not os.path.isfile(outfile1) or clobber:
+                log.info('Reading {}'.format(infile1))
+                ra, dec, z, ipoly, wboss, wcp, wzf, veto = np.loadtxt(infile1, unpack=True)
+
+                keep = np.where(veto == 1)[0]
+                rand = np.zeros((len(keep), 4))
+                rand[:, 0] = ra[keep]
+                rand[:, 1] = dec[keep]
+                rand[:, 2] = z[keep]
+
+                #log.info('  Calculating FKP weights.')
+                randfkp = calc_fkp_weights(rand[:, 2], zmin, zmax)
+                rand[:, 3] = randfkp * (wcp[keep]+wzf[keep]-1)
+
+                log.info('Writing {}'.format(outfile1))
+                np.savetxt(outfile1, rand)
+
+    else:
+        log.fatal('Unrecognized sample {}.'.format(sample))
 
 def main():
 
@@ -127,7 +165,7 @@ def main():
     parser.add_argument('--omegaM', type=float, default='0.3', help='Omega_matter (note: Omega_Lambda = 1-Omega_Matter)')
     parser.add_argument('--w', type=float, default='-1.0', help='w parameter (choose w=-1.0 for cosmological constant)')
     parser.add_argument('--corrtype', type=str, default='monopole', help='Specify correlation type (monopole|3D_ps|3D_rm).')
-    parser.add_argument('--nrandom', type=int, default='all', help='Number of random catalogs to use (integer number|all)')
+    parser.add_argument('--nrandom', type=str, default='all', help='Number of random catalogs to use (integer number|all)')
     parser.add_argument('--docute', action='store_true', help='Generate the individual correlation functions using CUTE.')
     parser.add_argument('--qaplots', action='store_true', help='Generate QAplots.')
     parser.add_argument('--clobber', action='store_true', help='Regenerate the parsed data/random files, even if they exist.')
@@ -142,9 +180,23 @@ def main():
         log.fatal('Required ${} environment variable not set'.format(key))
         return 0
 
-    drdir = os.path.join(os.getenv('LSS_CUTE'), args.dr)
-    if not os.path.isdir(drdir):
-        log.fatal('Top level directory {} does not exist!'.format(drdir))
+    # Choose the sample.
+    if args.sample == 'dr11_cmass_north':
+        sample = args.sample
+        zmin, zmax = _dr11_cmass_north_zminmax()
+    else:
+        log.warning('Unrecognized sample {}'.format(args.sample))
+        return 0
+
+    # Establish the top-level directory.
+    sampledir = os.path.join(os.getenv('LSS_CUTE'), sample)
+    if not os.path.isdir(sampledir):
+        log.fatal('Top level directory {} does not exist!'.format(sampledir))
+        return 0
+
+    randomdir = os.path.join(sampledir, 'randoms')
+    if not os.path.isdir(randomdir):
+        log.fatal('Required randoms directory {} does not exist!'.format(randomdir))
         return 0
 
     # Initialize the cosmological parameters.
@@ -152,122 +204,106 @@ def main():
     omega_L = 1-omega_M
     ww = args.w
 
-    # Choose the sample.
-    if not args.sample == 'cmass_north':
-        log.warning('Unrecognized sample {}; falling back to cmass_north'.format(args.sample))
-        sample = 'cmass_north'
-    else:
-        sample = args.sample
+    # Sensibly hard-code some parameters specific to each correlation function. 
+    if args.corrtype == 'monopole':
+        log_bin = 0    # logarithmic binning? [should also try 1]
+        n_logint = 25  # number of logarithmic bins
+
+        dim1_max = 150  # [Mpc]
+        dim1_nbin = 75  # number of bins
+        dim2_max = 150  # used? [Mpc]
+        dim2_nbin = 75  # number of bins
+        
+    if args.corrtype == '3D_ps':
+        log_bin = 0   # no logarithmic binning
+        n_logint = 1  # dummy variable; not used
+
+        dim1_max = 150   # maximum "pi" value [Mpc]
+        dim1_nbin = 150  # number of "pi" bins
+        dim2_max = 150   # maximum "sigma" value [Mpc]
+        dim2_nbin = 150  # number of "sigma" bins
+
+    if args.corrtype == '3D_rm':
+        log_bin = 0    # logarithmic binning? [should also try 1]
+        n_logint = 25  # number of logarithmic bins
+
+        dim1_max = 150   # maximum "r" value [Mpc]
+        dim1_nbin = 150  # number of "r" bins
+        dim2_max = 1     # maximum "mu" value [Mpc]
+        dim2_nbin = 20   # number of "mu" bins
 
     ##########
+    # Run CUTE.
     if args.docute:
 
-        # Check to be sure the subdirectories we need exist.
+        # Make the subdirectories we need.
         newdir = ['cutefiles']
         for dd in newdir:
             try:
-                os.stat(os.path.join(drdir, dd))
+                os.stat(os.path.join(sampledir, dd))
             except:
-                os.mkdir(os.path.join(drdir, dd))
-
-        # Sensibly hard-code some parameters specific to each correlation function. 
-        if args.corrtype == '3D_ps':
-            npibins = 150  # number of "pi" bins
-            nsigbins = 150 # number of "sigma" bins
-            maxpi = 150    # maximum "pi" value [Mpc]
-            maxsig = 150   # maximum "sigma" value [Mpc]
-
+                os.mkdir(os.path.join(sampledir, dd))
+        cutefiledir = os.path.join(sampledir, 'cutefiles')
+             
         # Parse the spectroscopic data file (unless it exists).
-        datafile = _parse_datafile(args.dr, sample, clobber=args.clobber)
+        speczfile = _parse_speczcat(sample, clobber=args.clobber)
 
-        # Check that the random files exist, and then loop.
+        # Call CUTE using each random catalog in turn.
+        allrandomfile = np.array(glob.glob(os.path.join(randomdir, '*')))
+        if len(allrandomfile) == 0:
+            log.fatal('No random catalogs in {} found!'.format(randomdir))
+            return 0
 
-        
-        for rand in 
-        
+        for ii, randomfile in enumerate(allrandomfile):
 
-        pdb.set_trace()
+            randfile = os.path.join(cutefiledir, '{}_{:05d}.dat'.format(sample, ii+1))
+            _parse_randomcat(infile=randomfile, outfile=randfile, clobber=args.clobber)
 
-        
-        for item in range(len(randomslist)):
-            # Create a unique filename for each parameeter file
-            newfile = paramfile+'fkp_{}.param'.format(item+4001)
+            # Correlation function output file name.
+            outfile = os.path.join(cutefiledir, '{}_{:05d}_{}.dat'.format(sample, ii+1, args.corrtype))
 
-            # Write the parameter file; constants, and then conditionals
-            pfile = open(newfile, 'w')
-            pfile.write('data_filename= '+datafile+'\n')
-            pfile.write('random_filename= '+randomfile+'_fkp_{}.dat'.format(item+4001)+'\n') # get rid of 3D_rm name
+            # Write the CUTE parameter file.
+            paramfile = os.path.join(cutefiledir, '{}.param'.format(sample))
+            
+            pfile = open(paramfile, 'w')
+            pfile.write('data_filename= {}\n'.format(speczfile))
+            pfile.write('random_filename= {}\n'.format(randfile))
             pfile.write('mask_filename= junk\n')
             pfile.write('z_dist_filename= junk\n')
-            pfile.write('output_filename= '+baseoutfile+'_fkp_{}.dat'.format(item+4001)+'\n')
-            pfile.write('corr_type= '+args.corrtype+'\n')
+            pfile.write('output_filename= {}\n'.format(outfile))
+            pfile.write('corr_type= {}\n'.format(args.corrtype))
             pfile.write('num_lines= all\n')
             pfile.write('corr_estimator= LS\n')
-            
-            if args.corrtype == 'monopole':
-                pfile.write('input_format= 2\n')
-                pfile.write('np_rand_fact= 8\n')
-                pfile.write('omega_M= {}\n'.format(omega_M))
-                pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= {}\n'.format(ww))
-                pfile.write('log_bin= 1\n') # changed from 0 to 1
-                pfile.write('n_logint= 23\n')
-                pfile.write('dim1_max= 150\n')
-                pfile.write('dim1_nbin= 75\n')
-                pfile.write('dim2_max= 150\n')
-                pfile.write('dim2_nbin= 75\n')
-                pfile.write('dim3_min= 0.4\n')
-                pfile.write('dim3_max= 0.7\n')
-                pfile.write('dim3_nbin= 1\n')
-                pfile.write('radial_aperture= 1\n')
-                pfile.write('use_pm= 1\n')
-                pfile.write('n_pix_sph= 2048\n')
-                
-            if args.corrtype == '3D_rm':
-                pfile.write('input_format= 2\n')
-                pfile.write('np_rand_fact= 9.5217\n')
-                pfile.write('omega_M= {}\n'.format(omega_M))
-                pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= {}\n'.format(ww))
-                pfile.write('log_bin= 1\n') # changed from 0 to 1
-                pfile.write('n_logint= 0\n')
-                pfile.write('dim1_max= 160\n')
-                pfile.write('dim1_nbin= 50\n')
-                pfile.write('dim2_max= 1\n')
-                pfile.write('dim2_nbin= 200\n')
-                pfile.write('dim3_min= 0.4\n')
-                pfile.write('dim3_max= 0.7\n')
-                pfile.write('dim3_nbin= 1\n')
-                pfile.write('radial_aperture= 1\n')
-                pfile.write('use_pm= 0\n')
-                pfile.write('n_pix_sph= 2048\n')
+            pfile.write('input_format= 2\n')
+            pfile.write('np_rand_fact= 1\n')
+            pfile.write('omega_M= {}\n'.format(omega_M))
+            pfile.write('omega_L= {}\n'.format(omega_L))
+            pfile.write('w= {}\n'.format(ww))
+            pfile.write('radial_aperture= 1\n') # [degrees]
+            pfile.write('use_pm= 0\n')
+            pfile.write('n_pix_sph= 2048\n')
 
-            if args.corrtype == '3D_ps':
-                pfile.write('input_format= 2\n')
-                pfile.write('np_rand_fact= 9.5217\n')
-                pfile.write('omega_M= {}\n'.format(omega_M))
-                pfile.write('omega_L= {}\n'.format(omega_L))
-                pfile.write('w= {}\n'.format(ww))
-                pfile.write('log_bin= 0\n')
-                pfile.write('n_logint= 0\n')
-                pfile.write('dim1_max= {}\n'.format(maxsig)) # Maximum Radial Separation
-                pfile.write('dim1_nbin= {}\n'.format(nsigbins))
-                pfile.write('dim2_max= {}\n'.format(maxpi)) # Maximum Transverse Separation
-                pfile.write('dim2_nbin= {}\n'.format(npibins))
-                pfile.write('dim3_min= 0.4\n')
-                pfile.write('dim3_max= 0.7\n')
-                pfile.write('dim3_nbin= 1\n')
-                pfile.write('radial_aperture= 1\n')
-                pfile.write('use_pm= 0\n')
-                pfile.write('n_pix_sph= 2048\n')
-
+            pfile.write('log_bin= {}\n'.format(log_bin))
+            pfile.write('n_logint= {}\n'.format(n_logint))
+            pfile.write('dim1_max= {}\n'.format(dim1_max))
+            pfile.write('dim1_nbin= {}\n'.format(dim1_nbin))
+            pfile.write('dim2_max= {}\n'.format(dim2_max))
+            pfile.write('dim2_nbin= {}\n'.format(dim2_nbin))
+            pfile.write('dim3_min= {}\n'.format(zmin))
+            pfile.write('dim3_max= {}\n'.format(zmax))
+            pfile.write('dim3_nbin= 1\n')
             pfile.close()
-            # Run CUTE, passing the newly created parameter file
-            os.system('CUTE '+newfile)
 
+            # Run CUTE, passing the newly created parameter file
+            os.system('CUTE {}'.format(paramfile))
+
+            pdb.set_trace()
+
+    ##########
+    # Run CUTE.
     if args.qaplots:
         
-        anderson1 = os.path.join(drdir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
+        anderson1 = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
         and_rad,and_mono,and_quad = np.loadtxt(anderson1, unpack=True)
 
         if args.corrtype == 'monopole':
@@ -278,7 +314,7 @@ def main():
                 #plt.axis([-5, 155, 0, 120])
                 plt.xlabel('$\mathrm{\ r \ (Mpc)}$')
                 plt.ylabel(r'$\mathrm{\ r^2 * \xi}$')
-                #plt.savefig(os.path.join(drdir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
+                #plt.savefig(os.path.join(sampledir,'qaplots','power_spectrum_monopole_{}.png'.format(item+4001)))
                 plt.show()
                 
         if args.corrtype == '3D_rm':
@@ -313,45 +349,5 @@ def main():
             sig2d = np.rot90(pi2d)
             plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm()) ; plt.colorbar() ; plt.show()      
 
-    randomsdir = os.path.join(os.getenv('LSS_CUTE'), args.dr, 'randoms')
-    datafile = os.path.join(drdir, args.dr+'_cmass.dat')
-    randomfile = os.path.join(drdir, 'parsed', '{}_cmass_random'.format(args.dr))
-    baseoutfile = os.path.join(drdir, 'cuteout', args.corrtype, 'dr11_2pt_{}'.format(args.corrtype))
-    paramfile = os.path.join(drdir, 'param', 'dr11_{}_'.format(args.corrtype))
-    randomslist = glob.glob(os.path.join(randomsdir, '*.dat'))
-
-    # Parse the input data and write out CUTE-compatible files.
-    if args.parse:
-        allspecz = fits.getdata(os.path.join(drdir, 'galaxy_DR11v1_CMASS_North.fits.gz'), 1)
-        keep = np.where((allspecz['Z']>0.43)*(allspecz['Z']<0.7))[0]
-        specz = allspecz[keep]
-        ngal = len(keep)
-        datafkp = calc_fkp_weights(specz['Z'], 0.43, 0.7)
-        data = np.zeros((ngal, 4))
-        data[:,0] = specz['RA']
-        data[:,1] = specz['DEC']
-        data[:,2] = specz['Z']
-        data[:,3] = datafkp*specz['WEIGHT_SYSTOT']*(specz['WEIGHT_NOZ']+specz['WEIGHT_CP']-1)
-        print('Writing {}'.format(datafile))
-        log.info('Writing {}'.format(datafile))
-        np.savetxt(datafile, data)
-	
-        for item in range(len(randomslist)):
-            ra, dec, z, ipoly, wboss, wcp, wzf, veto = \
-              np.loadtxt(os.path.join(randomsdir, randomslist[item]), unpack=True)
-            keep = np.where(veto==1)[0]
-            nobj = len(keep)
-            rand = np.zeros((nobj,4))
-            rand[:,0] = ra[keep]
-            rand[:,1] = dec[keep]
-            rand[:,2] = z[keep]
-            randfkp = calc_fkp_weights(rand[:,2], 0.43, 0.7)
-            rand[:,3] = randfkp*(wcp[keep]+wzf[keep]-1)
-            log.info('Writing {}'.format(randomfile+'_'+args.corrtype+'_fkp_{}.dat'.format(item+4001)))
-            print('Writing {}'.format(randomfile+'_'+args.corrtype+'_fkp_{}.dat'.format(item+4001)))
-            np.savetxt(randomfile+'_fkp_{}.dat'.format(item+4001), rand) # rename all of the randomefile+3D_rm files
-                      
-
-            
 if __name__ == "__main__":
     main()
