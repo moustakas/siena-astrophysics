@@ -290,7 +290,6 @@ def main():
             pfile.write('radial_aperture= 1\n') # [degrees]
             pfile.write('use_pm= 0\n')
             pfile.write('n_pix_sph= 2048\n')
-
             pfile.write('log_bin= {}\n'.format(log_bin))
             pfile.write('n_logint= {}\n'.format(n_logint))
             pfile.write('dim1_max= {}\n'.format(dim1_max))

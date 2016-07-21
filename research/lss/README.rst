@@ -130,11 +130,11 @@ a single random catalog and all other defaults do:
         cute-2ptcor --corrtype monopole --nrandom 1 --docute --qaplots
 
 The first time the code is run it reads in the data and (needed) random catalogs
-and parses them into the format read by ``CUTE``; in subsequent calls the code
-only regenerate these catalogs if the optional input ``--clobber`` is set.
+and parses them into the format read by ``CUTE``; in subsequent calls these
+parsed files are only regenerated if the optional input ``--clobber`` is set.
 
-The output file is written to the ``qaplots`` directory.
-
+The correlation function and QAplots are written to the ``cutefiles`` and
+``qaplots`` directory, respectively.
 
 Compute the 2D Correlation Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
