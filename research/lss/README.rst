@@ -125,7 +125,7 @@ Compute and Plot the Monopole
 To compute and generate a plot of the simple monopole correlation function using
 a single random catalog and all other defaults do:
 
-.. code:: python
+.. code:: bash
 
         cute-2ptcor --corrtype monopole --nrandom 1 --docute --qaplots
 
