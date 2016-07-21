@@ -125,7 +125,9 @@ Compute and Plot the Monopole
 To compute and generate a plot of the simple monopole correlation function using
 a single random catalog and all other defaults do:
 
-.. code:: cute-2ptcor --corrtype monopole --nrandom 1 --docute --qaplots
+.. code:: python
+
+        cute-2ptcor --corrtype monopole --nrandom 1 --docute --qaplots
 
 The first time the code is run it reads in the data and (needed) random catalogs
 and parses them into the format read by ``CUTE``; in subsequent calls the code
@@ -140,7 +142,7 @@ Compute the 2D Correlation Function
 Next, compute the 2D correlation function in pi-mu space.
 
 .. code:: python
-          stuff
+
 
 Compare with the literature...
 
