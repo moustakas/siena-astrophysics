@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.cosmology import WMAP7
 from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -217,6 +218,7 @@ def main():
         dim1_nbin = 75  # number of bins
         dim2_max = 150  # used? [Mpc]
         dim2_nbin = 75  # number of bins
+        
     elif args.corrtype == '3D_ps':
         log_bin = 0   # no logarithmic binning
         n_logint = 1  # dummy variable; not used
@@ -225,6 +227,7 @@ def main():
         dim1_nbin = 150  # number of "pi" bins
         dim2_max = 150   # maximum "sigma" value [Mpc]
         dim2_nbin = 150  # number of "sigma" bins
+        
     elif args.corrtype == '3D_rm':
         log_bin = 0    # logarithmic binning? [should also try 1]
         n_logint = 25  # number of logarithmic bins
@@ -309,15 +312,16 @@ def main():
     if args.qaplots:
         log.info('Building {} QAplots.'.format(args.corrtype))
 
-        if args.corrtype == 'monopole':
-            allcorrfile = glob(os.path.join(cutefiledir, '{}_?????_{}.dat'.format(sample, args.corrtype)))
+        allcorrfile = glob(os.path.join(cutefiledir, '{}_?????_{}.dat'.format(sample, args.corrtype)))
+        ncorr = len(allcorrfile)
 
+        if args.corrtype == 'monopole':
             qafile = os.path.join(qadir, '{}_monopole.pdf'.format(sample))
             fig, ax = plt.subplots(figsize=(8, 6))
             for corrfile in allcorrfile:
                 rad, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
                 ax.scatter(rad, xi*rad*rad)
-            ax.set_xlabel(r'$r$ (Mpc)')
+            ax.set_xlabel(r'$r$ (Mpc / h)')
             ax.set_ylabel(r'$r^2 \xi$')
             ax.margins(0.05)
 
@@ -329,22 +333,49 @@ def main():
         #anderson1 = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
         #and_rad,and_mono,and_quad = np.loadtxt(anderson1, unpack=True)
 
-        if args.corrtype == '3D_rm':
-            for item in range(len(randomslist)):
-                thisout = outfile+'fkp_{}.dat'.format(item+4001)
-                mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                rad = np.linspace(2, 198, 40)
-                # rad = np.linspace(2, 198, 40)
-                # rad = rad.reshape((50,40))
-                monopole = compute_monopole(mu, rad, xi)
-                quadrupole = compute_quadrupole(mu, rad, xi)
-                plotmqh(monopole,quadrupole,hex1,rad)
-                plt.xlabel('$\mathrm{\ r \ (Mpc \,  h^{-1})}$')
-                plt.ylabel(r'$\mathrm{\ r^2 \xi(r)}$')
-            plt.plot(and_rad, (and_mono)*and_rad**2, 'r-')
-            plt.show()
-                
         if args.corrtype == '3D_ps':
+            allxi = np.zeros((ncorr, dim1_nbin, dim2_nbin))
+            for ii, corrfile in enumerate(allcorrfile):
+                pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
+                allxi[ii, :, :] = xi.reshape(dim1_nbin, dim2_nbin)
+
+            xi2d = np.mean(allxi, axis=0)
+
+            bigxi = np.zeros((dim1_nbin*2, dim2_nbin*2))
+            bigxi[:dim1_nbin, :dim2_nbin] = np.fliplr(np.flipud(xi2d))
+            bigxi[dim1_nbin:2*dim1_nbin, :dim2_nbin] = np.fliplr(xi2d)
+            bigxi[:dim1_nbin, dim2_nbin:2*dim2_nbin] = np.flipud(xi2d)
+            bigxi[dim1_nbin:2*dim1_nbin, dim2_nbin:2*dim2_nbin] = xi2d
+
+            # Fragile!
+            pi2d = np.concatenate((np.arange(-dim2_nbin, 0, 1), np.arange(1, dim2_nbin+1, 1)))
+            pi2d = np.tile(pi2d, (1, 2*dim2_nbin)).reshape(2*dim2_nbin, 2*dim2_nbin)
+            sig2d = np.rot90(pi2d)
+            
+            qafile = os.path.join(qadir, '{}_2d_ps.pdf'.format(sample))
+            fig, ax = plt.subplots(figsize=(8, 8))
+            im = plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm(), cmap='Blues_r')
+            #C = plt.contour(sig2d, pi2d, bigxi, colors='k')
+            
+            ax.set_aspect('equal')
+            ax.set_xlabel(r'$\sigma$ (Mpc / h)', fontsize=16)
+            ax.set_ylabel(r'$\pi$ (Mpc / h)', fontsize=16)
+            ax.margins(0)
+
+            div = make_axes_locatable(ax)
+            cax = div.append_axes('right', size='5%', pad=0.2)
+            cbar = fig.colorbar(im, cax=cax, format='%.4g')
+            cbar.ax.set_ylabel(r'$\xi(\pi, \sigma)$', fontsize=16)
+
+            plt.subplots_adjust(right=0.85)
+
+            log.info('Writing {}'.format(qafile))
+            plt.savefig(qafile)
+
+            pdb.set_trace()
+
+
+
             xi = np.zeros((len(randomslist), nsigbins, npibins))
             for item in range(len(randomslist)):
                 thisout = outfile+'fkp_{}.dat'.format(item+4001)
@@ -361,5 +392,20 @@ def main():
             sig2d = np.rot90(pi2d)
             plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm()) ; plt.colorbar() ; plt.show()      
 
+        if args.corrtype == '3D_rm':
+            for item in range(len(randomslist)):
+                thisout = outfile+'fkp_{}.dat'.format(item+4001)
+                mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
+                rad = np.linspace(2, 198, 40)
+                # rad = np.linspace(2, 198, 40)
+                # rad = rad.reshape((50,40))
+                monopole = compute_monopole(mu, rad, xi)
+                quadrupole = compute_quadrupole(mu, rad, xi)
+                plotmqh(monopole,quadrupole,hex1,rad)
+                plt.xlabel('$\mathrm{\ r \ (Mpc \,  h^{-1})}$')
+                plt.ylabel(r'$\mathrm{\ r^2 \xi(r)}$')
+            plt.plot(and_rad, (and_mono)*and_rad**2, 'r-')
+            plt.show()
+                
 if __name__ == "__main__":
     main()
