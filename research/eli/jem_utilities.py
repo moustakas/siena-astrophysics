@@ -1267,8 +1267,8 @@ def do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=10,maxrange=200,samefile=True
     #print "tot points looped over: %d" % (tot_points_looped_over)
     print "Total weights: %f" % (tot_weight_val)
     print "# calcs      : %f" % (ncalcs)
-    #new_tot_freq = tot_freq/tot_weight_val
-    new_tot_freq = tot_freq
+    new_tot_freq = tot_freq/tot_weight_val
+    #new_tot_freq = tot_freq
     #new_tot_freq *= ncalcs
     #print new_tot_freq
     return new_tot_freq

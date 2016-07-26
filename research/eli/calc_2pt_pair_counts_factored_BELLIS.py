@@ -91,8 +91,8 @@ def main():
     print "Total execution time %f" % (time.time() - start)
 
     print "Performing the pair counts...."
-    #pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
-    pair_counts = jem.do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
+    pair_counts = jem.do_pair_counts(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
+    #pair_counts = jem.do_pair_counts_2d(voxels0,voxels1,ngrids,nbins=nbins,maxrange=maxsep,samefile=samefile)
     time_pc = time.time()
     print "PAIR COUNTS"
     print  pair_counts.shape
@@ -112,6 +112,21 @@ def main():
     hist=np.histogram(distances,bins=nbins,range=(0,maxsep))
     pair_counts = hist[0]
     '''
+
+    # New way to normalize the weighting
+    tot_weight = 0.
+    w0 = coords0.transpose()[3]
+    w1 = coords1.transpose()[3]
+    for i in w0:
+       tot_weight += (i*w1).sum()
+
+    if samefile==True:
+        tot_weight -= (w0*w1).sum()
+        tot_weight /= 2.
+
+    print "Tot weight calc the new way: %f" % (tot_weight)
+
+    pair_counts /= tot_weight
 
 
     #print "Sum: ",sum(pair_counts)
