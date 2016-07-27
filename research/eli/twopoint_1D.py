@@ -17,6 +17,27 @@ RR=np.loadtxt(tag+'RR.dat',dtype='float',unpack=True,delimiter=',')
 ndata=DD[0][0]
 nrand=RR[0][0]
 
+sum_wd = DD[2][0]
+sum_wd2 = DD[5][0]
+sum_wr = RR[2][0]
+sum_wr2 = RR[5][0]
+
+print sum_wd
+print sum_wd2 
+print sum_wr 
+print sum_wr2 
+print
+
+norm_dd = 0.5*(sum_wd*sum_wd - sum_wd2) 
+norm_rr = 0.5*(sum_wr*sum_wr - sum_wr2)
+#norm_dd = sum_wd*sum_wd
+#norm_rr = sum_wr*sum_wr
+norm_dr = sum_wd*sum_wr
+
+print norm_dd
+print norm_dr
+print norm_rr
+
 x = DD[1][1:]
 DD = DD[3][1:]
 DR = DR[3][1:]
@@ -24,10 +45,18 @@ RR = RR[3][1:]
 
 print ndata,nrand
 
-DD /= ((ndata**2-ndata)/2.)
-DR /= ((nrand*ndata)/1.)
-RR /= ((nrand**2-nrand)/2.)
+#DD /= ((ndata**2-ndata)/2.)
+#DR /= ((nrand*ndata)/1.)
+#RR /= ((nrand**2-nrand)/2.)
+DD /= norm_dd
+DR /= norm_dr
+RR /= norm_rr
 w = (DD - 2*DR + RR)/RR
+#w = (DD - 4*DR + RR)/(2*RR)
+
+print DD[-4:]
+print DR[-4:]
+print RR[-4:]
 
 print w
 print ndata

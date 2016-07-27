@@ -114,19 +114,27 @@ def main():
     '''
 
     # New way to normalize the weighting
-    tot_weight = 0.
+    tot_weight2 = 0.
     w0 = coords0.transpose()[3]
     w1 = coords1.transpose()[3]
     for i in w0:
-       tot_weight += (i*w1).sum()
+       tot_weight2 += (i*w1).sum()
 
+    #'''
     if samefile==True:
-        tot_weight -= (w0*w1).sum()
-        tot_weight /= 2.
+        tot_weight2 -= (w0*w1).sum()
+        tot_weight2 /= 2.
+        tot_weight3 = (w0*w1).sum()
+    else:
+        tot_weight3 = 1.0 # Otherwise, not necessarily the same size.
+    #'''
 
-    print "Tot weight calc the new way: %f" % (tot_weight)
+    tot_weight0 = w0.sum()
+    tot_weight1 = w1.sum()
 
-    pair_counts /= tot_weight
+    print "Tot weight calc the new way: %f %f %f %f" % (tot_weight2,tot_weight0,tot_weight1,tot_weight3)
+
+    #pair_counts /= tot_weight
 
 
     #print "Sum: ",sum(pair_counts)
@@ -157,10 +165,10 @@ def main():
     else:
         print('Writing {}'.format(outfilename))
         outfile = open(outfilename,"w")
-        output = "%d,%d,0,0\n" % (ngals0,ngals1)
+        output = "%d,%d,%f,%f,%f,%f\n" % (ngals0,ngals1,tot_weight0,tot_weight1,tot_weight2,tot_weight3)
         outfile.write(output)
         for i in xrange(nbins):
-            output = "%f,%f,%f,%f\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
+            output = "%f,%f,%f,%f,0,0\n" % (xvals[i],(xvals[i+1]+xvals[i])/2.,xvals[i+1],pair_counts[i])
             print output.rstrip()
             outfile.write(output)
         outfile.close()
