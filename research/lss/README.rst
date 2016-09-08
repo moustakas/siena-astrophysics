@@ -134,14 +134,23 @@ and parses them into the format read by ``CUTE``; in subsequent calls these
 parsed files are only regenerated if the optional input ``--clobber`` is set.
 
 The correlation function and QAplots are written to the ``cutefiles`` and
-``qaplots`` directory, respectively.
+``qaplots`` directory, respectively.  For example, here's the output of the
+preceding command:
+
+[insert the plot here]
+
 
 Compute the 2D Correlation Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Next, compute the 2D correlation function in pi-mu space.
+Next, let's look at the 2D correlation function in pi-mu space.  To iterate 
 
 .. code:: python
+
+          cute-2ptcor --corrtype 3D_ps --docute --qaplots
+          cute-2ptcor --corrtype 3D_ps --docute --qaplots > ~/corr.3dps.log 2>&1 &
+
+With this command we are going to loop over all the randoms.
 
 
 Compare with the literature...
