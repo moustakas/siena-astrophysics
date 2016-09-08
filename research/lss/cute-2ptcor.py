@@ -29,15 +29,16 @@ def plotmqh(monopole,quadrupole,hexadecapole,rrange):
 def compute_monopole(mu, r, xirm):
     '''Compute the monopole from the xi(r, mu) correlation function.'''
     xirm = xirm*1.0
-    Bxirm = np.reshape(xirm,[40,50]) # generalize
-    xr = 0.025 # find out about this factor (factor of 1/40)
-    monopole = xr*np.trapz(Bxirm, axis=0) # go through the math of why
+    Bxirm = np.reshape(xirm, [150, 20]) # generalize
+    #xr = 0.025 # find out about this factor (factor of 1/40)
+    xr = 0.5
+    monopole = xr*np.trapz(Bxirm, axis=1) # go through the math of why
     return monopole
 
 def compute_quadrupole(mu, r, xirm):
     '''Compute the quadrapole from the xi(r, mu) correlation function.'''
-    xirm = xirm*(3*(mu*mu)-1.0)*(5/2)
-    Bxirm = np.reshape(xirm,[40,50])
+    xirm = xirm*(3*(mu*mu-1.0)*(5.0/2.0))
+    Bxirm = np.reshape(xirm, [150, 20])
     xr = 0.025
     quadrupole = xr*np.trapz(Bxirm)
     return quadrupole
@@ -90,6 +91,20 @@ def calc_fkp_weights(z, zmin, zmax, area=1.0):
 def _dr11_cmass_north_zminmax():
     '''Return minimum and maximum redshifts and the survey area (deg^2).'''
     return 0.43, 0.7, 6308.0
+
+def _literature(author='anderson', sample='dr11_cmass_north'):
+    '''Wrapper function to read various published correlation functions.'''
+
+    sampledir = os.path.join(os.getenv('LSS_CUTE'), sample)
+
+    # Anderson+13 monopole and quadrapole
+    if author.lower() == 'anderson':
+        litfile = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
+        if os.path.isfile(litfile):
+            rad, mono, quad = np.loadtxt(litfile, unpack=True)
+            return rad, mono, quad
+        else:
+            log.warning('Published correlation function {} not found!'.format(litfile))
 
 def _parse_speczcat(sample='dr11_cmass_north', clobber=False):
     '''Parse the spectroscopic redshift catalog for a give sample.'''
@@ -158,9 +173,11 @@ def _parse_randomcat(sample='dr11_cmass_north', infile=None, outfile=None, clobb
 
                 log.info('Writing {}'.format(outfile1))
                 np.savetxt(outfile1, rand)
+                return 1
 
     else:
         log.fatal('Unrecognized sample {}.'.format(sample))
+        return 0
 
 def main():
 
@@ -238,6 +255,7 @@ def main():
         dim2_nbin = 20   # number of "mu" bins
     else:
         log.fatal('Unrecognized or unsupported correlation type {}'.format(args.corrtype))
+        return 0
 
     # Make the subdirectories we need.
     newdir = ['cutefiles', 'qaplots']
@@ -255,6 +273,8 @@ def main():
 
         # Parse the spectroscopic data file (unless it exists).
         speczfile = _parse_speczcat(sample, clobber=args.clobber)
+        if type(speczfile) == int:
+            return
 
         # Call CUTE using each random catalog in turn, optionally restricting to
         # a smaller number of random catalogs.
@@ -268,8 +288,10 @@ def main():
         for ii, randomfile in enumerate(allrandomfile):
 
             randfile = os.path.join(cutefiledir, '{}_{:05d}.dat'.format(sample, ii+1))
-            _parse_randomcat(infile=randomfile, outfile=randfile, clobber=args.clobber)
-
+            check = _parse_randomcat(infile=randomfile, outfile=randfile, clobber=args.clobber)
+            if check == 0:
+                return
+            
             # Correlation function output file name.
             outfile = os.path.join(cutefiledir, '{}_{:05d}_{}.dat'.format(sample, ii+1, args.corrtype))
 
@@ -309,6 +331,7 @@ def main():
 
     ##########
     # Generate QAplots.
+
     if args.qaplots:
         log.info('Building {} QAplots.'.format(args.corrtype))
 
@@ -316,13 +339,26 @@ def main():
         ncorr = len(allcorrfile)
 
         if args.corrtype == 'monopole':
+            allxi = np.zeros((ncorr, dim1_nbin))
+            for ii, corrfile in enumerate(allcorrfile):
+                if ((ii + 1) % 10) == 0:
+                    log.info('Reading correlation function {}/{}'.format(ii+1, ncorr))
+                rad, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
+                allxi[ii, :] = xi
+
+            # Compare with Anderson+
+            andrad, andmono, andquad = _literature(author='anderson', sample=sample)
+                
+            xibar = np.mean(allxi, axis=0)
+
             qafile = os.path.join(qadir, '{}_monopole.pdf'.format(sample))
             fig, ax = plt.subplots(figsize=(8, 6))
-            for corrfile in allcorrfile:
-                rad, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
-                ax.scatter(rad, xi*rad*rad)
+            ax.scatter(rad, xibar*rad*rad, label='Siena Average Monopole')
+            ax.scatter(andrad, andmono*andrad*andrad, marker='s', color='orange', label='Anderson+13 Monopole')
+            #ax.scatter(andrad, -andquad*andrad*andrad, marker='s', color='red', label='Anderson+13 Quadrapole')
             ax.set_xlabel(r'$r$ (Mpc / h)')
             ax.set_ylabel(r'$r^2 \xi$')
+            ax.legend(loc='upper right', frameon=None)
             ax.margins(0.05)
 
             plt.subplots_adjust(bottom=0.15, top=0.88)
@@ -330,22 +366,21 @@ def main():
             log.info('Writing {}'.format(qafile))
             plt.savefig(qafile)
 
-        #anderson1 = os.path.join(sampledir, 'Anderson_2013_CMASSDR11_corrfunction_x0x2_prerecon.dat')
-        #and_rad,and_mono,and_quad = np.loadtxt(anderson1, unpack=True)
-
         if args.corrtype == '3D_ps':
             allxi = np.zeros((ncorr, dim1_nbin, dim2_nbin))
             for ii, corrfile in enumerate(allcorrfile):
+                if ((ii + 1) % 10) == 0:
+                    log.info('Reading correlation function {}/{}'.format(ii+1, ncorr))
                 pi, sigma, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
                 allxi[ii, :, :] = xi.reshape(dim1_nbin, dim2_nbin)
 
-            xi2d = np.mean(allxi, axis=0)
+            xibar = np.mean(allxi, axis=0)
 
             bigxi = np.zeros((dim1_nbin*2, dim2_nbin*2))
-            bigxi[:dim1_nbin, :dim2_nbin] = np.fliplr(np.flipud(xi2d))
-            bigxi[dim1_nbin:2*dim1_nbin, :dim2_nbin] = np.fliplr(xi2d)
-            bigxi[:dim1_nbin, dim2_nbin:2*dim2_nbin] = np.flipud(xi2d)
-            bigxi[dim1_nbin:2*dim1_nbin, dim2_nbin:2*dim2_nbin] = xi2d
+            bigxi[:dim1_nbin, :dim2_nbin] = np.fliplr(np.flipud(xibar))
+            bigxi[dim1_nbin:2*dim1_nbin, :dim2_nbin] = np.fliplr(xibar)
+            bigxi[:dim1_nbin, dim2_nbin:2*dim2_nbin] = np.flipud(xibar)
+            bigxi[dim1_nbin:2*dim1_nbin, dim2_nbin:2*dim2_nbin] = xibar
 
             # Fragile!
             pi2d = np.concatenate((np.arange(-dim2_nbin, 0, 1), np.arange(1, dim2_nbin+1, 1)))
@@ -360,6 +395,8 @@ def main():
             ax.set_aspect('equal')
             ax.set_xlabel(r'$\sigma$ (Mpc / h)', fontsize=16)
             ax.set_ylabel(r'$\pi$ (Mpc / h)', fontsize=16)
+            ax.set_xlim((-130, 130))
+            ax.set_ylim((-130, 130))
             ax.margins(0)
 
             div = make_axes_locatable(ax)
@@ -374,38 +411,38 @@ def main():
 
             pdb.set_trace()
 
-
-
-            xi = np.zeros((len(randomslist), nsigbins, npibins))
-            for item in range(len(randomslist)):
-                thisout = outfile+'fkp_{}.dat'.format(item+4001)
-                pi, sigma, thisxi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                xi = thisxi.reshape(nsigbins, npibins)
-            #xi = np.mean(xi)
-            bigxi = np.zeros((nsigbins*2, npibins*2))
-            xi2d = xi.reshape(nsigbins, npibins)
-            bigxi[:nsigbins, :npibins] = np.fliplr(np.flipud(xi2d))
-            bigxi[nsigbins:2*nsigbins, :npibins] = np.fliplr(xi2d)
-            bigxi[:nsigbins, npibins:2*npibins] = np.flipud(xi2d)
-            bigxi[nsigbins:2*nsigbins, npibins:2*npibins] = xi2d
-            pi2d = np.tile(np.arange(-(2*npibins-1), 2*npibins, 2), (1, 2*npibins)).reshape(2*npibins, 2*npibins)
-            sig2d = np.rot90(pi2d)
-            plt.pcolor(sig2d, pi2d, bigxi, norm=LogNorm()) ; plt.colorbar() ; plt.show()      
-
         if args.corrtype == '3D_rm':
-            for item in range(len(randomslist)):
-                thisout = outfile+'fkp_{}.dat'.format(item+4001)
-                mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(thisout, unpack=True)
-                rad = np.linspace(2, 198, 40)
-                # rad = np.linspace(2, 198, 40)
-                # rad = rad.reshape((50,40))
-                monopole = compute_monopole(mu, rad, xi)
-                quadrupole = compute_quadrupole(mu, rad, xi)
-                plotmqh(monopole,quadrupole,hex1,rad)
-                plt.xlabel('$\mathrm{\ r \ (Mpc \,  h^{-1})}$')
-                plt.ylabel(r'$\mathrm{\ r^2 \xi(r)}$')
-            plt.plot(and_rad, (and_mono)*and_rad**2, 'r-')
-            plt.show()
-                
+            allmono = np.zeros((ncorr, dim1_nbin))
+            allquad = np.zeros((ncorr, dim1_nbin))
+            for ii, corrfile in enumerate(allcorrfile[:10]):
+                if ((ii + 1) % 10) == 0:
+                    log.info('Reading correlation function {}/{}'.format(ii+1, ncorr))
+                mu, rad, xi, xierr, DD, DR, RR = np.loadtxt(corrfile, unpack=True)
+                allmono[ii, :] = compute_monopole(mu, rad, xi)
+                #allquad[ii, :] = compute_quadrapole(mu, rad, xi)
+
+            rad = np.unique(rad)
+            monobar = np.mean(allmono, axis=0)
+            #quadbar = np.mean(allquad, axis=0)
+            #pdb.set_trace()
+
+            # Compare with Anderson+
+            andrad, andmono, andquad = _literature(author='anderson', sample=sample)
+
+            qafile = os.path.join(qadir, '{}_rm_monopole.pdf'.format(sample))
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.scatter(rad, monobar*rad*rad, label='Siena Average Monopole')
+            ax.scatter(andrad, andmono*andrad*andrad, marker='s', color='orange', label='Anderson+13 Monopole')
+            #ax.scatter(andrad, -andquad*andrad*andrad, marker='s', color='red', label='Anderson+13 Quadrapole')
+            ax.set_xlabel(r'$r$ (Mpc / h)')
+            ax.set_ylabel(r'$r^2 \xi$')
+            ax.legend(loc='upper right', frameon=None)
+            ax.margins(0.05)
+
+            plt.subplots_adjust(bottom=0.15, top=0.88)
+
+            log.info('Writing {}'.format(qafile))
+            plt.savefig(qafile)
+
 if __name__ == "__main__":
     main()
