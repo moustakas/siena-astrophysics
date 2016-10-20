@@ -41,6 +41,7 @@ alias cx='chmod +x'
 alias findf='find . -name "\!*"  -print'
 alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
 alias pwd='pwd -P'
+alias jupyter='/usr/bin/jupyter notebook --no-browser'
 
 alias decals_sim='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim.py'
 alias decals_sim_plots='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim_plots.py'
