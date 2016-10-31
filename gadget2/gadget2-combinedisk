@@ -27,8 +27,8 @@ def main():
     parser.add_argument('--outdir', type=str, default='./', help='output directory')
     parser.add_argument('--rmin', type=float, default=5.0, help='pericentric passage distance (kpc)')
     parser.add_argument('--rstart', type=float, default=100.0, help='initial separation (kpc)')
-    parser.add_argument('--ncore', type=int, default=2, help='number of computer cores to use')
-    parser.add_argument('--time-max', type=float, default=1.5, help='maximum time step')
+    parser.add_argument('--ncore', type=int, default=12, help='number of computer cores to use')
+    parser.add_argument('--time-max', type=float, default=1.4, help='maximum time step')
     parser.add_argument('--time-resolution', type=float, default=0.02, help='time resolution')
 
     args = parser.parse_args()
@@ -211,7 +211,8 @@ def main():
     outfile.write('#$ -N {}.combine\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.combine.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
-    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    #outfile.write('#$ -q sos.q\n')                       # use the SoS queue
+    outfile.write('#$ -q allsmp.q@node1,allsmp.q@node2,allsmp.q@node3,allsmp.q@node4,allsmp.q@node5,allsmp.q@node6,allsmp.q@node7,allsmp.q@node8,allsmp.q@node17\n')
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('CombineGalaxies {} {:g} {:g} {} {:g} {:g} {:g} {:g} {} \n'.format(
@@ -230,7 +231,8 @@ def main():
     outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
-    outfile.write('#$ -q physics.q\n')                       # use the physics queue
+    #outfile.write('#$ -q sos.q\n')                       # use the SoS queue
+    outfile.write('#$ -q allsmp.q@node1,allsmp.q@node2,allsmp.q@node3,allsmp.q@node4,allsmp.q@node5,allsmp.q@node6,allsmp.q@node7,allsmp.q@node8,allsmp.q@node17\n')
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('source /etc/profile.d/modules.sh\n')
