@@ -125,8 +125,8 @@ def main():
     param['TimeBegin'] = 0.0 # Begin of the simulation
     param['TimeOfFirstSnapshot'] = 0.0
 
-    param['Omega0']      =   0
-    param['OmegaLambda'] =   0
+    param['Omega0']      =   0.3
+    param['OmegaLambda'] =   0.7
     param['OmegaBaryon'] =   0
     param['HubbleParam'] = 0.7
 
@@ -212,7 +212,7 @@ def main():
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.combine.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
     #outfile.write('#$ -q sos.q\n')                       # use the SoS queue
-    outfile.write('#$ -q allsmp.q@node1,allsmp.q@node2,allsmp.q@node3,allsmp.q@node4,allsmp.q@node5,allsmp.q@node6,allsmp.q@node7,allsmp.q@node8,allsmp.q@node17\n')
+    outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('CombineGalaxies {} {:g} {:g} {} {:g} {:g} {:g} {:g} {} \n'.format(
@@ -232,7 +232,7 @@ def main():
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
     #outfile.write('#$ -q sos.q\n')                       # use the SoS queue
-    outfile.write('#$ -q allsmp.q@node1,allsmp.q@node2,allsmp.q@node3,allsmp.q@node4,allsmp.q@node5,allsmp.q@node6,allsmp.q@node7,allsmp.q@node8,allsmp.q@node17\n')
+    outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('source /etc/profile.d/modules.sh\n')
