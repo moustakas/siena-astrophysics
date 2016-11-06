@@ -239,8 +239,8 @@ def main():
     outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
-    #outfile.write('#$ -q sos.q\n')                           # use the SoS queue
-    outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
+    outfile.write('#$ -q sos.q\n')                           # use the SoS queue
+    #outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('source /etc/profile.d/modules.sh\n')
