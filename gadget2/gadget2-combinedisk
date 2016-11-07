@@ -27,7 +27,8 @@ def main():
     parser.add_argument('--outdir', type=str, default='./', help='output directory')
     parser.add_argument('--rmin', type=float, default=5.0, help='pericentric passage distance (kpc)')
     parser.add_argument('--rstart', type=float, default=100.0, help='initial separation (kpc)')
-    parser.add_argument('--ncore', type=int, default=12, help='number of computer cores to use')
+    parser.add_argument('--ncore', type=int, default=24, help='number of computer cores to use')
+    parser.add_argument('--queue', type=str, default='all.q', help='queue to use (all.q, sos.q, all.q@node1)')
     parser.add_argument('--time-max', type=float, default=1.4, help='maximum time step')
     parser.add_argument('--time-resolution', type=float, default=0.02, help='time resolution')
 
@@ -211,8 +212,7 @@ def main():
     outfile.write('#$ -N {}.combine\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.combine.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
-    outfile.write('#$ -q sos.q\n')                       # use the SoS queue
-    #outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
+    outfile.write('#$ -q {}\n'.format(args.queue))              # use the SoS queue
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('CombineGalaxies {} {:g} {:g} {} {:g} {:g} {:g} {:g} {} \n'.format(
@@ -231,8 +231,7 @@ def main():
     outfile.write('#$ -N {}.gadget2\n'.format(args.prefix))  # name of the job displayed in qstat
     outfile.write('#$ -j y\n')                               # join standard error and standard out in streams
     outfile.write('#$ -o {}.gadget2.$JOB_ID\n'.format(args.prefix)) # unique output file name tied to $JOB_ID
-    outfile.write('#$ -q sos.q\n')                       # use the SoS queue
-    #outfile.write('#$ -q all.q@node1,all.q@node2,all.q@node3,all.q@node4,all.q@node5,all.q@node6,all.q@node7,all.q@node8,all.q@node17\n')
+    outfile.write('#$ -q {}\n'.format(args.queue))              # use the SoS queue
     outfile.write('#$ -pe orte {:d}\n'.format(args.ncore))   # number of cores to use
     outfile.write('\n')
     outfile.write('source /etc/profile.d/modules.sh\n')
