@@ -1,0 +1,67 @@
+Redownloaded everything
+Read the Readme files and tried to understand some of what the code is doing
+Took some notes on how to create a spectra
+Still struggling
+The path I was in attempting to run a test spectra was: siena-astrophysics/research/desisim-testdata/desi/spectro/templates/basic-templates/v2.0
+Which contains fits files of elg, bgs,lrg, quasars, stars, wd (not sure what wd is)
+
+
+Install xcode, install desiutil using github
+Class
+desisim.templates import ELGdef 
+make_templates()
+units of flux = ergs/sec/cm^2/Aplt.plot(wave, flux[0, :])
+
+flux, wave, meta = elg.make_template(model=n, seed=x)
+LRG normalized in z band
+ELG normalized in r band
+look at speclite.fliters for list of curves
+what redshift
+relative flux
+
+
+play with noiseless spectra
+    desisim
+play with noisy spectra
+    quickbrick
+    quickgen
+Redshift fitting 
+    redmonster
+Derive lens rates - rates at which we see lenses we put in
+
+Parameters to vary:
+    Source - backgroud ELG because the breaks will be stronger than an LRG, the numbers game - ELG are more common at a redshift of 1-2 z which is 8 Gye
+        Apparent Mag - r_source
+        Redshift z
+        Reshift between source and lens
+        
+    Lens - forground LRG because they only have one break and it will be easier to see the ELG on top and the mass of the dark matter halo, LRG tend to have massive halos "Biased" tracers of the density field
+        Apparent Mag - r_lens
+        Redshift - r_L
+
+The relative brightness matters 
+    f_source/f_lens = 10^-0.4(r_s-r_L)
+    roughly from (almost 0) to 1
+Absolute brightness does matter
+    20 < r_L < 22
+We wont vary the r_s because we can solve for it with fs/fl and rl
+z of the lens (0.3 - 0.7) not always an equal probability
+z of the source (0.8 - 1.6) we are not going to go any higher than 1.6 becuase of OII
+
+Right now we are going to start a LaTeX document for the paper, documentclass(aastex)
+three panel figure
+math with some text to explain what I am doing
+sketch of the geometry with lensing equation
+Make a figure of a gaussian distribution of r_L values with a mean of 21 and some sigma - an input prior 
+    fs/fl on y
+    uniform from 10^-2  to 1 in logspace
+    then combine them to make a histogram of rs
+    
+Make a figure with the refactered code from our example to specify the zl,zs,f 
+def ____ (zl,zs,f,r_l):
+returns wave flux of the lens and flux of the source
+make a three by three figure from fs/fl big to fs/fl small
+ONLY CHANGE F
+        
+Review chapter nine Keaton
+    
