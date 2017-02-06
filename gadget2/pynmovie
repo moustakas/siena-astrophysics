@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+import os
 import sys
-import envoy
 import argparse
 import numpy as np
 
-import pynbody as pyn
+from pynbody import load
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
@@ -14,11 +14,11 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Generate a movie from Gadget-2 snapshots')
     parser.add_argument('snapfiles', nargs='*', type=str, help='Snapshot file names')
-    parser.add_argument('-f', '--fps', type=int, help='Frame Rate (frames per second)', default=5)
     parser.add_argument('-o', '--outvideo', type=str, help='Filename of the output video', default='pynmovie.mp4')
     parser.add_argument('-n', '--nbins', type=int, default=50, help='Number of bins to use for the 2D histogram')
-    parser.add_argument('-k', '--keep-png', action='store_true', default=False, 
-                        help='Do not delete the intermediate-stage PNGs.')
+    parser.add_argument('-f', '--fps', type=int, help='Frame Rate (frames per second)', default=5)
+    parser.add_argument('--remove-pngs', action='store_true', default=False,
+                        help='Remove (delete) the intermediate-stage PNG files.')
     args = parser.parse_args()
     snapfiles = args.snapfiles
     nsnap = len(snapfiles)
@@ -34,7 +34,7 @@ def main():
 
         # load the snapshot and retrieve the xyz coordinates
         print( 'Reading {}'.format(snap))
-        sim = pyn.load(snap)
+        sim = load(snap)
         xyz_dm = sim.dm['pos']
         xyz_stars = sim.stars['pos']
         xyz_gas = sim.gas['pos']
@@ -111,17 +111,12 @@ def main():
         plt.close(1)
                         
     print('ffmpeg -r %d -i %%09d.png -y %s' % (int(args.fps), args.outvideo))
-    vid = envoy.run('ffmpeg -r %d -i %%09d.png -y %s' % (int(args.fps), args.outvideo))
+    os.system('ffmpeg -r %d -i %%09d.png -y %s' % (int(args.fps), args.outvideo))
 
-    # Clean up PNGs
-    #if args.keep is not None:
-    #   pngkeep = args.keep.split(',')
-            
-    for ii in range(nsnap):
-        # load the snapshot and retrieve the xyz coordinates
-        pngfile = '{:09d}.png'.format(ii)
-        if args.keep_png is False:
-            envoy.run('rm '+pngfile)
+    # Optionally clean up the PNGs.
+    if args.remove_pngs:
+        for ii in range(nsnap):
+            os.system('/bin/rm {:09d}.png'.format(ii))
             
 if __name__ == "__main__":
     main()

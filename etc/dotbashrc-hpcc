@@ -1,0 +1,58 @@
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+. /usr/local/Modules/3.2.9/init/bash
+module load modules
+
+# User specific aliases and functions
+
+module load tools/python2.7
+
+##################################################
+# Personal system defaults
+umask 002
+export TERM=xterm-256color
+export PS1="\u@\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]% "
+export EDITOR=emacs
+
+##################################################
+# Some convenience variables
+export SIENA_ASTROPHYSICS_DIR=${HOME}/siena-astrophysics
+
+# need this in order to compile CombineGalaxies
+export LD_LIBRARY_PATH=/usr/local/gsl/gcc/lib
+
+##################################################
+# Expand my path
+export PATH=${PATH}:/data/moustakas/Gadget-2.0.7/Gadget2
+export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
+export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/MakeNewDisk 
+export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/CombineGalaxies 
+export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/rockstar-galaxies
+
+##################################################
+# Set up Python
+export PYTHONPATH=${PYTHONPATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
+
+##################################################
+# Personal aliases
+
+alias l='ls -l --color=auto'
+# alias l='ls -l --color=auto | grep -v "~"'
+alias lt='ls -ltr --color=auto '
+alias lm='ls -l --color=auto | more'
+alias dirs='ls -l --color=auto | grep ^d'
+alias cls='clear'
+alias df='df -kH'
+alias du='du -ksh'
+alias mv='mv -i'
+alias rm='rm -i'
+alias cp='cp -ip'        # make copy preserve timestamp of files
+alias cx='chmod +x'
+alias findf='find . -name "\!*"  -print'
+alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
+alias pwd='pwd -P'
