@@ -14,6 +14,7 @@ export SIENA_ASTROPHYSICS_DIR=${HOME}/repos/siena-astrophysics
 export DUST_DIR=/global/work/data/sfd_dustmaps/
 export LSS_BOSS=/global/work/projects/lss-boss
 export DECALS_SIM_DIR=/global/work/decam/versions/sim
+export SPS_HOME=/usr/local/gitrepos/fsps
 
 ##################################################
 # Expand my path
