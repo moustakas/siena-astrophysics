@@ -17,6 +17,8 @@ MakeDiskGalaxy
 *.pyc
 *.pyo
 .ipynb_checkpoints
+*.fits # I added this because I was playing around with fits file creation, and
+       # I didn't want any unncecessary stuff clogging up the works
 
 # Packages #
 ############
