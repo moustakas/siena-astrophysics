@@ -60,8 +60,8 @@ Some additional resources you may find useful include:
 .. _`Github`: https://github.com
 .. _`siena-astrophysics`: https://github.com/moustakas/siena-astrophysics
 .. _`Software Carpentry`: https://software-carpentry.org/lessons
-.. _`The Unix Shell` http://swcarpentry.github.io/shell-novice
-.. _`Programming with Python` http://swcarpentry.github.io/python-novice-inflammation
-.. _`Version Control with Git` http://swcarpentry.github.io/git-novice
-.. _`The Foundations of Data Science` https://ds8.gitbooks.io/textbook/content
-.. _`Practical Python for Astronomers` https://python4astronomers.github.io
+.. _`The Unix Shell`: http://swcarpentry.github.io/shell-novice
+.. _`Programming with Python`: http://swcarpentry.github.io/python-novice-inflammation
+.. _`Version Control with Git`: http://swcarpentry.github.io/git-novice
+.. _`The Foundations of Data Science`: https://ds8.gitbooks.io/textbook/content
+.. _`Practical Python for Astronomers`: https://python4astronomers.github.io
