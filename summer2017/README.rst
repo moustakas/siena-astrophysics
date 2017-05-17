@@ -17,14 +17,14 @@ Learning Goals
 
 My learning goals for you this summer are two-fold.
 
-1. You will develop some competency (and hopefully an expertise!) in some of the
-technical skills astronomers use to do science.  However, most, if not all of
-the skills you're going to learn are not just limited to astronomy; they are
+First, you will develop some competency (and hopefully an expertise!) in some of
+the technical skills astronomers use to do science.  However, most, if not all
+of the skills you're going to learn are not just limited to astronomy; they are
 used across a myriad of disciplines in both academia and industry.  So this
 skillset will serve you well while you're at Siena College and beyond.
 
-2. And you will learn a lot of astrophysics by reading published papers and by
-discussing ideas with me and your peers.
+And second, you will learn a lot of astrophysics by reading published papers and
+by discussing ideas with me and your peers.
 
 What you need
 -------------
@@ -38,6 +38,16 @@ What you need
 
 3. Enthusiasm!
 
+NSF Training
+------------
+
+The NSF requires you to complete an online `Responsible Conduct of Research`_
+training program, in which you will learn about collaborative research,
+responsible authorship, data management, etc.  This training must be completed
+during the first week of your summer research experience.
+
+.. `Responsible Conduct of Research`: https://www.citiprogram.org/index.cfm?pageID=154&icat=0&clear=1
+
 Building your toolkit
 ---------------------
 
@@ -46,6 +56,7 @@ lessons and tutorials from `Software Carpentry`_ on other online resources.
 
 * `The Unix Shell`_
 * `Programming with Python`_
+* `Scipy Lecture Notes`_
 * `Version Control with Git`_
 * `Practical Python for Astronomers`_
 
@@ -56,6 +67,15 @@ Some additional resources you may find useful include:
 
 * `The Foundations of Data Science`_
 
+Need to add:
+------------
+
+* Logging into nyx
+* gitmersion
+* pair coding
+* emacs
+* Pep8
+* Stackexchange
 
 .. _`Github`: https://github.com
 .. _`siena-astrophysics`: https://github.com/moustakas/siena-astrophysics
@@ -65,3 +85,4 @@ Some additional resources you may find useful include:
 .. _`Version Control with Git`: http://swcarpentry.github.io/git-novice
 .. _`The Foundations of Data Science`: https://ds8.gitbooks.io/textbook/content
 .. _`Practical Python for Astronomers`: https://python4astronomers.github.io
+.. _`Scipy Lecture Notes`: http://www.scipy-lectures.org/index.html
