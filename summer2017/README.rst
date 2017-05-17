@@ -43,10 +43,10 @@ NSF Training
 
 The NSF requires you to complete an online `Responsible Conduct of Research`_
 training program, in which you will learn about collaborative research,
-responsible authorship, data management, etc.  This training must be completed
-during the first week of your summer research experience.
+responsible authorship, data management, etc.  *This training must be completed
+during the first week of your summer research experience.*
 
-.. `Responsible Conduct of Research`: https://www.citiprogram.org/index.cfm?pageID=154&icat=0&clear=1
+.. _`Responsible Conduct of Research`: https://www.citiprogram.org/index.cfm?pageID=154&icat=0&clear=1
 
 Building your toolkit
 ---------------------
