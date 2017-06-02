@@ -3,7 +3,7 @@
 * This directory is dedicated to the study of the masses of BCGs in galaxy 
 clusters. 
 
-* ***NOTE:*** My own (very basic) CLF calculator is under lumfunc.ipynb. The variable names suggest that the mass function is being studied in the notebook. However, this is just a consequence of my laziness when making modifications; relic of the notebook's development. It is in semi-functioning condition, returning the expected lognormal distribution for ```latex $\Phi (L)$``` versus ```latex $L (L_{\odot})$```. 
+* ***NOTE:*** My own (very basic) CLF calculator is under lumfunc.ipynb. The variable names suggest that the mass function is being studied in the notebook. However, this is just a consequence of my laziness when making modifications; relic of the notebook's development. It is in semi-functioning condition, returning the expected lognormal distribution for $\Phi (L)$ versus $L (L_{\odot})$. 
 
 * Reddick's code and files are available on NYX at: `/global/work/projects/redmapper/csmf`
 
@@ -51,3 +51,10 @@ param, param_err = mass_matching.run_matching_zbin_and_print(cat,zmin,zmax,zlabe
 ```
 
 * You may now runt he function `run_zev_fit.py`: `python run_zev_fit.py A_lm_z.dat constant 0.1 0.33 0.9 10` along with the output files, to obtain the redshift evolution parameters. You must perform this twice. The second time, you should instead pass the argument, `lnlm0_z.dat power_log 0.1 0.33 3. 0.85 10`.
+  ** This will output parameters `A_lambda` (from the first call), as well as `lnlm0` and `B_lambda` (from the seond call).
+
+* The main fitting routines are as follows (***NOTE*** do not use the `MCMC` fitting routines):
+  ** `run_emcee_cen`
+  ** `run_emcee_cen_noev`
+  ** `run_emcee_sat`
+  ** `run_emcee_sat_noev`
