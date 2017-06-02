@@ -24,10 +24,10 @@ clusters.
 * To calculate the CSMF, use the `redm_full.py` script in the `redmapper` directory. Use the following in the command line:`python redm_full.py paramfile`
 
 * The paramfile must be an ascii file. It specifies input files, an output directory, and some optional flags. For an example, see `paramfile_dr8.dat` in the `redmapper` directory. The input files are asignes to rows of the following names:
-  ** cluster_file (central galaxies catalog)
-  ** member_file (satellites catalog)
-  ** kcorr_file
-  ** cindex_file (indexes centrals to the members list)
+  * cluster_file (central galaxies catalog)
+  * member_file (satellites catalog)
+  * kcorr_file
+  * cindex_file (indexes centrals to the members list)
 
 * ***NOTE:*** The code does **not** internally account for changes in effective area with redshift
 
@@ -35,7 +35,7 @@ clusters.
 ##### Fitting the CSMF:
 
 * The first step before doing anything else is to calculate the $\lambda (M)$ relationship.
-  ** This is not yet an automated process. You will have to run some variation of the following bit of code in an `iPython notebook`.
+  * This is not yet an automated process. You will have to run some variation of the following bit of code in an `iPython notebook`.
 ```python
 import numpy as np
 import mass_matching
@@ -51,10 +51,10 @@ param, param_err = mass_matching.run_matching_zbin_and_print(cat,zmin,zmax,zlabe
 ```
 
 * You may now runt he function `run_zev_fit.py`: `python run_zev_fit.py A_lm_z.dat constant 0.1 0.33 0.9 10` along with the output files, to obtain the redshift evolution parameters. You must perform this twice. The second time, you should instead pass the argument, `lnlm0_z.dat power_log 0.1 0.33 3. 0.85 10`.
-  ** This will output parameters `A_lambda` (from the first call), as well as `lnlm0` and `B_lambda` (from the seond call).
+  * This will output parameters `A_lambda` (from the first call), as well as `lnlm0` and `B_lambda` (from the seond call).
 
 * The main fitting routines are as follows (***NOTE*** do not use the `MCMC` fitting routines):
-  ** `run_emcee_cen`
-  ** `run_emcee_cen_noev`
-  ** `run_emcee_sat`
-  ** `run_emcee_sat_noev`
+  * `run_emcee_cen`
+  * `run_emcee_cen_noev`
+  * `run_emcee_sat`
+  * `run_emcee_sat_noev`
