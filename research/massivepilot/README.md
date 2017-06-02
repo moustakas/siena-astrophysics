@@ -3,11 +3,11 @@
 * This directory is dedicated to the study of the masses of BCGs in galaxy 
 clusters. 
 
-* ***NOTE:*** My own (very basic) CLF calculator is under lumfunc.ipynb. The variable names suggest that the mass function is being studied in the notebook. However, this is just a consequence of my laziness when making modifications; relic of the notebook's development. It is in semi-functioning condition, returning the expected lognormal distribution for $\Phi (L)$ versus $L (L_{\odot})$. 
+* ***NOTE:*** My own (very basic) CLF calculator is under lumfunc.ipynb. The variable names suggest that the mass function is being studied in the notebook. However, this is just a consequence of my laziness when making modifications; relic of the notebook's development. It is in semi-functioning condition, returning the expected lognormal distribution for $latex \Phi (L)$ versus $latex L (L_{\odot})$. 
 
-* Reddick's code and files are available on NYX at: `/global/work/projects/redmapper/csmf`
+* Rachel Reddick's code and files are available on NYX at: `/global/work/projects/redmapper/csmf`
 
-* <a href="https://www.evernote.com/shard/s730/sh/982bd8b9-3c15-4fe1-be5c-5068f7995aa3/936bc9c36eb37628" target="_blank">Here are Reddick's notes on the code.</a>
+* <a href="https://www.evernote.com/shard/s730/sh/982bd8b9-3c15-4fe1-be5c-5068f7995aa3/936bc9c36eb37628" target="_blank">Here are Rachel's notes on the code.</a>
 
 
 ##### A few notes on the use of the code:
@@ -24,10 +24,10 @@ clusters.
 * To calculate the CSMF, use the `redm_full.py` script in the `redmapper` directory. Use the following in the command line:`python redm_full.py paramfile`
 
 * The paramfile must be an ascii file. It specifies input files, an output directory, and some optional flags. For an example, see `paramfile_dr8.dat` in the `redmapper` directory. The input files are asignes to rows of the following names:
-  * cluster_file (central galaxies catalog)
-  * member_file (satellites catalog)
-  * kcorr_file
-  * cindex_file (indexes centrals to the members list)
+  * `cluster_file` (central galaxies catalog)
+  * `member_file` (satellites catalog)
+  * `kcorr_file`
+  * `cindex_file` (indexes centrals to the members list)
 
 * ***NOTE:*** The code does **not** internally account for changes in effective area with redshift
 
@@ -53,8 +53,11 @@ param, param_err = mass_matching.run_matching_zbin_and_print(cat,zmin,zmax,zlabe
 * You may now runt he function `run_zev_fit.py`: `python run_zev_fit.py A_lm_z.dat constant 0.1 0.33 0.9 10` along with the output files, to obtain the redshift evolution parameters. You must perform this twice. The second time, you should instead pass the argument, `lnlm0_z.dat power_log 0.1 0.33 3. 0.85 10`.
   * This will output parameters `A_lambda` (from the first call), as well as `lnlm0` and `B_lambda` (from the seond call).
 
-* The main fitting routines are as follows (***NOTE*** do not use the `MCMC` fitting routines):
+* The main fitting routines are as follows (***NOTE:*** do not use the `MCMC` fitting routines):
   * `run_emcee_cen`
   * `run_emcee_cen_noev`
   * `run_emcee_sat`
   * `run_emcee_sat_noev`
+
+
+##### There is more in Rachel's notes that I have not covered here because I ran out of time. Feel free to add on.
