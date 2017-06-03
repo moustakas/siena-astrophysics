@@ -1,0 +1,17 @@
+# %ECSV 0.9
+# ---
+# datatype:
+# - {name: name, datatype: str}
+# - {name: right ascension, datatype: float64}
+# - {name: declination, datatype: float64}
+# - {name: heliocentric redshift, datatype: float64}
+# meta: !!omap
+# - {description: 'The right ascension, declination, and heliocentric 
+#   		   redshift of each source matched between those used 
+# 		   by Kravtsov (2014) and our iSEDfit catalog.
+#
+#     K. Napier, Siena, 2017 May 16'}
+name ra dec helioZ
+A2142     239.58321    27.23341   0.090900
+MKW3s     230.46625     7.70861   0.044200
+A2052     229.18536     7.02154   0.035491
