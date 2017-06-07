@@ -12,6 +12,7 @@ from time import time
 
 import numpy as np
 import fitsio
+import matplotlib.pylab as plt
 
 def datadir():
     """Return the top-level data directory."""
@@ -90,8 +91,8 @@ def load_model(zred):
     # Priors on stellar mass and stellar metallicity.
     model_params.append({'name': 'mass', 'N': 1,
                          'isfree': True,
-                         'init': 1e11,
-                         'init_disp': 1e10,
+                         'init': 5e11, # changed from 1-5 06/07/17 # C
+                         'init_disp': 5e10, # changed from 1-5 06/07/17 # C 
                          'units': r'M_\odot',
                          'prior_function': priors.tophat,
                          'prior_args': {'mini': 1e10, 'maxi': 5e12}})
@@ -117,7 +118,7 @@ def load_model(zred):
     model_params.append({'name': 'tau', 'N': 1,
                          'isfree': True,
                          'init':      1.0,
-                         'init_disp': 0.5,
+                         'init_disp': 1.5, # changed from 0.5-1.5  06/07/17 # C 
                          'units': 'Gyr',
                          'prior_function': priors.logarithmic,
                          'prior_args': {'mini': 0.1, 'maxi': 5.0}})
@@ -249,7 +250,7 @@ def main():
             tt = time() - t0
 
             print('What is edge_trunc!')
-            initial_center = fitting.reinitialize(min_results.x, model) # , edge_trunc=run_params.get('edge_trunc', 0.1))
+            initial_center = fitting.reinitialize(min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)) #uncommented edge_trunc 06/07/17 # C
             initial_prob = -1 * min_results['fun']
             
             print('Minimization {} finished in {} seconds'.format(min_method, tt))
@@ -259,10 +260,75 @@ def main():
             break
 
             ## reinitialize fit
-            #initial_prob = -1 * min_results['fun']
+            initial_prob = -1 * min_results['fun'] # 06/07/17 uncommented initial_prob # C 
             
     if args.qaplots:
+        from prospect.io import read_results, write_results # C ENTIRE PLOT SECTION PLOTS ARE GOING IN megs DIRECTORY
+        print('Creating Plots')
         # Do it
+        wspec = sps.csp.wavelengths # spectral wavelengths
+        wphot = np.array([f.wave_effective for f in obs['filters']]) # photometric effective wavelengths
+        wphot_width = np.array([f.effective_width for f in obs['filters']]) # photometric effective widths
+
+        initial_theta = model.rectify_theta(model.initial_theta) # initial parameters
+        mspec_init, mphot_init, mextra_init = model.mean_model(initial_theta, obs, sps=sps) # generate model
+
+        # establish bounds
+        xmin, xmax = wphot.min()*0.8, wphot.max()/0.8
+        temp = np.interp(np.linspace(xmin,xmax,10000), wspec, mspec_init)
+        ymin, ymax = temp.min()*0.8, temp.max()/0.8
+        # plotting 
+        plt.figure(figsize=(16,8))
+        for i in range(len(wphot)):
+            f = obs['filters'][i]
+            w, t = f.wavelength.copy(), f.transmission.copy()
+            while t.max() > 1:
+                t /= 10.
+                t = 0.1*(ymax-ymin)*t + ymin
+                loglog(w, t, lw=3, color='gray', alpha=0.7)
+        plt.loglog(wspec, mspec_init, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
+        plt.errorbar(wphot, mphot_init, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none', markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
+        plt.errorbar(wphot, obs['maggies'], yerr=obs['maggies_unc'], ecolor='red', marker='o', ls='', lw=3, markersize=10, markerfacecolor='none', markeredgecolor='red', markeredgewidth=3, alpha=0.8, label='Observed photometry')
+                
+        plt.xlabel('Wavelength [A]')
+        plt.ylabel('Flux Density [maggies]')
+        plt.xlim([xmin, xmax])
+        plt.ylim([ymin, ymax])
+        plt.legend(loc='best', fontsize=20)
+        plt.tight_layout()
+        plt.savefig(os.path.join(datadir(), 'init_model.jpg'))            
+
+        ## checking that we get closer
+        mspec_init, mphot_init, mextra_init = model.mean_model(min_results.x, obs, sps=sps) # generate model
+
+        # plotting 
+        plt.figure(figsize=(16,8))
+        plt.loglog(wspec, mspec_init, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
+        plt.errorbar(wphot, mphot_init, marker='s', ls='', lw=3, markersize=10,
+                 markerfacecolor='none', markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
+        plt.errorbar(wphot, obs['maggies'], yerr=obs['maggies_unc'], ecolor='red', marker='o', ls='', lw=3, markersize=10, 
+                 markerfacecolor='none', markeredgecolor='red', markeredgewidth=3, alpha=0.8, label='Observed photometry')
+
+        plt.xlabel('Wavelength [A]')
+        plt.ylabel('Flux Density [maggies]')
+        plt.xlim([xmin, xmax])
+        plt.ylim([ymin, ymax*10])
+        plt.legend(loc='best', fontsize=20)
+        plt.tight_layout()
+        plt.savefig(os.path.join(datadir(), 'closer_model.jpg'))
+
+        ##
+        plt.figure()
+        # res, pr, mod = read_results.results_from("{}_1496171711_mcmc.h5".format(run_params['outfile']))
+        res, pr, mod = read_results.results_from('redmapper-masses_1496171711_mcmc.h5') # C make sure file is from output above not from notebook previously done...
+        tracefig = pread.param_evol(res, figsize=(20,10), chains=choice(128, size=10, replace=False))
+        plt.savefig(os.path.join(datadir(), 'walker_plots.jpg'))
+        # corner plots
+        plt.figure()
+        theta_truth = np.array([run_params[i] for i in ['mass','logzsol','tau','tage','dust2']])
+        theta_truth[0] = np.log10(theta_truth[0])
+        cornerfig = pread.subtriangle(res, start=0, thin=5, truths=theta_truth, fig=subplots(5,5,figsize=(27,27))[0])
+        plt.savefig(os.path.join(datadir(), 'corner_plot.jpg'))
         pass
 
 if __name__ == "__main__":
