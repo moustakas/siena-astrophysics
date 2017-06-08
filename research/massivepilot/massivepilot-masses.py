@@ -133,7 +133,7 @@ def load_model(zred):
     
     return sedmodel.SedModel(model_params)
 
-def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=True):
+def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=False):
     """Define the likelihood function.
 
     Given a parameter vector and a dictionary of observational data and a model
@@ -217,9 +217,9 @@ def main():
         run_params = {
             'outfile': 'test',
             'debug':   False,
-            'nwalkers': 50, # 128,
+            'nwalkers': 32, # 128,
             'nburn': [32, 32, 64], 
-            'niter': 500, # 512,
+            'niter': 256, # 512,
             'do_powell': True,
             'ftol': 0.5e-5, 'maxfev': 5000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
@@ -250,18 +250,60 @@ def main():
             tt = time() - t0
 
             print('What is edge_trunc!')
-            initial_center = fitting.reinitialize(min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)) #uncommented edge_trunc 06/07/17 # C
+            initial_center = fitting.reinitialize(
+                min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
+                ) #uncommented edge_trunc 06/07/17 # C
             initial_prob = -1 * min_results['fun']
             
             print('Minimization {} finished in {} seconds'.format(min_method, tt))
-            print('best {0} guess: {1}'.format(min_method, initial_theta))
+            print('best {0} guess: {1}'.format(min_method, initial_center))
             print('best {0} lnp: {1}'.format(min_method, initial_prob))
-
-            break
-
-            ## reinitialize fit
-            initial_prob = -1 * min_results['fun'] # 06/07/17 uncommented initial_prob # C 
             
+            outroot = "{0}_{1}".format(run_params['outfile'], int(time()))
+            try:
+                hfilename = os.path.join( datadir(), outroot + '_mcmc.h5' )
+                hfile = h5py.File(hfilename, "a")
+                print("Writing to file {}".format(hfilename))
+                write_results.write_h5_header(hfile, run_params, model)
+                write_results.write_obs_to_h5(hfile, obs)
+            except:
+                hfile = None
+
+            import emcee, sys
+            try:
+                from emcee.utils import MPIPool
+                pool = MPIPool(debug=False, loadbalance=True)
+                if not pool.is_master():
+                    # Wait for instructions from the master process.
+                    pool.wait()
+                    sys.exit(0)
+            except(ImportError, ValueError):
+                pool = None
+                print('Not using MPI')
+
+            # halt? need we
+            import h5py
+            postkwargs = {}
+
+            fout = sys.stdout
+            fnull = open(os.devnull, 'w')
+            sys.stdout = fnull
+
+            tstart = time()
+            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model,
+                                            postkwargs=postkwargs, initial_prob=initial_prob,
+                                            pool=pool, hdf5=hfile,
+                                            nwalkers=run_params.get('nwalkers'),
+                                            nburn=run_params.get('nburn'),
+                                            niter=run_params.get('niter'), 
+                                            postargs=(model, obs, sps))
+            esampler, burn_p0, burn_prob0 = out
+            edur = time() - tstart
+
+            sys.stdout = fout
+
+            print('done emcee in {0}s'.format(edur))
+
     if args.qaplots:
         from prospect.io import read_results, write_results # C ENTIRE PLOT SECTION PLOTS ARE GOING IN megs DIRECTORY
         print('Creating Plots')
