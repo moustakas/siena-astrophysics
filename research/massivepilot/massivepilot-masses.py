@@ -16,6 +16,8 @@ import numpy as np
 import fitsio
 import matplotlib.pylab as plt
 
+from prospect.sources import CSPSpecBasis
+
 ##########################################333
 # MOVE TO ITS OWN FUNCTION!
 
@@ -187,7 +189,10 @@ def subtriangle(sample_results, outname=None, showpars=None,
     try:
         parnames = np.array(sample_results['theta_labels'])
     except(KeyError):
-        parnames = np.array(sample_results['model'].theta_labels())
+        #parnames = np.array(sample_results['model'].theta_labels())
+        print('FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        parnames = np.array(['Bob1', 'Bob2', 'Bob3'])
+
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
                                   flatchain.shape[2])
@@ -298,25 +303,33 @@ def getobs(cat):
     """
     from sedpy.observate import load_filters
 
+    obs = {} 
+
+    # Photometric bandpasses
     sdss = ['sdss_{}0'.format(b) for b in ['u','g','r','i','z']]
     wise = ['wise_{}'.format(b) for b in ['w1','w2']]
     filternames = sdss + wise
     
-    mask = (cat['IVARMAGGIES'] > 0) * 1
-    obs = {}
-    obs['maggies'] = np.squeeze(cat['MAGGIES'])
-    with np.errstate(divide='ignore'):
-        obs['maggies_unc'] = np.squeeze(1.0/np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
-    obs['wavelength'] = None # not fitting spectra
     obs['filternames'] = filternames
     obs['filters'] = load_filters(filternames)
+
+    # Input photometry
+    obs['maggies'] = np.squeeze(cat['MAGGIES'])
+    mask = (cat['IVARMAGGIES'] > 0) * 1
+    with np.errstate(divide='ignore'):
+        obs['maggies_unc'] = np.squeeze(1.0/np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
     obs['phot_mask'] = mask  # 1 = good, 0 = bad
-    obs['isedfit_id'] = cat['ISEDFIT_ID']
-    obs['zred'] = cat['Z']
-    
-    print('What is "unc"?!?')
-    obs['unc'] = obs['maggies_unc']
+
+    # Input spectroscopy (none for this dataset)
+    obs['wavelength'] = None
     obs['spectrum'] = None
+    obs['unc'] = None
+
+    # Input redshift.
+    obs['zred'] = cat['Z']
+
+    # Additional informational keys.
+    obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
 
@@ -439,12 +452,13 @@ def chisqfn(theta, model, obs, sps):
 def main():
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
 
-    args = parser.parse_args()
+    args = parser.parse_args()    
 
     if args.build_sample:
 
@@ -468,13 +482,12 @@ def main():
         from scipy.optimize import minimize
         
         from prospect.models import model_setup
-        from prospect.sources import CSPSpecBasis
         from prospect import fitting
         from prospect.io import write_results
 
         # Specify the run parameters.
         run_params = {
-            'prefix': 'test',
+            'prefix': args.prefix,
             'debug':   False,
             'nwalkers': 32, # 128,
             'nburn': [32, 32, 64], 
@@ -494,8 +507,9 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent()
-        
         for obj in cat:
+            objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
+            
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
@@ -518,8 +532,11 @@ def main():
             print('best {0} guess: {1}'.format(min_method, initial_center))
             print('best {0} lnp: {1}'.format(min_method, initial_prob))
             
-            hfilename = os.path.join( datadir(), '{}_{0:05}_mcmc.h5'.format(
-                run_params['prefix'], cat['ISEDFIT_ID']) )
+            hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
+                run_params['prefix'], objprefix) )
+            if os.path.isfile(hfilename):
+                os.remove(hfilename)
+            
             hfile = h5py.File(hfilename, 'a')
             print('Writing to file {}'.format(hfilename))
             write_results.write_h5_header(hfile, run_params, model)
@@ -561,87 +578,91 @@ def main():
     if args.qaplots:
         from prospect.io import read_results
 
-        print('Creating Plots')
+        # Load the default SPS model.
+        t0 = time()
+        print('Do we really need to do this here???  Note: hard-coding zcontinuous!')
+        sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
+        print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
 
-        # Start outer loop on parent catalog.
+        # Read the parent sample and loop on each object.
+        cat = read_parent()
+        for obj in cat:
+            objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
-        # grab results, powell results, and our corresponding models
-        resfile = os.path.join( datadir(), 'test_00798_mcmc.h5' )
-        print('Reading {}'.format(resfile))
-        res, pr, mod = read_results.results_from(resfile)
+            # Grab the emcee / prospector outputs.
+            h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
+            print('Reading {}'.format(h5file))
 
-        tracefig = param_evol(res, figsize=(20,10),
-                              chains=np.random.choice(res['run_params']['nwalkers'],
-                                                      size=10, replace=False))
-        plt.savefig(os.path.join(datadir(), 'walker_plots.jpg'))
-        
-        pdb.set_trace()
-        
+            results, powell_results, model = read_results.results_from(h5file)
 
+            # Reinitialize the model for this object since it's not written to disk(??).
+            model = load_model(results['obs']['zred'])
 
+            # Figure 1: Visualize a random sampling of the MCMC chains.
+            chains = np.random.choice(results['run_params']['nwalkers'], size=10, replace=False)
+            
+            qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
+            print('Generating {}'.format(qafile))
+            fig = param_evol(results, figsize=(20, 10), chains=chains)
+            fig.savefig(qafile)
 
-        wspec = sps.csp.wavelengths # spectral wavelengths
-        wphot = np.array([f.wave_effective for f in res['obs']['filters']]) # photometric effective wavelengths
-        wphot_width = np.array([f.effective_width for f in obs['filters']]) # photometric effective widths
+            # Figure 2: Generate a corner/triangle plot of the free parameters.
+            params = model.free_params
+            nparams = len(params)
+            #theta_truth = np.array([results['run_params'][pp] for pp in params])
 
-        initial_theta = model.rectify_theta(model.initial_theta) # initial parameters
-        mspec_init, mphot_init, mextra_init = model.mean_model(initial_theta, obs, sps=sps) # generate model
+            qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
+            print('Generating {}'.format(qafile))
+            fig = subtriangle(results, start=0, thin=5, truths=None,
+                              fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
+            fig.savefig(qafile)
 
-        # establish bounds
-        xmin, xmax = wphot.min()*0.8, wphot.max()/0.8
-        temp = np.interp(np.linspace(xmin,xmax,10000), wspec, mspec_init)
-        ymin, ymax = temp.min()*0.8, temp.max()/0.8
-        # plotting 
-        plt.figure(figsize=(16,8))
-        for i in range(len(wphot)):
-            f = obs['filters'][i]
-            w, t = f.wavelength.copy(), f.transmission.copy()
-            while t.max() > 1:
-                t /= 10.
-                t = 0.1*(ymax-ymin)*t + ymin
-                loglog(w, t, lw=3, color='gray', alpha=0.7)
-        plt.loglog(wspec, mspec_init, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-        plt.errorbar(wphot, mphot_init, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none', markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
-        plt.errorbar(wphot, obs['maggies'], yerr=obs['maggies_unc'], ecolor='red', marker='o', ls='', lw=3, markersize=10, markerfacecolor='none', markeredgecolor='red', markeredgewidth=3, alpha=0.8, label='Observed photometry')
+            # Figure 3: Generate the best-fitting SED.
+
+            # Show the last iteration of a randomly selected walker.
+            nwalkers, niter = results['run_params']['nwalkers'], results['run_params']['niter']
+            theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
+
+            mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
+
+            # Use the filters to set the wavelength and flux limits...
+            wspec = sps.csp.wavelengths # spectral wavelengths
+            wphot = np.array([f.wave_effective for f in results['obs']['filters']])
+            wphot_width = np.array([f.effective_width for f in results['obs']['filters']])
+
+            xmin, xmax = wphot.min()*0.8, wphot.max()/0.8
+            temp = np.interp(np.linspace(xmin, xmax, 10000), wspec, mspec)
+            ymin, ymax = temp.min()*0.8, temp.max()/0.8
+
+            qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
+            print('Generating {}'.format(qafile))
+            fig, ax = plt.subplots(figsize=(16, 8))
+
+            # Plot the filter curves...
+            for ff in range(len(wphot)):
+                f = results['obs']['filters'][ff]
+                w, t = f.wavelength.copy(), f.transmission.copy()
+                while t.max() > 1:
+                    t /= 10.0
+                    t = 0.1*(ymax-ymin)*t + ymin
+                    ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
+                    
+            ax.loglog(wspec, mspec, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
+            ax.errorbar(wphot, mphot, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none',
+                        markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
+            ax.errorbar(wphot, results['obs']['maggies'], yerr=results['obs']['maggies_unc'],
+                        ecolor='red', marker='o', ls='', lw=3, markersize=10, markerfacecolor='none',
+                        markeredgecolor='red', markeredgewidth=3,
+                        alpha=0.8, label='Observed photometry')
                 
-        plt.xlabel('Wavelength [A]')
-        plt.ylabel('Flux Density [maggies]')
-        plt.xlim([xmin, xmax])
-        plt.ylim([ymin, ymax])
-        plt.legend(loc='best', fontsize=20)
-        plt.tight_layout()
-        plt.savefig(os.path.join(datadir(), 'init_model.jpg'))            
+            ax.set_xlabel('Wavelength [A]')
+            ax.set_ylabel('Flux Density [maggies]')
+            ax.set_xlim([xmin, xmax])
+            ax.set_ylim([ymin, ymax])
+            ax.legend(loc='lower right', fontsize=20)
+            fig.savefig(qafile)
 
-        ## checking that we get closer
-        mspec_init, mphot_init, mextra_init = model.mean_model(min_results.x, obs, sps=sps) # generate model
-
-        # plotting 
-        plt.figure(figsize=(16,8))
-        plt.loglog(wspec, mspec_init, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-        plt.errorbar(wphot, mphot_init, marker='s', ls='', lw=3, markersize=10,
-                 markerfacecolor='none', markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
-        plt.errorbar(wphot, obs['maggies'], yerr=obs['maggies_unc'], ecolor='red', marker='o', ls='', lw=3, markersize=10, 
-                 markerfacecolor='none', markeredgecolor='red', markeredgewidth=3, alpha=0.8, label='Observed photometry')
-
-        plt.xlabel('Wavelength [A]')
-        plt.ylabel('Flux Density [maggies]')
-        plt.xlim([xmin, xmax])
-        plt.ylim([ymin, ymax*10])
-        plt.legend(loc='best', fontsize=20)
-        plt.tight_layout()
-        plt.savefig(os.path.join(datadir(), 'closer_model.jpg'))
-
-        ##
-        plt.figure()
-
-
-        # corner plots
-        plt.figure()
-        theta_truth = np.array([run_params[i] for i in ['mass','logzsol','tau','tage','dust2']])
-        theta_truth[0] = np.log10(theta_truth[0])
-        cornerfig = pread.subtriangle(res, start=0, thin=5, truths=theta_truth, fig=subplots(5,5,figsize=(27,27))[0])
-        plt.savefig(os.path.join(datadir(), 'corner_plot.jpg'))
-        pass
+            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
