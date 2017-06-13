@@ -456,6 +456,7 @@ def main():
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
+    parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
 
     args = parser.parse_args()    
@@ -520,7 +521,7 @@ def main():
             
             t0 = time()
             min_results = minimize(chisqfn, initial_theta, (model, obs, sps), method=min_method)
-            tt = time() - t0
+            pdur = time() - t0
 
             print('What is edge_trunc!')
             initial_center = fitting.reinitialize(
@@ -528,7 +529,7 @@ def main():
                 ) #uncommented edge_trunc 06/07/17 # C
             initial_prob = -1 * min_results['fun']
             
-            print('Minimization {} finished in {} seconds'.format(min_method, tt))
+            print('Minimization {} finished in {} seconds'.format(min_method, pdur))
             print('best {0} guess: {1}'.format(min_method, initial_center))
             print('best {0} lnp: {1}'.format(min_method, initial_prob))
             
@@ -542,29 +543,15 @@ def main():
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
 
-            try:
-                from emcee.utils import MPIPool
-                pool = MPIPool(debug=False, loadbalance=True)
-                if not pool.is_master():
-                    # Wait for instructions from the master process.
-                    pool.wait()
-                    sys.exit(0)
-            except(ImportError, ValueError):
-                pool = None
-                print('Not using MPI')
-
-            # halt? need we
-            postkwargs = {}
-
             fout = sys.stdout
             fnull = open(os.devnull, 'w')
             sys.stdout = fnull
 
             tstart = time()
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model,
-                                            postkwargs=postkwargs, initial_prob=initial_prob,
-                                            pool=pool, hdf5=hfile,
-                                            nwalkers=run_params.get('nwalkers'),
+                                            threads=args.threads, 
+                                            initial_prob=initial_prob,
+                                            hdf5=hfile, nwalkers=run_params.get('nwalkers'),
                                             nburn=run_params.get('nburn'),
                                             niter=run_params.get('niter'), 
                                             postargs=(model, obs, sps))
@@ -574,6 +561,18 @@ def main():
             sys.stdout = fout
 
             print('done emcee in {}s'.format(edur))
+
+            # Write out more.
+            write_results.write_pickles(run_params, model, obs, esampler, powell_guesses,
+                                        outroot=outroot, toptimize=pdur, tsample=edur,
+                                        sampling_initial_center=initial_center,
+                                        post_burnin_center=burn_p0,
+                                        post_burnin_prob=burn_prob0)
+            write_results.write_hdf5(hfile, rp, model, obsdat, esampler, powell_guesses,
+                                     toptimize=pdur, tsample=edur,
+                                     sampling_initial_center=initial_center,
+                                     post_burnin_center=burn_p0,
+                                     post_burnin_prob=burn_prob0)
 
     if args.qaplots:
         from prospect.io import read_results
