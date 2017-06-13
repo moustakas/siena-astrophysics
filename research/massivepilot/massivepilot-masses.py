@@ -490,9 +490,10 @@ def main():
         run_params = {
             'prefix': args.prefix,
             'debug':   False,
-            'nwalkers': 32, # 128,
+            'nwalkers': 16, # 128,
             'nburn': [32, 32, 64], 
-            'niter': 256, # 512,
+            'niter': 128, # 512,
+            # set the powell convergence criteria 
             'do_powell': True,
             'ftol': 0.5e-5, 'maxfev': 5000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
@@ -542,7 +543,7 @@ def main():
             print('Writing to file {}'.format(hfilename))
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
-
+            
             fout = sys.stdout
             fnull = open(os.devnull, 'w')
             sys.stdout = fnull
@@ -561,15 +562,17 @@ def main():
             sys.stdout = fout
 
             print('done emcee in {}s'.format(edur))
-
+            
             # Write out more.
-            write_results.write_pickles(run_params, model, obs, esampler, powell_guesses,
-                                        outroot=outroot, toptimize=pdur, tsample=edur,
+        
+            write_results.write_pickles(run_params, model, obs, esampler, min_results,
+                                        outroot=run_params['prefix'], toptimize=pdur, tsample=edur,
                                         sampling_initial_center=initial_center,
                                         post_burnin_center=burn_p0,
                                         post_burnin_prob=burn_prob0)
-            write_results.write_hdf5(hfile, rp, model, obsdat, esampler, powell_guesses,
-                                     toptimize=pdur, tsample=edur,
+            pdb.set_trace()
+            write_results.write_hdf5(hfilename, run_params, model, esampler, min_results,
+                                     min_results, toptimize=pdur, tsample=edur,
                                      sampling_initial_center=initial_center,
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
