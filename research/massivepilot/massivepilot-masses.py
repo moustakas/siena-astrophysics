@@ -454,6 +454,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
+    parser.add_argument('--min-method', default='Nelder-Mead', type=str,
+                        help='Method to use for initial minimization.'
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
@@ -499,9 +501,6 @@ def main():
             'zcontinuous': 1, # interpolate the models in stellar metallicity
             }
 
-        # Specify the minimization method.
-        min_method = 'Nelder-Mead'
-            
         # Load the default SPS model.
         t0 = time()
         sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'], compute_vega_mags=False)
@@ -521,7 +520,8 @@ def main():
             initial_theta = model.rectify_theta(model.initial_theta) # initial parameters
             
             t0 = time()
-            min_results = minimize(chisqfn, initial_theta, (model, obs, sps), method=min_method)
+            min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
+                                   method=args.min_method)
             pdur = time() - t0
 
             print('What is edge_trunc!')
@@ -566,16 +566,18 @@ def main():
             # Write out more.
         
             write_results.write_pickles(run_params, model, obs, esampler, min_results,
-                                        outroot=run_params['prefix'], toptimize=pdur, tsample=edur,
+                                        outroot='{}_{}'.format(run_params['prefix'], objprefix),
+                                        toptimize=pdur, tsample=edur,
                                         sampling_initial_center=initial_center,
                                         post_burnin_center=burn_p0,
                                         post_burnin_prob=burn_prob0)
-            pdb.set_trace()
-            write_results.write_hdf5(hfilename, run_params, model, esampler, min_results,
+            write_results.write_hdf5(hfilename, run_params, model, obs, esampler, 
                                      min_results, toptimize=pdur, tsample=edur,
                                      sampling_initial_center=initial_center,
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
+            
+            pdb.set_trace()
 
     if args.qaplots:
         from prospect.io import read_results
