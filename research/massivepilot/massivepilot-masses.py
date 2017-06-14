@@ -348,7 +348,8 @@ def load_model(zred):
     from prospect.models import priors, sedmodel
     
     model_params = []
-    
+
+    # CHANGE AROUND FROM CAT VALUES FOR MASS 5.3e11 ~ 1.53e11 ~ 1.29e11 
     # (Fixed) prior on galaxy redshift.
     model_params.append({'name': 'zred', 'N': 1,
                          'isfree': False,
@@ -360,8 +361,8 @@ def load_model(zred):
     # Priors on stellar mass and stellar metallicity.
     model_params.append({'name': 'mass', 'N': 1,
                          'isfree': True,
-                         'init': 5e11, # changed from 1-5 06/07/17 # C
-                         'init_disp': 5e10, # changed from 1-5 06/07/17 # C 
+                         'init': 5e11, 
+                         'init_disp': 5e10, 
                          'units': r'M_\odot',
                          'prior_function': priors.tophat,
                          'prior_args': {'mini': 1e10, 'maxi': 5e12}})
@@ -377,6 +378,16 @@ def load_model(zred):
     model_params.append({'name': 'mass_units', 'N': 1, # Ben's speed solution.
                         'isfree': False,
                         'init': 'mformed'})
+
+    model_params.append({'name': 'dust2', 'N': 1,
+                        'isfree': True,
+                        'init': 0.35,
+                        'reinit': True,
+                        'init_disp': 0.3,
+                        'units': '',
+                        'prior_function': priors.tophat,
+                        'prior_args': {'mini':0.0, 'maxi':2.0}})
+
     
     # Priors on SFH type (fixed), tau, and age.
     model_params.append({'name': 'sfh', 'N': 1,
@@ -387,7 +398,7 @@ def load_model(zred):
     model_params.append({'name': 'tau', 'N': 1,
                          'isfree': True,
                          'init':      1.0,
-                         'init_disp': 1.5, # changed from 0.5-1.5  06/07/17 # C 
+                         'init_disp': 1.5, 
                          'units': 'Gyr',
                          'prior_function': priors.logarithmic,
                          'prior_args': {'mini': 0.1, 'maxi': 5.0}})
@@ -455,14 +466,17 @@ def main():
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--min-method', default='Nelder-Mead', type=str,
-                        help='Method to use for initial minimization.'
+                        help='Method to use for initial minimization.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
 
-    args = parser.parse_args()    
+    args = parser.parse_args()
 
+    
+    min_method = 'Nelder-Mead'
+    
     if args.build_sample:
 
         # Read the parent redmapper catalog, choose a subset of objects and
@@ -497,9 +511,12 @@ def main():
             'niter': 128, # 512,
             # set the powell convergence criteria 
             'do_powell': True,
-            'ftol': 0.5e-5, 'maxfev': 5000,
+            'ftol': 0.5e-5, 'maxfev': 6000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
             }
+
+        cat = read_parent()
+        
 
         # Load the default SPS model.
         t0 = time()
@@ -524,10 +541,10 @@ def main():
                                    method=args.min_method)
             pdur = time() - t0
 
-            print('What is edge_trunc!')
+            print('What is edge_trunc?')
             initial_center = fitting.reinitialize(
                 min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
-                ) #uncommented edge_trunc 06/07/17 # C
+                )
             initial_prob = -1 * min_results['fun']
             
             print('Minimization {} finished in {} seconds'.format(min_method, pdur))
@@ -577,8 +594,8 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             
-            pdb.set_trace()
-
+          
+            sys.exit(1)
     if args.qaplots:
         from prospect.io import read_results
 
@@ -598,7 +615,8 @@ def main():
             print('Reading {}'.format(h5file))
 
             results, powell_results, model = read_results.results_from(h5file)
-
+            
+            pdb.set_trace()
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
 
@@ -625,8 +643,9 @@ def main():
 
             # Show the last iteration of a randomly selected walker.
             nwalkers, niter = results['run_params']['nwalkers'], results['run_params']['niter']
-            theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
-
+            #theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
+            theta = min_results.x # initial parameters
+            
             mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
 
             # Use the filters to set the wavelength and flux limits...
@@ -666,7 +685,6 @@ def main():
             ax.legend(loc='lower right', fontsize=20)
             fig.savefig(qafile)
 
-            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
