@@ -34,7 +34,60 @@ run, including reconstruction of the model for making posterior samples
 """
 
 #__all__ = ["subtriangle", "param_evol"]
+'''
+def results_from(hfilename, model_file=None, **kwargs):
+    if filename.split('.')[-1] == 'h5':
+        res = read_hdf5(filename, **kwargs)
+        mf_default = filename.replace('_mcmc.h5', '_model')
+    else:
+        with open(filename, 'rb') as rf:
+            res = pickle.load(rf)
+        mf_default = filename.replace('_mcmc', '_model')
 
+    # Now try to read the model object itself from a pickle
+    if model_file is None:
+        mname = mf_default
+    else:
+        mname = model_file
+    param_file = (res['run_params'].get('param_file', ''),
+                  res.get("paramfile_text", ''))
+    model, powell_results = read_model(mname, param_file=param_file, **kwargs)
+    res['model'] = model
+
+    return res, powell_results, model
+
+def read_model(model_file, param_file=('', ''), dangerous=False, **extras):
+    if os.path.exists(model_file):
+        try:
+            with open(model_file, 'rb') as mf:
+                mod = pickle.load(mf)
+        except(AttributeError):
+            # Here one can deal with module and class names that changed
+            with open(model_file, 'rb') as mf:
+                mod = load(mf)
+        except(ImportError):
+            # here we load the parameter file as a module using the stored
+            # source string.  Obviously this is dangerous as it will execute
+            # whatever is in the stored source string.  But it can be used to
+            # recover functions (especially dependcy functions) that are user
+            # defined
+            path, filename = os.path.split(param_file[0])
+            modname = filename.replace('.py', '')
+            if dangerous:
+                from ..models.model_setup import import_module_from_string
+                user_module = import_module_from_string(param_file[1], modname)
+            with open(model_file, 'rb') as mf:
+                mod = pickle.load(mf)
+
+        model = mod['model']
+
+        for k, v in list(model.theta_index.items()):
+            if type(v) is tuple:
+                model.theta_index[k] = slice(*v)
+            powell_results = mod['powell']
+
+    return model, powell_results
+'''
 def model_comp(theta, model, obs, sps, photflag=0, gp=None):
     """Generate and return various components of the total model for a given
     set of parameters.
@@ -349,7 +402,6 @@ def load_model(zred):
     
     model_params = []
 
-    # CHANGE AROUND FROM CAT VALUES FOR MASS 5.3e11 ~ 1.53e11 ~ 1.29e11 
     # (Fixed) prior on galaxy redshift.
     model_params.append({'name': 'zred', 'N': 1,
                          'isfree': False,
@@ -361,8 +413,8 @@ def load_model(zred):
     # Priors on stellar mass and stellar metallicity.
     model_params.append({'name': 'mass', 'N': 1,
                          'isfree': True,
-                         'init': 5e11, 
-                         'init_disp': 5e10, 
+                         'init': 2.7e11, 
+                         'init_disp': 1e10, 
                          'units': r'M_\odot',
                          'prior_function': priors.tophat,
                          'prior_args': {'mini': 1e10, 'maxi': 5e12}})
@@ -594,14 +646,14 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             
-          
-            sys.exit(1)
+            
+            
     if args.qaplots:
         from prospect.io import read_results
 
         # Load the default SPS model.
         t0 = time()
-        print('Do we really need to do this here???  Note: hard-coding zcontinuous!')
+        print('Note: hard-coding zcontinuous!')
         sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
         print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
 
@@ -611,12 +663,13 @@ def main():
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
             # Grab the emcee / prospector outputs.
-            h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
+            #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
+            h5file = os.path.join( datadir(), 'test_{}_mcmc.h5'.format(objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, powell_results, model = read_results.results_from(h5file)
-            
+            results, powell_results, model = read_results.results_from(h5file, model_file=None)
             pdb.set_trace()
+            
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
 
