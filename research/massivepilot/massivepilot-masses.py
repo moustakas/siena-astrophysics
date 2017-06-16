@@ -162,9 +162,7 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None, chains=None
     try:
         parnames = np.array(sample_results['theta_labels'])
     except(KeyError):
-        print('FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        parnames = np.array(['Bob1', 'Bob2', 'Bob3'])
-        #parnames = np.array(sample_results['model'].theta_labels())
+        parnames = np.array(sample_results['model'].theta_labels())
 
     # logify mass
     if 'mass' in parnames:
@@ -242,9 +240,7 @@ def subtriangle(sample_results, outname=None, showpars=None,
     try:
         parnames = np.array(sample_results['theta_labels'])
     except(KeyError):
-        #parnames = np.array(sample_results['model'].theta_labels())
-        print('FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        parnames = np.array(['Bob1', 'Bob2', 'Bob3'])
+        parnames = np.array(sample_results['model'].theta_labels())
 
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
@@ -378,15 +374,20 @@ def getobs(cat):
     obs['spectrum'] = None
     obs['unc'] = None
 
-    # Input redshift.
-    obs['zred'] = cat['Z']
+    # Use initial values based on the iSEDfit results.
+    obs['zred'] = cat['Z'] # redshift
+    obs['mass'] = 10**cat['MSTAR'] # stellar mass
+    obs['logzsol'] = np.log10(cat['ZMETAL']) # stellar metallicity
+    obs['tage'] = cat['AGE']  # age
+    obs['tau'] = cat['TAU']   # tau (for a delayed SFH)
+    obs['dust2'] = cat['AV'] * cat['MU'] # diffuse dust attenuation
 
     # Additional informational keys.
     obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
 
-def load_model(zred):
+def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     """Initialize the priors on each free and fixed parameter.
 
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
@@ -413,33 +414,33 @@ def load_model(zred):
     # Priors on stellar mass and stellar metallicity.
     model_params.append({'name': 'mass', 'N': 1,
                          'isfree': True,
-                         'init': 2.7e11, 
-                         'init_disp': 1e10, 
+                         'init':      mass, 
+                         'init_disp': 5e11, 
                          'units': r'M_\odot',
                          'prior_function': priors.tophat,
-                         'prior_args': {'mini': 1e10, 'maxi': 5e12}})
+                         'prior_args': {'mini': 1e9, 'maxi': 1e13}})
 
     model_params.append({'name': 'logzsol', 'N': 1,
                          'isfree': False,
-                         'init': -0.3,
-                         'init_disp': 0.3,
+                         'init': logzsol,
+                         'init_disp': 0.3, # dex
                          'units': r'$\log (Z/Z_\odot)$',
                          'prior_function': priors.tophat,
-                         'prior_args': {'mini':-1, 'maxi':0.19}})
+                         'prior_args': {'mini': -1.0, 'maxi': 0.19}})
 
     model_params.append({'name': 'mass_units', 'N': 1, # Ben's speed solution.
                         'isfree': False,
                         'init': 'mformed'})
 
+    # Priors on dust.
     model_params.append({'name': 'dust2', 'N': 1,
-                        'isfree': True,
-                        'init': 0.35,
-                        'reinit': True,
+                        'isfree': False,
+                        'init':     dust2,
+                        'reinit':   True,
                         'init_disp': 0.3,
                         'units': '',
                         'prior_function': priors.tophat,
-                        'prior_args': {'mini':0.0, 'maxi':2.0}})
-
+                        'prior_args': {'mini': 0.0, 'maxi': 2.0}})
     
     # Priors on SFH type (fixed), tau, and age.
     model_params.append({'name': 'sfh', 'N': 1,
@@ -449,19 +450,24 @@ def load_model(zred):
 
     model_params.append({'name': 'tau', 'N': 1,
                          'isfree': True,
-                         'init':      1.0,
-                         'init_disp': 1.5, 
+                         'init':      tau,
+                         'init_disp': 1.0,
                          'units': 'Gyr',
-                         'prior_function': priors.logarithmic,
-                         'prior_args': {'mini': 0.1, 'maxi': 5.0}})
+                         #'prior_function': priors.logarithmic,
+                         #'prior_args': {'mini': 0.1, 'maxi': 5.0}})
+                         'prior_function': priors.tophat,
+                         'prior_args': {'mini': 0.01, 'maxi': 10.0}})
 
-    model_params.append({'name': 'tage', 'N': 1,
-                        'isfree': True,
-                        'init':      10.0,
-                        'init_disp':  3.0,
-                        'units': 'Gyr',
-                        'prior_function': priors.tophat,
-                        'prior_args': {'mini': 0.5, 'maxi': 14.0}})
+    model_params.append( {
+        'name':   'tage',
+        'N':       1,
+        'isfree':    True,
+        'init':      tage,
+        'init_disp':  3.0,
+        'units':       'Gyr',
+        'prior_function': priors.tophat,
+        'prior_args': {'mini': 0.5, 'maxi': 15.0}
+        } )
     
     return sedmodel.SedModel(model_params)
 
@@ -517,7 +523,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
-    parser.add_argument('--min-method', default='Nelder-Mead', type=str,
+    parser.add_argument('--min-method', default='Powell', type=str,
                         help='Method to use for initial minimization.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
@@ -526,9 +532,6 @@ def main():
 
     args = parser.parse_args()
 
-    
-    min_method = 'Nelder-Mead'
-    
     if args.build_sample:
 
         # Read the parent redmapper catalog, choose a subset of objects and
@@ -537,14 +540,14 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = [3, 4, 5]
+        these = [500, 600, 700]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
 
         outfile = os.path.join(datadir(), 'massivepilot-sample.fits')
         print('Writing {}'.format(outfile))
-        fitsio.write(outfile, out)
-        
+        fitsio.write(outfile, out, clobber=True)
+
     if args.do_fit:
         import h5py
         import emcee
@@ -563,12 +566,11 @@ def main():
             'niter': 128, # 512,
             # set the powell convergence criteria 
             'do_powell': True,
-            'ftol': 0.5e-5, 'maxfev': 6000,
+            #'ftol': 0.5e-5, 'maxfev': 6000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
             }
 
         cat = read_parent()
-        
 
         # Load the default SPS model.
         t0 = time()
@@ -583,26 +585,33 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(obs['zred'])
+            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
+                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
-            initial_theta = model.rectify_theta(model.initial_theta) # initial parameters
-            
-            t0 = time()
-            min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
-                                   method=args.min_method)
-            pdur = time() - t0
+            initial_theta = model.rectify_theta(model.initial_theta)
 
-            print('What is edge_trunc?')
-            initial_center = fitting.reinitialize(
-                min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
-                )
-            initial_prob = -1 * min_results['fun']
-            
-            print('Minimization {} finished in {} seconds'.format(min_method, pdur))
-            print('best {0} guess: {1}'.format(min_method, initial_center))
-            print('best {0} lnp: {1}'.format(min_method, initial_prob))
-            
+            print('Skipping initial Powell minimization because it borks.')
+            if True:
+                t0 = time()
+                min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
+                                       method=args.min_method)
+                pdur = time() - t0
+
+                print('What is edge_trunc?')
+                initial_center = fitting.reinitialize(
+                    min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
+                    )
+                initial_prob = -1 * min_results['fun']
+                
+                print('Minimization {} finished in {} seconds'.format(args.min_method, pdur))
+                print('best {0} guess: {1}'.format(args.min_method, initial_center))
+                print('best {0} lnp: {1}'.format(args.min_method, initial_prob))
+            else:
+                min_results, pdur = None, None
+                initial_center = initial_theta.copy()
+                initial_prob = lnprobfn(initial_center, model, obs, sps)
+
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
             if os.path.isfile(hfilename):
@@ -610,6 +619,7 @@ def main():
             
             hfile = h5py.File(hfilename, 'a')
             print('Writing to file {}'.format(hfilename))
+
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
             
@@ -618,18 +628,14 @@ def main():
             sys.stdout = fnull
 
             tstart = time()
-            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model,
-                                            threads=args.threads, 
-                                            initial_prob=initial_prob,
-                                            hdf5=hfile, nwalkers=run_params.get('nwalkers'),
-                                            nburn=run_params.get('nburn'),
-                                            niter=run_params.get('niter'), 
-                                            postargs=(model, obs, sps))
+            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, threads=args.threads, 
+                                            initial_prob=initial_prob, hdf5=hfile,
+                                            nwalkers=run_params.get('nwalkers'), nburn=run_params.get('nburn'),
+                                            niter=run_params.get('niter'), postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
 
             sys.stdout = fout
-
             print('done emcee in {}s'.format(edur))
             
             # Write out more.
@@ -646,7 +652,7 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             
-            
+            pdb.set_trace()
             
     if args.qaplots:
         from prospect.io import read_results
@@ -667,8 +673,7 @@ def main():
             h5file = os.path.join( datadir(), 'test_{}_mcmc.h5'.format(objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, powell_results, model = read_results.results_from(h5file, model_file=None)
-            pdb.set_trace()
+            results, min_results, model = read_results.results_from(h5file, model_file=None)
             
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
@@ -684,7 +689,6 @@ def main():
             # Figure 2: Generate a corner/triangle plot of the free parameters.
             params = model.free_params
             nparams = len(params)
-            #theta_truth = np.array([results['run_params'][pp] for pp in params])
 
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
@@ -696,8 +700,11 @@ def main():
 
             # Show the last iteration of a randomly selected walker.
             nwalkers, niter = results['run_params']['nwalkers'], results['run_params']['niter']
-            #theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
-            theta = min_results.x # initial parameters
+            if False:
+                theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
+            else:
+                print('Plotting based on Powell!!!')
+                theta = min_results.x # initial parameters
             
             mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
 
@@ -737,6 +744,8 @@ def main():
             ax.set_ylim([ymin, ymax])
             ax.legend(loc='lower right', fontsize=20)
             fig.savefig(qafile)
+
+            pdb.set_trace()
 
 
 if __name__ == "__main__":
