@@ -34,60 +34,6 @@ run, including reconstruction of the model for making posterior samples
 """
 
 #__all__ = ["subtriangle", "param_evol"]
-'''
-def results_from(hfilename, model_file=None, **kwargs):
-    if filename.split('.')[-1] == 'h5':
-        res = read_hdf5(filename, **kwargs)
-        mf_default = filename.replace('_mcmc.h5', '_model')
-    else:
-        with open(filename, 'rb') as rf:
-            res = pickle.load(rf)
-        mf_default = filename.replace('_mcmc', '_model')
-
-    # Now try to read the model object itself from a pickle
-    if model_file is None:
-        mname = mf_default
-    else:
-        mname = model_file
-    param_file = (res['run_params'].get('param_file', ''),
-                  res.get("paramfile_text", ''))
-    model, powell_results = read_model(mname, param_file=param_file, **kwargs)
-    res['model'] = model
-
-    return res, powell_results, model
-
-def read_model(model_file, param_file=('', ''), dangerous=False, **extras):
-    if os.path.exists(model_file):
-        try:
-            with open(model_file, 'rb') as mf:
-                mod = pickle.load(mf)
-        except(AttributeError):
-            # Here one can deal with module and class names that changed
-            with open(model_file, 'rb') as mf:
-                mod = load(mf)
-        except(ImportError):
-            # here we load the parameter file as a module using the stored
-            # source string.  Obviously this is dangerous as it will execute
-            # whatever is in the stored source string.  But it can be used to
-            # recover functions (especially dependcy functions) that are user
-            # defined
-            path, filename = os.path.split(param_file[0])
-            modname = filename.replace('.py', '')
-            if dangerous:
-                from ..models.model_setup import import_module_from_string
-                user_module = import_module_from_string(param_file[1], modname)
-            with open(model_file, 'rb') as mf:
-                mod = pickle.load(mf)
-
-        model = mod['model']
-
-        for k, v in list(model.theta_index.items()):
-            if type(v) is tuple:
-                model.theta_index[k] = slice(*v)
-            powell_results = mod['powell']
-
-    return model, powell_results
-'''
 def model_comp(theta, model, obs, sps, photflag=0, gp=None):
     """Generate and return various components of the total model for a given
     set of parameters.
@@ -652,10 +598,29 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             
-            pdb.set_trace()
+            
             
     if args.qaplots:
+        
         from prospect.io import read_results
+        import h5py
+        from matplotlib.font_manager import FontProperties
+        from matplotlib import gridspec
+        plt.rcParams.update({'xtick.major.pad': '7.0'})
+        plt.rcParams.update({'xtick.major.size': '7.5'})
+        plt.rcParams.update({'xtick.major.width': '1.5'})
+        plt.rcParams.update({'xtick.minor.pad': '7.0'})
+        plt.rcParams.update({'xtick.minor.size': '3.5'})
+        plt.rcParams.update({'xtick.minor.width': '1.0'})
+        plt.rcParams.update({'ytick.major.pad': '7.0'})
+        plt.rcParams.update({'ytick.major.size': '7.5'})
+        plt.rcParams.update({'ytick.major.width': '1.5'})
+        plt.rcParams.update({'ytick.minor.pad': '7.0'})
+        plt.rcParams.update({'ytick.minor.size': '3.5'})
+        plt.rcParams.update({'ytick.minor.width': '1.0'})
+        plt.rcParams.update({'xtick.color': 'k'})
+        plt.rcParams.update({'ytick.color': 'k'})
+        plt.rcParams.update({'font.size': 30})
 
         # Load the default SPS model.
         t0 = time()
@@ -684,6 +649,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
             print('Generating {}'.format(qafile))
             fig = param_evol(results, figsize=(20, 10), chains=chains)
+            fig.title('Minimization Chains')
             fig.savefig(qafile)
 
             # Figure 2: Generate a corner/triangle plot of the free parameters.
@@ -692,9 +658,12 @@ def main():
 
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
+            fig.title('Corners')
             fig = subtriangle(results, start=0, thin=5, truths=None,
                               fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
             fig.savefig(qafile)
+
+        
 
             # Figure 3: Generate the best-fitting SED.
 
@@ -719,6 +688,7 @@ def main():
 
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
+            fig.title('SED Best Fit')
             fig, ax = plt.subplots(figsize=(16, 8))
 
             # Plot the filter curves...
