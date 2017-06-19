@@ -380,7 +380,7 @@ def getobs(cat):
     obs['logzsol'] = np.log10(cat['ZMETAL']) # stellar metallicity
     obs['tage'] = cat['AGE']  # age
     obs['tau'] = cat['TAU']   # tau (for a delayed SFH)
-    obs['dust2'] = cat['AV'] * cat['MU'] # diffuse dust attenuation
+    obs['dust2'] = 0.05
 
     # Additional informational keys.
     obs['isedfit_id'] = cat['ISEDFIT_ID']
@@ -451,12 +451,12 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     model_params.append({'name': 'tau', 'N': 1,
                          'isfree': True,
                          'init':      tau,
-                         'init_disp': 1.0,
+                         'init_disp': 10.0,
                          'units': 'Gyr',
-                         #'prior_function': priors.logarithmic,
-                         #'prior_args': {'mini': 0.1, 'maxi': 5.0}})
-                         'prior_function': priors.tophat,
-                         'prior_args': {'mini': 0.01, 'maxi': 10.0}})
+                         'prior_function': priors.logarithmic,
+                         'prior_args': {'mini': 0.1, 'maxi': 5.0}})
+                         #'prior_function': priors.tophat,
+                         #'prior_args': {'mini': 0.01, 'maxi': 10.0}})
 
     model_params.append( {
         'name':   'tage',
@@ -591,8 +591,7 @@ def main():
             # Get close to the right answer doing a simple minimization.
             initial_theta = model.rectify_theta(model.initial_theta)
 
-            print('Skipping initial Powell minimization because it borks.')
-            if True:
+            if False:
                 t0 = time()
                 min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
                                        method=args.min_method)
@@ -608,6 +607,7 @@ def main():
                 print('best {0} guess: {1}'.format(args.min_method, initial_center))
                 print('best {0} lnp: {1}'.format(args.min_method, initial_prob))
             else:
+                print('Skipping initial Powell minimization because it borks.')
                 min_results, pdur = None, None
                 initial_center = initial_theta.copy()
                 initial_prob = lnprobfn(initial_center, model, obs, sps)
@@ -703,13 +703,15 @@ def main():
             if False:
                 theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
             else:
-                print('Plotting based on Powell!!!')
-                theta = min_results.x # initial parameters
+                #print('Plotting based on Powell!!!')
+                #theta = min_results.x # initial parameters
+                theta = results['model'].initial_theta
+                print(theta)
             
             mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
 
             # Use the filters to set the wavelength and flux limits...
-            wspec = sps.csp.wavelengths # spectral wavelengths
+            wspec = sps.csp.wavelengths * (1 + results['obs']['zred']) # spectral wavelengths
             wphot = np.array([f.wave_effective for f in results['obs']['filters']])
             wphot_width = np.array([f.effective_width for f in results['obs']['filters']])
 
@@ -730,8 +732,8 @@ def main():
                     t = 0.1*(ymax-ymin)*t + ymin
                     ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
                     
-            ax.loglog(wspec, mspec, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-            ax.errorbar(wphot, mphot, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none',
+            ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
+            ax.errorbar(wphot, mphot / mextra, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none',
                         markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
             ax.errorbar(wphot, results['obs']['maggies'], yerr=results['obs']['maggies_unc'],
                         ecolor='red', marker='o', ls='', lw=3, markersize=10, markerfacecolor='none',
