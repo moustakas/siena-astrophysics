@@ -575,9 +575,9 @@ def main():
 
             tstart = time()
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, threads=args.threads, 
-                                            initial_prob=initial_prob, hdf5=hfile,
-                                            nwalkers=run_params.get('nwalkers'), nburn=run_params.get('nburn'),
-                                            niter=run_params.get('niter'), postargs=(model, obs, sps))
+                                initial_prob=initial_prob, hdf5=hfile, nwalkers=run_params.get('nwalkers'),
+                                nburn=run_params.get('nburn'), niter=run_params.get('niter'),
+                                postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
 
@@ -649,7 +649,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
             print('Generating {}'.format(qafile))
             fig = param_evol(results, figsize=(20, 10), chains=chains)
-            fig.title('Minimization Chains')
+            #fig.title('Minimization Chains')
             fig.savefig(qafile)
 
             # Figure 2: Generate a corner/triangle plot of the free parameters.
@@ -658,7 +658,7 @@ def main():
 
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
-            fig.title('Corners')
+            #fig.title('Corners')
             fig = subtriangle(results, start=0, thin=5, truths=None,
                               fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
             fig.savefig(qafile)
@@ -674,6 +674,7 @@ def main():
             else:
                 #print('Plotting based on Powell!!!')
                 #theta = min_results.x # initial parameters
+                pdb.set_trace()
                 theta = results['model'].initial_theta
                 print(theta)
             
@@ -690,7 +691,7 @@ def main():
 
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
-            fig.title('SED Best Fit')
+            #fig.title('SED Best Fit')
             fig, ax = plt.subplots(figsize=(16, 8))
 
             # Plot the filter curves...
