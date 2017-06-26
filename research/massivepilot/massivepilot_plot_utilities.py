@@ -1,10 +1,8 @@
 import sys, os
 import numpy as np
+import matplotlib.pyplot as plt
 
-try:
-    from sedpy.observate import load_filters
-except:
-    pass
+from sedpy.observate import load_filters
 
 """Convenience functions for reading and reconstructing results from a fitting
 run, including reconstruction of the model for making posterior samples
@@ -12,6 +10,21 @@ run, including reconstruction of the model for making posterior samples
 
 __all__ = ["subtriangle", "param_evol"]
 
+#plt.rcParams.update({'xtick.major.pad': '7.0'})
+#plt.rcParams.update({'xtick.major.size': '7.5'})
+#plt.rcParams.update({'xtick.major.width': '1.5'})
+#plt.rcParams.update({'xtick.minor.pad': '7.0'})
+#plt.rcParams.update({'xtick.minor.size': '3.5'})
+#plt.rcParams.update({'xtick.minor.width': '1.0'})
+#plt.rcParams.update({'ytick.major.pad': '7.0'})
+#plt.rcParams.update({'ytick.major.size': '7.5'})
+#plt.rcParams.update({'ytick.major.width': '1.5'})
+#plt.rcParams.update({'ytick.minor.pad': '7.0'})
+#plt.rcParams.update({'ytick.minor.size': '3.5'})
+#plt.rcParams.update({'ytick.minor.width': '1.0'})
+#plt.rcParams.update({'xtick.color': 'k'})
+#plt.rcParams.update({'ytick.color': 'k'})
+#plt.rcParams.update({'font.size': 30})
 
 def model_comp(theta, model, obs, sps, photflag=0, gp=None):
     """Generate and return various components of the total model for a given
@@ -49,7 +62,6 @@ def model_comp(theta, model, obs, sps, photflag=0, gp=None):
 
     return sed, cal, delta, mask, wave
 
-
 def param_evol(sample_results, showpars=None, start=0, figsize=None, chains=None, **plot_kwargs):
     """Plot the evolution of each parameter value with iteration #, for each
     walker in the chain.
@@ -84,10 +96,8 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None, chains=None
         chain = sample_results['chain'][chains, start:, :]
         lnprob = sample_results['lnprobability'][:, start:]
     nwalk = chain.shape[0]
-    try:
-        parnames = np.array(sample_results['theta_labels'])
-    except(KeyError):
-        parnames = np.array(sample_results['model'].theta_labels())
+    
+    parnames = np.array(sample_results['theta_labels'])
 
     # logify mass
     if 'mass' in parnames:
@@ -155,17 +165,13 @@ def subtriangle(sample_results, outname=None, showpars=None,
 
     :param truths:
         List of truth values for the chosen parameters
+    
     """
-    try:
-        import triangle
-    except(ImportError):
-        import corner as triangle
+    import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
-    try:
-        parnames = np.array(sample_results['theta_labels'])
-    except(KeyError):
-        parnames = np.array(sample_results['model'].theta_labels())
+    parnames = np.array(sample_results['theta_labels'])
+    
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
                                   flatchain.shape[2])
@@ -184,19 +190,14 @@ def subtriangle(sample_results, outname=None, showpars=None,
         parnames = parnames[ind_show]
     if trim_outliers is not None:
         trim_outliers = len(parnames) * [trim_outliers]
-    try:
-        fig = triangle.corner(flatchain, labels=parnames, truths=truths,  verbose=False,
-                              quantiles=[0.16, 0.5, 0.84], range=trim_outliers, **kwargs)
-    except:
-        fig = triangle.corner(flatchain, labels=parnames, truths=truths,  verbose=False,
-                              quantiles=[0.16, 0.5, 0.84], range=trim_outliers, **kwargs)
+
+    fig = triangle.corner(flatchain, labels=parnames, truths=truths,  verbose=False,
+                          quantiles=[0.16, 0.5, 0.84], range=trim_outliers, **kwargs)
 
     if outname is not None:
         fig.savefig('{0}.triangle.png'.format(outname))
-        #pl.close(fig)
     else:
         return fig
-
 
 def obsdict(inobs, photflag):
     """Return a dictionary of observational data, generated depending on
@@ -216,28 +217,25 @@ def obsdict(inobs, photflag):
 
     return obs, outn, marker
 
-# All this because scipy changed the name of one class, which
-# shouldn't even be a class.
+## All this because scipy changed the name of one class, which
+## shouldn't even be a class.
+#
+#renametable = {
+#    'Result': 'OptimizeResult',
+#    }
+#
+#def mapname(name):
+#    if name in renametable:
+#        return renametable[name]
+#    return name
+#
+#def mapped_load_global(self):
+#    module = mapname(self.readline()[:-1])
+#    name = mapname(self.readline()[:-1])
+#    klass = self.find_class(module, name)
+#    self.append(klass)
 
-renametable = {
-    'Result': 'OptimizeResult',
-    }
-
-
-def mapname(name):
-    if name in renametable:
-        return renametable[name]
-    return name
-
-
-def mapped_load_global(self):
-    module = mapname(self.readline()[:-1])
-    name = mapname(self.readline()[:-1])
-    klass = self.find_class(module, name)
-    self.append(klass)
-
-
-def load(file):
-    unpickler = pickle.Unpickler(file)
-    unpickler.dispatch[pickle.GLOBAL] = mapped_load_global
-    return unpickler.load()
+#def load(file):
+#    unpickler = pickle.Unpickler(file)
+#    unpickler.dispatch[pickle.GLOBAL] = mapped_load_global
+#    return unpickler.load()

@@ -259,7 +259,7 @@ def main():
             'nburn': [32, 32, 64], 
             'niter': 128, # 512,
             # set the powell convergence criteria 
-            'do_powell': True,
+            'do_powell': False,
             #'ftol': 0.5e-5, 'maxfev': 6000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
             }
@@ -347,33 +347,14 @@ def main():
                                      post_burnin_prob=burn_prob0)
             
 
-    if args.qaplots:
-        
-        from prospect.io import read_results
+    if args.qaplots:        
         import h5py
-        from massivepilot_plot_utilities
+        from prospect.io import read_results
+        from massivepilot_plot_utilities import param_evol, subtriangle
 
+        import seaborn as sns
+        sns.set(style='white', font_scale=1.8, palette='deep')
         
-        from matplotlib.font_manager import FontProperties
-        from matplotlib import gridspec
-
-        
-        plt.rcParams.update({'xtick.major.pad': '7.0'})
-        plt.rcParams.update({'xtick.major.size': '7.5'})
-        plt.rcParams.update({'xtick.major.width': '1.5'})
-        plt.rcParams.update({'xtick.minor.pad': '7.0'})
-        plt.rcParams.update({'xtick.minor.size': '3.5'})
-        plt.rcParams.update({'xtick.minor.width': '1.0'})
-        plt.rcParams.update({'ytick.major.pad': '7.0'})
-        plt.rcParams.update({'ytick.major.size': '7.5'})
-        plt.rcParams.update({'ytick.major.width': '1.5'})
-        plt.rcParams.update({'ytick.minor.pad': '7.0'})
-        plt.rcParams.update({'ytick.minor.size': '3.5'})
-        plt.rcParams.update({'ytick.minor.width': '1.0'})
-        plt.rcParams.update({'xtick.color': 'k'})
-        plt.rcParams.update({'ytick.color': 'k'})
-        plt.rcParams.update({'font.size': 30})
-
         # Load the default SPS model.
         t0 = time()
         print('Note: hard-coding zcontinuous!')
@@ -415,8 +396,6 @@ def main():
                               fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
             fig.savefig(qafile)
 
-        
-
             # Figure 3: Generate the best-fitting SED.
 
             # Show the last iteration of a randomly selected walker.
@@ -426,52 +405,59 @@ def main():
             else:
                 #print('Plotting based on Powell!!!')
                 #theta = min_results.x # initial parameters
-                pdb.set_trace()
                 theta = results['model'].initial_theta
-                print(theta)
             
             mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
+            print(mextra)
 
             # Use the filters to set the wavelength and flux limits...
             wspec = sps.csp.wavelengths * (1 + results['obs']['zred']) # spectral wavelengths
             wphot = np.array([f.wave_effective for f in results['obs']['filters']])
             wphot_width = np.array([f.effective_width for f in results['obs']['filters']])
 
-            xmin, xmax = wphot.min()*0.8, wphot.max()/0.8
+            xmin, xmax = 1000.0, 6E4 
+            #xmin, xmax = wphot.min()*0.6, wphot.max()/0.8
             temp = np.interp(np.linspace(xmin, xmax, 10000), wspec, mspec)
-            ymin, ymax = temp.min()*0.8, temp.max()/0.8
+            ymin, ymax = -0.1, temp.max()/0.6
+            #ymin, ymax = temp.min()*0.8, temp.max()/0.6
 
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
             #fig.title('SED Best Fit')
-            fig, ax = plt.subplots(figsize=(16, 8))
+            fig, ax = plt.subplots(figsize=(12, 8))
 
             # Plot the filter curves...
-            for ff in range(len(wphot)):
-                f = results['obs']['filters'][ff]
-                w, t = f.wavelength.copy(), f.transmission.copy()
-                while t.max() > 1:
-                    t /= 10.0
-                    t = 0.1*(ymax-ymin)*t + ymin
-                    ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
+            if False:
+                for ff in range(len(wphot)):
+                    f = results['obs']['filters'][ff]
+                    w, t = f.wavelength.copy(), f.transmission.copy()
+                    while t.max() > 1:
+                        t /= 10.0
+                        t = 0.1*(ymax-ymin)*t + ymin
+                        ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
+
+            wfactor = 1E-4
+            factor = 10**(0.4*16.4) # maggies --> mJy
+            #factor = 10**(0.4*23.9) # maggies --> microJy
                     
-            ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-            ax.errorbar(wphot, mphot / mextra, marker='s', ls='', lw=3, markersize=10, markerfacecolor='none',
-                        markeredgecolor='blue', markeredgewidth=3, alpha=0.8, label='Model photometry')
-            ax.errorbar(wphot, results['obs']['maggies'], yerr=results['obs']['maggies_unc'],
-                        ecolor='red', marker='o', ls='', lw=3, markersize=10, markerfacecolor='none',
-                        markeredgecolor='red', markeredgewidth=3,
-                        alpha=0.8, label='Observed photometry')
+            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7, label='Model spectrum') # color='navy', 
+            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
+            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='', lw=3, markersize=20,
+                        markerfacecolor='none', markeredgewidth=3, # markeredgecolor='blue', 
+                        alpha=0.8, label='Model photometry')
+            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'], yerr=factor * results['obs']['maggies_unc'],
+                        marker='o', ls='', lw=3, markersize=10, #markerfacecolor='none',
+                        markeredgewidth=3, alpha=0.8, label='Observed photometry')
+                        #ecolor='red', markeredgecolor='red', 
                 
-            ax.set_xlabel('Wavelength [A]')
-            ax.set_ylabel('Flux Density [maggies]')
-            ax.set_xlim([xmin, xmax])
-            ax.set_ylim([ymin, ymax])
-            ax.legend(loc='lower right', fontsize=20)
+            ax.set_xlabel(r'Observed-frame Wavelength (${}$m)'.format('\mu'))
+            ax.set_ylabel('Flux Density (mJy)')
+            ax.set_xlim([wfactor * xmin, wfactor * xmax])
+            ax.set_ylim([ymin, factor * ymax])
+            ax.legend(loc='upper right', fontsize=20)
             fig.savefig(qafile)
 
             pdb.set_trace()
-
 
 if __name__ == "__main__":
     main()
