@@ -598,8 +598,7 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             
-            
-            
+
     if args.qaplots:
         
         from prospect.io import read_results
