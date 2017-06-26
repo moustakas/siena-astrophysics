@@ -6,7 +6,7 @@ Introduction
 ------------
 
 This directory contains code developed by students and faculty at Siena College
-to investigate large-scale structure and the baryonic acoustic oscillations
+to investigate large-scale structure and the baryon acoustic oscillations
 (BAO) feature using the 2-point correlation function.
 
 The only dataset currently supported is the SDSS-III/BOSS Data Release 11 (DR11)

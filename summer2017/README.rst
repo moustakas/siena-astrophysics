@@ -48,6 +48,13 @@ during the first week of your summer research experience.*
 
 .. _`Responsible Conduct of Research`: https://www.citiprogram.org/index.cfm?pageID=154&icat=0&clear=1
 
+Computers and more!
+-------------------
+
+The astrophysics research lab (Roger Bacon 113, ask me for the key code) has
+several computers that you are free to use.  
+
+
 Building your toolkit
 ---------------------
 
@@ -56,9 +63,7 @@ lessons and tutorials from `Software Carpentry`_ on other online resources.
 
 * `The Unix Shell`_
 * `Programming with Python`_
-* `Scipy Lecture Notes`_
 * `Version Control with Git`_
-* `Practical Python for Astronomers`_
 
 Additional resources
 --------------------
@@ -66,11 +71,16 @@ Additional resources
 Some additional resources you may find useful include:
 
 * `The Foundations of Data Science`_
+* `Scipy Lecture Notes`_
+* `Practical Python for Astronomers`_
+* `Python Data Science Handbook`_
 
 Need to add:
 ------------
 
 * Logging into nyx
+* Jupyter notebook daily log
+* explain conda 
 * gitmersion
 * pair coding
 * emacs
@@ -86,3 +96,4 @@ Need to add:
 .. _`The Foundations of Data Science`: https://ds8.gitbooks.io/textbook/content
 .. _`Practical Python for Astronomers`: https://python4astronomers.github.io
 .. _`Scipy Lecture Notes`: http://www.scipy-lectures.org/index.html
+.. _`Python Data Science Handbook`: https://github.com/jakevdp/PythonDataScienceHandbook
