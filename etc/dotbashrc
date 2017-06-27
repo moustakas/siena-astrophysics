@@ -49,7 +49,7 @@ export PIXPROD=dailytest
 # Set up Python
 # export PYTHONPATH=${PYTHONPATH}:${LEGACYPIPE_DIR}/py:${ASTROMETRY_DIR}/lib/python
 
-export PYTHONPATH=${SIENA_ASTROPHYSICS_DIR}/research/massivepilot:$PYTHONPATH
+export PYTHONPATH=${SIENA_ASTROPHYSICS_DIR}/research/redmapper:$PYTHONPATH
 
 ##################################################
 # Personal aliases

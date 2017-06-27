@@ -350,7 +350,7 @@ def main():
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
-        from massivepilot_plot_utilities import param_evol, subtriangle
+        from prospector_plot_utilities import param_evol, subtriangle
 
         import seaborn as sns
         sns.set(style='white', font_scale=1.8, palette='deep')
