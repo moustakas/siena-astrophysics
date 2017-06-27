@@ -10,6 +10,7 @@ import os
 import sys
 import pdb
 import argparse
+import pickle
 from time import time
 
 import numpy as np
@@ -222,6 +223,8 @@ def main():
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
+    parser.add_argument('--remake-sps', action='store_true', help="""Remake (and write out) the
+                           CSPSpecBasis object, otherwise read it from disk.""")
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
 
     args = parser.parse_args()
@@ -261,15 +264,27 @@ def main():
             # set the powell convergence criteria 
             'do_powell': False,
             #'ftol': 0.5e-5, 'maxfev': 6000,
-            'zcontinuous': 1, # interpolate the models in stellar metallicity
+            'compute_vega_mags': False,
+            'vactoair_flag':      True, # use wavelengths in air
+            'zcontinuous': 1,           # interpolate in metallicity
             }
 
-        cat = read_parent()
-
-        # Load the default SPS model.
-        t0 = time()
-        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'], compute_vega_mags=False)
-        print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
+        # Load or generate the default SPS object.
+        spsfile = os.path.join( datadir(), '{}_CSPSpecBasis.pickle'.format(args.prefix) )
+        if os.path.isfile(spsfile) and not args.remake_sps:
+            print('Reading pickled CSPSpecBasis object from {}.'.format(spsfile))
+            sps = pickle.load(open(spsfile, 'rb'))
+        else:
+            t0 = time()
+            print('Initializing the CSPSpecBasis object...')
+            sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
+                               compute_vega_mags=run_params['compute_vega_mags'])
+            print('...took {:.1f} seconds.'.format(time() - t0))
+            sps.params['vactoair_flag'] = run_params['vactoair_flag']
+            sps.update()
+            
+            print('Pickling CSPSpecBasis to file {}.'.format(spsfile))
+            pickle.dump(sps, open(spsfile, 'wb'))
 
         # Read the parent sample and loop on each object.
         cat = read_parent()
@@ -323,9 +338,9 @@ def main():
 
             tstart = time()
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, threads=args.threads, 
-                                initial_prob=initial_prob, hdf5=hfile, nwalkers=run_params.get('nwalkers'),
-                                nburn=run_params.get('nburn'), niter=run_params.get('niter'),
-                                postargs=(model, obs, sps))
+                                            initial_prob=initial_prob, hdf5=hfile, nwalkers=run_params.get('nwalkers'),
+                                            nburn=run_params.get('nburn'), niter=run_params.get('niter'),
+                                            postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
 
