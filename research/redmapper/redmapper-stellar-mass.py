@@ -20,7 +20,7 @@ from prospect.sources import CSPSpecBasis
 
 def datadir():
     """Return the top-level data directory."""
-    return os.path.join(os.getenv('HOME'), 'massivepilot')    
+    return os.path.join(os.getenv('HOME'), 'stellar-mass')    
 
 def read_redmapper():
     """Read the parent redmapper catalog."""
@@ -31,8 +31,8 @@ def read_redmapper():
     return cat
 
 def read_parent():
-    """Read the parent (pilot) massivepilot catalog."""
-    fitsfile = os.path.join(datadir(), 'massivepilot-sample.fits')
+    """Read the parent (pilot) catalog."""
+    fitsfile = os.path.join(datadir(), 'pilot-sample.fits')
     print('Reading {}'.format(fitsfile))
     cat = fitsio.read(fitsfile, ext=1)
     return cat
@@ -238,7 +238,7 @@ def main():
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
 
-        outfile = os.path.join(datadir(), 'massivepilot-sample.fits')
+        outfile = os.path.join(datadir(), 'pilot-sample.fits')
         print('Writing {}'.format(outfile))
         fitsio.write(outfile, out, clobber=True)
 
