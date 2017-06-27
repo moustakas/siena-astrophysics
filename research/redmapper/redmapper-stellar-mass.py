@@ -163,8 +163,9 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'prior_function': priors.tophat,
         'prior_args': {'mini': 0.5, 'maxi': 15.0}
         } )
-    
-    return sedmodel.SedModel(model_params)
+
+    model = sedmodel.SedModel(model_params)
+    return model
 
 def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=False):
     """Define the likelihood function.
@@ -182,19 +183,26 @@ def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=F
         # Generate mean model
         t1 = time()
         try:
+            pdb.set_trace()            
             mu, phot, x = model.mean_model(theta, obs, sps=sps)
         except(ValueError):
             return -np.infty
         d1 = time() - t1
 
         # Noise modeling
-        if spec_noise is not None:
+        if spec_noise:
             spec_noise.update(**model.params)
-        if phot_noise is not None:
+        if phot_noise:
             phot_noise.update(**model.params)
-        vectors = {'spec': mu, 'unc': obs['unc'],
-                   'sed': model._spec, 'cal': model._speccal,
-                   'phot': phot, 'maggies_unc': obs['maggies_unc']}
+
+        vectors = {
+            'spec': mu,
+            'unc': obs['unc'],
+            'sed': model._spec,
+            'cal': model._speccal,
+            'phot': phot,
+            'maggies_unc': obs['maggies_unc']
+            }
 
         # Calculate log-likelihoods
         t2 = time()
@@ -250,7 +258,6 @@ def main():
         import emcee
         from scipy.optimize import minimize
         
-        from prospect.models import model_setup
         from prospect import fitting
         from prospect.io import write_results
 
