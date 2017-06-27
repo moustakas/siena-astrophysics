@@ -88,10 +88,33 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
 
     Args:
-      zred (float): input galaxy redshift.
+      zred (float): input (fixed) galaxy redshift.
+      mass (float): initial stellar mass (Msun)
+      logzsol (float): initial metallicity
+      tage (float): initial age (Gyr)
+      tau (float): initial SFH timescale (Gyr)
+      dust2 (float): initial diffuse dust attenuation (dimensionless optical depth)
 
     Returns:
       sed (prospect.models.sedmodel.SedModel): SED priors and other stuff.
+
+    Notes:
+      FSPS parameters are documented here:
+        http://dan.iel.fm/python-fsps/current/stellarpop_api/#api-reference
+      Some additional parameters that are not used include:
+        * pmetals (if zcontinuous>1 use 3-point smoothing)
+        * dust 1
+        * dust_tesc
+        * dust_index
+        * dust1_index
+        * dust_type
+        * add_dust_emission
+        * duste_umin
+        * ...many other dust parameters...
+        * tpagb_norm_type
+        * add_agb_dust_model
+        * agb_dust
+        * add_neb_emission
 
     """
     from prospect.models import priors, sedmodel
@@ -99,7 +122,8 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     model_params = []
 
     # (Fixed) prior on galaxy redshift.
-    model_params.append({'name': 'zred', 'N': 1,
+    model_params.append({'name': 'zred',
+                         'N': 1,
                          'isfree': False,
                          'init': zred,
                          'units': '',
@@ -107,35 +131,41 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
                          'prior_args': {'mini': 0.0, 'maxi': 4.0}})
     
     # Priors on stellar mass and stellar metallicity.
-    model_params.append({'name': 'mass', 'N': 1,
+    model_params.append({'name': 'mass_units',
+                         'N': 1,
+                         'isfree': False,
+                         'init': 'mformed'})
+
+    model_params.append({'name': 'mass',
+                         'N': 1,
                          'isfree': True,
                          'init':      mass, 
                          'init_disp': 5e11, 
-                         'units': r'M_\odot',
-                         'prior_function': priors.tophat,
-                         'prior_args': {'mini': 1e9, 'maxi': 1e13}})
+                         'units': r'$M_{\odot}$',
+                         'prior_function': priors.LogUniform,
+                         'prior_args': {'mini': 1e8, 'maxi': 1e13}})
 
-    model_params.append({'name': 'logzsol', 'N': 1,
+    model_params.append({'name': 'logzsol',
+                         'N': 1,
                          'isfree': False,
                          'init': logzsol,
                          'init_disp': 0.3, # dex
-                         'units': r'$\log (Z/Z_\odot)$',
+                         'units': r'$\log_{10}\, (Z/Z_\odot)$',
                          'prior_function': priors.tophat,
-                         'prior_args': {'mini': -1.0, 'maxi': 0.19}})
+                         'prior_args': {'mini': -1.5, 'maxi': 0.19}})
 
-    model_params.append({'name': 'mass_units', 'N': 1, # Ben's speed solution.
-                        'isfree': False,
-                        'init': 'mformed'})
-
-    # Priors on dust.
-    model_params.append({'name': 'dust2', 'N': 1,
-                        'isfree': False,
-                        'init':     dust2,
-                        'reinit':   True,
-                        'init_disp': 0.3,
-                        'units': '',
-                        'prior_function': priors.tophat,
-                        'prior_args': {'mini': 0.0, 'maxi': 2.0}})
+    # Priors on dust
+    #   dust2 - diffuse dust optical depth towards all stars at 5500A
+    #   dust1 - extra optical depth towards young stars at 5500A
+    model_params.append({'name': 'dust2',
+                         'N': 1,
+                         'isfree': False,
+                         'init': dust2,
+                         'reinit': True,
+                         'init_disp': 0.3,
+                         'units': '',
+                         'prior_function': priors.tophat,
+                         'prior_args': {'mini': 0.0, 'maxi': 2.0}})
     
     # Priors on SFH type (fixed), tau, and age.
     model_params.append({'name': 'sfh', 'N': 1,
