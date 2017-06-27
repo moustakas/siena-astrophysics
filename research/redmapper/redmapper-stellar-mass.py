@@ -114,7 +114,14 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         * tpagb_norm_type
         * add_agb_dust_model
         * agb_dust
+        * tburst
+        * fburst
+        * fage_burst
         * add_neb_emission
+        * gas_logz
+        * gas_logu
+        * ...calibration parameters...
+        * phot_jitter
 
     """
     from prospect.models import priors, sedmodel
@@ -122,66 +129,90 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     model_params = []
 
     # (Fixed) prior on galaxy redshift.
-    model_params.append({'name': 'zred',
-                         'N': 1,
-                         'isfree': False,
-                         'init': zred,
-                         'units': '',
-                         'prior_function': priors.tophat,
-                         'prior_args': {'mini': 0.0, 'maxi': 4.0}})
+    model_params.append({
+        'name': 'zred',
+        'N': 1,
+        'isfree': False,
+        'init': zred,
+        'units': '',
+        'prior_function': priors.tophat,
+        'prior_args': {'mini': 0.0, 'maxi': 4.0}
+        })
     
     # Priors on stellar mass and stellar metallicity.
-    model_params.append({'name': 'mass_units',
-                         'N': 1,
-                         'isfree': False,
-                         'init': 'mformed'})
+    model_params.append({
+        'name': 'mass_units',
+        'N': 1,
+        'isfree': False,
+        'init': 'mformed'
+        })
 
-    model_params.append({'name': 'mass',
-                         'N': 1,
-                         'isfree': True,
-                         'init':      mass, 
-                         'init_disp': 5e11, 
-                         'units': r'$M_{\odot}$',
-                         'prior_function': priors.LogUniform,
-                         'prior_args': {'mini': 1e8, 'maxi': 1e13}})
+    model_params.append({
+        'name': 'mass',
+        'N': 1,
+        'isfree': True,
+        'init':      mass, 
+        'init_disp': 5e11, 
+        'units': r'$M_{\odot}$',
+        'prior_function': priors.LogUniform,
+        'prior_args': {'mini': 1e8, 'maxi': 1e13}
+        })
 
-    model_params.append({'name': 'logzsol',
-                         'N': 1,
-                         'isfree': False,
-                         'init': logzsol,
-                         'init_disp': 0.3, # dex
-                         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-                         'prior_function': priors.tophat,
-                         'prior_args': {'mini': -1.5, 'maxi': 0.19}})
+    model_params.append({
+        'name': 'logzsol',
+        'N': 1,
+        'isfree': False,
+        'init': logzsol,
+        'init_disp': 0.3, # dex
+        'units': r'$\log_{10}\, (Z/Z_\odot)$',
+        'prior_function': priors.tophat,
+        'prior_args': {'mini': -1.5, 'maxi': 0.19}
+        })
 
     # Priors on dust
     #   dust2 - diffuse dust optical depth towards all stars at 5500A
     #   dust1 - extra optical depth towards young stars at 5500A
-    model_params.append({'name': 'dust2',
-                         'N': 1,
-                         'isfree': False,
-                         'init': dust2,
-                         'reinit': True,
-                         'init_disp': 0.3,
-                         'units': '',
-                         'prior_function': priors.tophat,
-                         'prior_args': {'mini': 0.0, 'maxi': 2.0}})
+    model_params.append({
+        'name': 'dust2',
+        'N': 1,
+        'isfree': False,
+        'init': dust2,
+        'reinit': True,
+        'init_disp': 0.3,
+        'units': '',
+        'prior_function': priors.tophat,
+        'prior_args': {'mini': 0.0, 'maxi': 2.0}
+        })
     
-    # Priors on SFH type (fixed), tau, and age.
-    model_params.append({'name': 'sfh', 'N': 1,
-                         'isfree': False,
-                         'init':   4, # 4 = delayed tau model
-                         'units': 'type'})
+    # Prior on the IMF.
+    model_params.append({
+        'name': 'imf_type',
+        'N': 1,
+        'isfree': False,
+        'init':   1, # 1 - Chabrier
+        'units': ''
+        })
 
-    model_params.append({'name': 'tau', 'N': 1,
-                         'isfree': True,
-                         'init':      tau,
-                         'init_disp': 10.0,
-                         'units': 'Gyr',
-                         'prior_function': priors.logarithmic,
-                         'prior_args': {'mini': 0.1, 'maxi': 5.0}})
-                         #'prior_function': priors.tophat,
-                         #'prior_args': {'mini': 0.01, 'maxi': 10.0}})
+    # Priors on SFH type (fixed), tau, and age.
+    model_params.append({
+        'name': 'sfh',
+        'N': 1,
+        'isfree': False,
+        'init':   4, # 4 = delayed tau model
+        'units': 'type'
+        })
+
+    model_params.append({
+        'name': 'tau',
+        'N': 1,
+        'isfree': True,
+        'init': tau,
+        'init_disp': 1.0,
+        'units': 'Gyr',
+        'prior_function': priors.LogUniform
+        'prior_args': {'mini': 0.1, 'maxi': 10.0}})
+    #'prior_function': priors.tophat,
+    #'prior_args': {'mini': 0.01, 'maxi': 10.0}})
 
     model_params.append( {
         'name':   'tage',
