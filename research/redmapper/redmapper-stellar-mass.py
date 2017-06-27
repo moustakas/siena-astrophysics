@@ -183,8 +183,7 @@ def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=F
         # Generate mean model
         t1 = time()
         try:
-            pdb.set_trace()            
-            mu, phot, x = model.mean_model(theta, obs, sps=sps)
+            model_spec, model_phot, model_extras = model.mean_model(theta, obs, sps=sps)
         except(ValueError):
             return -np.infty
         d1 = time() - t1
@@ -196,18 +195,18 @@ def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=F
             phot_noise.update(**model.params)
 
         vectors = {
-            'spec': mu,
-            'unc': obs['unc'],
-            'sed': model._spec,
-            'cal': model._speccal,
-            'phot': phot,
-            'maggies_unc': obs['maggies_unc']
+            'spec': model_spec,    # model spectrum
+            'phot': model_phot,    # model photometry
+            'sed': model._spec,    # object spectrum
+            #'unc': obs['unc'],     # object uncertainty spectrum
+            'cal': model._speccal, # object calibration spectrum
+            #'maggies_unc': obs['maggies_unc'] # object photometric uncertainty
             }
 
         # Calculate log-likelihoods
         t2 = time()
-        lnp_spec = lnlike_spec(mu, obs=obs, spec_noise=spec_noise, **vectors)
-        lnp_phot = lnlike_phot(phot, obs=obs, phot_noise=phot_noise, **vectors)
+        lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
+        lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
         d2 = time() - t2
         if verbose:
             write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
@@ -226,19 +225,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
-    parser.add_argument('--min-method', default='Powell', type=str,
-                        help='Method to use for initial minimization.')
+    parser.add_argument('--min-method', default='LM', type=str,
+                        help='Method to use for initial minimization (choices are LM, Powell, and NM).')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--remake-sps', action='store_true', help="""Remake (and write out) the
                            CSPSpecBasis object, otherwise read it from disk.""")
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
-
     args = parser.parse_args()
 
     if args.build_sample:
-
         # Read the parent redmapper catalog, choose a subset of objects and
         # write out.
         cat = read_redmapper()
@@ -257,20 +254,25 @@ def main():
         import h5py
         import emcee
         from scipy.optimize import minimize
-        
         from prospect import fitting
         from prospect.io import write_results
 
         # Specify the run parameters.
         run_params = {
-            'prefix': args.prefix,
-            'debug':   False,
-            'nwalkers': 16, # 128,
+            'prefix':   args.prefix,
+            'verbose':  args.verbose
+            'debug':    False,
+            # initial optimization parameters
+            'do_levenburg': True,
+            # emcee fitting parameters
+            'nwalkers': 128,
             'nburn': [32, 32, 64], 
-            'niter': 128, # 512,
-            # set the powell convergence criteria 
-            'do_powell': False,
-            #'ftol': 0.5e-5, 'maxfev': 6000,
+            'niter': 512,
+            # Nestle fitting parameters
+            'nestle_method': 'single',
+            'nestle_npoints': 200,
+            'nestle_maxcall': int(1e6),
+            # SPS initialization parameters
             'compute_vega_mags': False,
             'vactoair_flag':      True, # use wavelengths in air
             'zcontinuous': 1,           # interpolate in metallicity
@@ -278,7 +280,8 @@ def main():
 
         # Load or generate the default SPS object.
         spsfile = os.path.join( datadir(), '{}_CSPSpecBasis.pickle'.format(args.prefix) )
-        if os.path.isfile(spsfile) and not args.remake_sps:
+        if False:
+        #if os.path.isfile(spsfile) and not args.remake_sps:
             print('Reading pickled CSPSpecBasis object from {}.'.format(spsfile))
             sps = pickle.load(open(spsfile, 'rb'))
         else:
