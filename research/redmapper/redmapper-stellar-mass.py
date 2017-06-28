@@ -356,7 +356,7 @@ def halt(message):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
+    parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--seed', type=int, default=None, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
@@ -365,6 +365,41 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
 
+    # Specify the run parameters and initialize the SPS object.
+    run_params = {
+        'prefix':  args.prefix,
+        'verbose': args.verbose,
+        'seed':    args.seed,
+        # initial optimization choices (nmin is only for L-M optimization)
+        'do_levenburg': True,
+        'do_powell': False,
+        'do_nelder_mead': False,
+        'nmin': 10,
+        # emcee fitting parameters
+        'nwalkers': 128,
+        'nburn': [32, 32, 64], 
+        'niter': 512,
+        'interval': 0.1, # save 10% of the chains at a time
+        # Nestle fitting parameters
+        'nestle_method': 'single',
+        'nestle_npoints': 200,
+        'nestle_maxcall': int(1e6),
+        # Multiprocessing
+        'nthreads': args.nthreads,
+        # SPS initialization parameters
+        'compute_vega_mags': False,
+        'vactoair_flag':      True, # use wavelengths in air
+        'zcontinuous': 1,           # interpolate in metallicity
+        }
+
+    if not args.build_sample:
+        t0 = time()
+        print('Initializing CSPSpecBasis...')
+        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
+                           compute_vega_mags=run_params['compute_vega_mags'],
+                           vactoair_flag=run_params['vactoair_flag'])
+        print('...took {:.1f} seconds.'.format(time() - t0))
+            
     if args.build_sample:
         # Read the parent redmapper catalog, choose a subset of objects and
         # write out.
@@ -373,8 +408,10 @@ def main():
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
         these = [300, 301, 302]
+        #these = np.arange(200)
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
+        #out = cat[:200]
 
         outfile = os.path.join(datadir(), 'pilot-sample.fits')
         print('Writing {}'.format(outfile))
@@ -386,41 +423,6 @@ def main():
         from prospect import fitting
         from prospect.io import write_results
 
-        # Specify the run parameters.
-        run_params = {
-            'prefix':  args.prefix,
-            'verbose': args.verbose,
-            'seed':    args.seed,
-            # initial optimization choices (nmin is only for L-M optimization)
-            'do_levenburg': True,
-            'do_powell': False,
-            'do_nelder_mead': False,
-            'nmin': 10,
-            # emcee fitting parameters
-            'nwalkers': 128,
-            'nburn': [32, 32, 64], 
-            'niter': 512,
-            'interval': 0.1, # save 10% of the chains at a time
-            # Nestle fitting parameters
-            'nestle_method': 'single',
-            'nestle_npoints': 200,
-            'nestle_maxcall': int(1e6),
-            # Multiprocessing
-            'nthreads': args.nthreads,
-            # SPS initialization parameters
-            'compute_vega_mags': False,
-            'vactoair_flag':      True, # use wavelengths in air
-            'zcontinuous': 1,           # interpolate in metallicity
-            }
-
-        # Initialize the SPS object.
-        t0 = time()
-        print('Initializing CSPSpecBasis...')
-        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
-                           compute_vega_mags=run_params['compute_vega_mags'],
-                           vactoair_flag=run_params['vactoair_flag'])
-        print('...took {:.1f} seconds.'.format(time() - t0))
-            
         # Read the parent sample and loop on each object.
         cat = read_parent()
         for ii, obj in enumerate(cat):
@@ -555,17 +557,8 @@ def main():
         import h5py
         from prospect.io import read_results
         from prospector_plot_utilities import param_evol, subtriangle
-        #from matplotlib import rcParams
-        
         import seaborn as sns
         #sns.set(style='white', font_scale=1.8, palette='deep')
-        
-        
-        # Load the default SPS model.
-        t0 = time()
-        print('Note: hard-coding zcontinuous!')
-        sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
-        print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
         
         # Read the parent sample and loop on each object.
         cat = read_parent()
@@ -573,12 +566,10 @@ def main():
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
             # Grab the emcee / prospector outputs.
-            #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
-            h5file = os.path.join( datadir(),
-                                   'test_{}_mcmc.h5'.format(objprefix) )
+            h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, min_results, model = read_results.results_from(h5file,model_file=None)
+            results, guesses, model = read_results.results_from(h5file,model_file=None)
             
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
@@ -615,18 +606,14 @@ def main():
 
             # Figure 3: Generate the best-fitting SED.
             sns.set(style='white', font_scale=1.8, palette='deep')
-            
-            # Show the last iteration of a randomly selected walker.
-            nwalkers, niter = results['run_params']['nwalkers'],results['run_params']['niter']
-            if False:
-                theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
-            else:
-                #print('Plotting based on Powell!!!')
-                #theta = min_results.x # initial parameters
-                theta = results['model'].initial_theta
-            
+
+            # Grab the maximum likelihood values.
+            nwalkers, niter, nparams = results['chain'][:, :, :].shape
+            flatchain = results['chain'].reshape(nwalkers * niter, nparams)
+            lnp = results['lnprobability'].reshape(nwalkers * niter)
+            theta = flatchain[lnp.argmax(), :] # maximum likelihood values
+
             mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
-            print(mextra)
 
             # Use the filters to set the wavelength and flux limits...
             wspec = sps.csp.wavelengths * (1 + results['obs']['zred']) # spectral wavelengths
@@ -678,6 +665,8 @@ def main():
             ax.set_ylim([ymin, factor * ymax])
             ax.legend(loc='upper right', fontsize=20)
             fig.savefig(qafile)
+
+            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
