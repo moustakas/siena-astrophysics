@@ -26,6 +26,20 @@ __all__ = ["subtriangle", "param_evol"]
 #plt.rcParams.update({'ytick.color': 'k'})
 #plt.rcParams.update({'font.size': 30})
 
+def _niceparnames(parnames):
+
+    old = ['tau', 'tage',
+           'logm', 'logzsol', 'dust2']
+    new = [r'$\tau$ (Gyr)', 'Age (Gyr)', r'$\log_{10}\,(M / M_{\odot})$',
+           r'$\log_{10}\, (Z / Z_{\odot})$',
+           r'$\tau_{diffuse}$']
+
+    niceparnames = parnames.copy()
+    for oo, nn in zip( old, new ):
+        niceparnames = np.char.replace(niceparnames, oo, nn)
+    #print(niceparnames)    
+    return niceparnames
+
 def model_comp(theta, model, obs, sps, photflag=0, gp=None):
     """Generate and return various components of the total model for a given
     set of parameters.
@@ -111,6 +125,8 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None, chains=None
         parnames = parnames[ind_show]
         chain = chain[:, :, ind_show]
 
+    parnames = _niceparnames(parnames)
+
     # Set up plot windows
     ndim = len(parnames) + 1
     nx = int(np.floor(np.sqrt(ndim)))
@@ -142,7 +158,7 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None, chains=None
     ax = axes.flatten()[-1]
     for j in range(nwalk):
         ax.plot(lnprob[j, :])
-    ax.set_title('lnP', y=1.02)
+    ax.set_title(r'$\ln\,P$', y=1.02)
     pl.tight_layout()
     return fig
 
@@ -170,7 +186,9 @@ def subtriangle(sample_results, outname=None, showpars=None,
     import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
+    #parnames = np.array(sample_results['theta_labels'])
     parnames = np.array(sample_results['theta_labels'])
+    parnames = _niceparnames(parnames)
     
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
@@ -180,7 +198,8 @@ def subtriangle(sample_results, outname=None, showpars=None,
     if 'mass' in parnames:
         midx = [l=='mass' for l in parnames]
         flatchain[:,midx] = np.log10(flatchain[:,midx])
-        parnames[midx] = 'logmass'
+        #parnames[midx] = 'logmass'
+        parnames[midx] =  r'$\log_{10}\,(M / M_{\odot})$'
 
     # restrict to parameters you want to show
     if showpars is not None:
