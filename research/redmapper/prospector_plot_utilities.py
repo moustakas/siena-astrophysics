@@ -186,7 +186,6 @@ def subtriangle(sample_results, outname=None, showpars=None,
     import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
-    #parnames = np.array(sample_results['theta_labels'])
     parnames = np.array(sample_results['theta_labels'])
     parnames = _niceparnames(parnames)
     
