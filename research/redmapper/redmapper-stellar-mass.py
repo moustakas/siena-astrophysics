@@ -372,7 +372,7 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = [500, 600, 700]
+        these = [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
 
@@ -423,8 +423,6 @@ def main():
             
         # Read the parent sample and loop on each object.
         cat = read_parent()
-        cat = cat[1:2]
-        
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Fitting object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -515,6 +513,8 @@ def main():
                 initial_prob = None
 
             # Initialize the HDF5 output file and write some basic info.
+            if run_params['verbose']:
+                print('Starting emcee sampling at {}'.format(asctime()))
             outroot = '{}_{}'.format(run_params['prefix'], objprefix)
 
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
@@ -529,9 +529,6 @@ def main():
             write_results.write_obs_to_h5(hfile, obs)
             
             tstart = time()
-            if run_params['verbose']:
-                print('Starting emcee sampling at {}'.format(asctime()))
-                    
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, verbose=run_params['verbose'],
                                             nthreads=run_params['nthreads'], nwalkers=run_params['nwalkers'],
                                             nburn=run_params['nburn'], niter=run_params['niter'],
@@ -663,8 +660,6 @@ def main():
             ax.set_ylim([ymin, factor * ymax])
             ax.legend(loc='upper right', fontsize=20)
             fig.savefig(qafile)
-
-            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
