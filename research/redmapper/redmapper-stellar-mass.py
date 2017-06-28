@@ -10,7 +10,6 @@ import os
 import sys
 import pdb
 import argparse
-import pickle
 from time import time
 
 import numpy as np
@@ -184,7 +183,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'isfree': False,
         'init': zred,
         'units': '',
-        'prior_function': priors.tophat,
+        'prior_function': priors.TopHat,
         'prior_args': {'mini': 0.0, 'maxi': 4.0}
         })
     
@@ -214,7 +213,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': logzsol,
         'init_disp': 0.3, # dex
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior_function': priors.tophat,
+        'prior_function': priors.TopHat,
         'prior_args': {'mini': -1.5, 'maxi': 0.19}
         })
 
@@ -224,10 +223,9 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'N': 1,
         'isfree': False,
         'init': dust2,
-        'reinit': True,
         'init_disp': 0.3,
         'units': '',
-        'prior_function': priors.tophat,
+        'prior_function': priors.TopHat,
         'prior_args': {'mini': 0.0, 'maxi': 2.0}
         })
     
@@ -266,14 +264,15 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      tage,
         'init_disp':  3.0,
         'units':       'Gyr',
-        'prior_function': priors.tophat,
+        'prior_function': priors.TopHat,
         'prior_args': {'mini': 0.5, 'maxi': 15.0}
         } )
 
     model = sedmodel.SedModel(model_params)
+    
     return model
 
-def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=False):
+def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None, phot_noise=None):
     """Define the likelihood function.
 
     Given a parameter vector and a dictionary of observational data and a model
@@ -322,9 +321,32 @@ def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=F
     else:
         return -np.infty
 
-def chisqfn(theta, model, obs, sps):
+def chisqfn(theta, model, obs, sps, verbose):
     """Return the negative of lnprobfn for minimization."""
-    return -lnprobfn(theta, model, obs, sps)
+    return -lnprobfn(theta, model, obs, sps, verbose)
+
+# MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
+# will only see up to sys.exit()
+try:
+    from emcee.utils import MPIPool
+    pool = MPIPool(debug=False, loadbalance=True)
+    if not pool.is_master():
+        # Wait for instructions from the master process.
+        pool.wait()
+        sys.exit(0)
+except(ImportError, ValueError):
+    pool = None
+    print('Not using MPI')
+
+def halt(message):
+    """Exit, closing pool safely.
+    """
+    print(message)
+    try:
+        pool.close()
+    except:
+        pass
+    sys.exit(0)
 
 def main():
 
@@ -359,7 +381,6 @@ def main():
     if args.do_fit:
         import h5py
         import emcee
-        from scipy.optimize import minimize
         from prospect import fitting
         from prospect.io import write_results
 
@@ -368,12 +389,15 @@ def main():
             'prefix':   args.prefix,
             'verbose':  args.verbose
             'debug':    False,
-            # initial optimization parameters
+            # initial optimization choices
             'do_levenburg': True,
+            'do_powell': False,
+            'do_nelder_mead': False,
             # emcee fitting parameters
             'nwalkers': 128,
             'nburn': [32, 32, 64], 
-            'niter': 512,
+            'niter': 256,
+            'interval': 0.1, # save 10% of the chains at a time
             # Nestle fitting parameters
             'nestle_method': 'single',
             'nestle_npoints': 200,
@@ -384,24 +408,14 @@ def main():
             'zcontinuous': 1,           # interpolate in metallicity
             }
 
-        # Load or generate the default SPS object.
-        spsfile = os.path.join( datadir(), '{}_CSPSpecBasis.pickle'.format(args.prefix) )
-        if False:
-        #if os.path.isfile(spsfile) and not args.remake_sps:
-            print('Reading pickled CSPSpecBasis object from {}.'.format(spsfile))
-            sps = pickle.load(open(spsfile, 'rb'))
-        else:
-            t0 = time()
-            print('Initializing the CSPSpecBasis object...')
-            sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
-                               compute_vega_mags=run_params['compute_vega_mags'])
-            print('...took {:.1f} seconds.'.format(time() - t0))
-            sps.params['vactoair_flag'] = run_params['vactoair_flag']
-            sps.update()
+        # Initialize the SPS object.
+        t0 = time()
+        print('Initializing the CSPSpecBasis object...')
+        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
+                           compute_vega_mags=run_params['compute_vega_mags']) #,
+                           #vactoair_flag=run_params['vactoair_flag'])
+        print('...took {:.1f} seconds.'.format(time() - t0))
             
-            print('Pickling CSPSpecBasis to file {}.'.format(spsfile))
-            pickle.dump(sps, open(spsfile, 'wb'))
-
         # Read the parent sample and loop on each object.
         cat = read_parent()
         for obj in cat:
@@ -414,28 +428,83 @@ def main():
                                tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
-            initial_theta = model.rectify_theta(model.initial_theta)
+            if run_params['verbose']:
+                print('Initial parameter values: {}'.format(model.initial_theta))
+            initial_theta = model.rectify_theta(model.initial_theta) # make zeros tiny numbers
 
-            if False:
-                t0 = time()
-                min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
-                                       method=args.min_method)
-                pdur = time() - t0
+            if bool(rp.get('do_powell', True)):
+                ts = time()
+                # optimization options
+                powell_opt = {'ftol': run_params.get('ftol', 0.5e-5),
+                              'xtol': 1e-6,
+                              'maxfev': run_params.get('maxfev', 5000)}
 
-                print('What is edge_trunc?')
-                initial_center = fitting.reinitialize(
-                    min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
-                    )
-                initial_prob = -1 * min_results['fun']
+                chi2args = (sps, run_params['verbose'])
+                guesses, pinit = fitting.pminimize(chisqfn, initial_theta, args=chi2args, model=model,
+                                                   method='powell', opts=powell_opt, pool=pool,
+                                                   nthreads=run_params.get('nthreads', 1))
+                best = np.argmin([p.fun for p in guesses])
+
+                # Hack to recenter values outside the parameter bounds!
+                initial_center = fitting.reinitialize(guesses[best].x, model,
+                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
+                initial_prob = -1 * guesses[best]['fun']
+                pdur = time() - ts
+                if run_params['verbose']:
+                    print('Powell initialization took {} seconds.'.format(pdur))
+                    print('Best Powell guesses: {}'.format(initial_center))
+                    print('Initial probability: {}'.format(initial_prob))
+        
+            elif bool(rp.get('do_nelder_mead', True)):
+                from scipy.optimize import minimize
+                ts = time()
+                chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
+                guesses = minimize(chisqfn, initial_theta, chi2args, method='nelder-mead')
+                pdur = time() - ts
+
+                # Hack to recenter values outside the parameter bounds!
+                initial_center = fitting.reinitialize(guesses.x, model,
+                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
+                initial_prob = -1 * guesses['fun']
                 
-                print('Minimization {} finished in {} seconds'.format(args.min_method, pdur))
-                print('best {0} guess: {1}'.format(args.min_method, initial_center))
-                print('best {0} lnp: {1}'.format(args.min_method, initial_prob))
+                if run_params['verbose']:
+                    print('Nelder-Mead initialization took {} seconds.'.format(pdur))
+                    print('Best guesses: {}'.format(initial_center))
+                    print('Initial probability: {}'.format(initial_prob))
+                    
+            elif bool(run_params.get('do_levenburg', True)):
+                from scipy.optimize import least_squares
+                ts = time()
+                pinitial = fitting.minimizer_ball(model.initial_theta.copy(),
+                                                  nmin=run_params.get('nmin', 10), model)
+                guesses = []
+                for i, pinit in enumerate(pinitial):
+                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac',
+                                        xtol=1e-18, ftol=1e-18)
+                    guesses.append(res)
+        
+                chisq = [np.sum(r.fun**2) for r in guesses]
+                best = np.argmin(chisq)
+
+                # Hack to recenter values outside the parameter bounds!
+                initial_center = fitting.reinitialize(guesses[best].x, model,
+                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
+                initial_prob = None
+                pdur = time() - ts
+                if run_params['verbose']:
+                    print('Levenburg-Marquardt initialization took {} seconds.'.format(pdur))
+                    print('Best guesses: {}'.format(initial_center))
+                    print('Initial probability: {}'.format(initial_prob))
+        
             else:
-                print('Skipping initial Powell minimization because it borks.')
-                min_results, pdur = None, None
+                if run_params['verbose']:
+                    print('Skipping initial minimization.')
+                guesses = None
+                pdur = 0.0
                 initial_center = initial_theta.copy()
-                initial_prob = lnprobfn(initial_center, model, obs, sps)
+                initial_prob = None
+
+            pdb.set_trace()
 
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
