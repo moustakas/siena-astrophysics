@@ -10,7 +10,7 @@ import os
 import sys
 import pdb
 import argparse
-from time import time
+from time import time, asctime
 
 import numpy as np
 import fitsio
@@ -64,9 +64,10 @@ def getobs(cat):
     obs['phot_mask'] = mask  # 1 = good, 0 = bad
 
     # Input spectroscopy (none for this dataset)
-    obs['wavelength'] = None
+    obs['wavelength'] = None 
     obs['spectrum'] = None
     obs['unc'] = None
+    obs['mask'] = None
 
     # Use initial values based on the iSEDfit results.
     obs['zred'] = cat['Z'] # redshift
@@ -306,9 +307,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         'spec': model_spec,    # model spectrum
         'phot': model_phot,    # model photometry
         'sed': model._spec,    # object spectrum
-        #'unc': obs['unc'],     # object uncertainty spectrum
         'cal': model._speccal, # object calibration spectrum
-        #'maggies_unc': obs['maggies_unc'] # object photometric uncertainty
         }
 
     # Calculate log-likelihoods--
@@ -361,7 +360,7 @@ def main():
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
-    parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
+    parser.add_argument('--nthreads', default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
 
@@ -391,11 +390,11 @@ def main():
             'prefix':   args.prefix,
             'verbose':  args.verbose,
             'debug':    False,
-            # initial optimization choices
+            # initial optimization choices (nmin is only for L-M optimization)
             'do_levenburg': True,
             'do_powell': False,
             'do_nelder_mead': False,
-            'nmin': 10, # number of starting conditions to sample from the prior for L-M optimization
+            'nmin': 10,
             # emcee fitting parameters
             'nwalkers': 128,
             'nburn': [32, 32, 64], 
@@ -405,6 +404,8 @@ def main():
             'nestle_method': 'single',
             'nestle_npoints': 200,
             'nestle_maxcall': int(1e6),
+            # Multiprocessing
+            'nthreads': args.nthreads,
             # SPS initialization parameters
             'compute_vega_mags': False,
             'vactoair_flag':      True, # use wavelengths in air
@@ -442,10 +443,10 @@ def main():
                               'xtol': 1e-6,
                               'maxfev': run_params.get('maxfev', 5000)}
 
-                chi2args = (sps, run_params['verbose'])
+                chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
                 guesses, pinit = fitting.pminimize(chisqfn, initial_theta, args=chi2args, model=model,
                                                    method='powell', opts=powell_opt, pool=pool,
-                                                   nthreads=run_params.get('nthreads', 1))
+                                                   nthreads=run_params['nthreads'])
                 best = np.argmin([p.fun for p in guesses])
 
                 # Hack to recenter values outside the parameter bounds!
@@ -508,7 +509,8 @@ def main():
                 initial_center = initial_theta.copy()
                 initial_prob = None
 
-            pdb.set_trace()
+            # Initialize the HDF5 output file and write some basic info.
+            outroot = '{}_{}'.format(run_params['prefix'], objprefix)
 
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
@@ -516,41 +518,44 @@ def main():
                 os.remove(hfilename)
             
             hfile = h5py.File(hfilename, 'a')
-            print('Writing to file {}'.format(hfilename))
-
+            if run_params['verbose']:
+                print('Writing to HDF5 file {}'.format(hfilename))
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
             
-            fout = sys.stdout
-            fnull = open(os.devnull, 'w')
-            sys.stdout = fnull
+            #fout = sys.stdout
+            #fnull = open(os.devnull, 'w')
+            #sys.stdout = fnull
 
             tstart = time()
-            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, threads=args.threads, 
-                                            initial_prob=initial_prob, hdf5=hfile, nwalkers=run_params.get('nwalkers'),
-                                            nburn=run_params.get('nburn'), niter=run_params.get('niter'),
+            if run_params['verbose']:
+                print('Starting emcee sampling at {}'.format(asctime()))
+                    
+            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, verbose=run_params['verbose'],
+                                            nthreads=run_params['nthreads'], nwalkers=run_params['nwalkers'],
+                                            nburn=run_params['nburn'], niter=run_params['niter'],
+                                            initial_prob=initial_prob, hdf5=hfile, pool=pool,
                                             postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
-
-            sys.stdout = fout
-            print('done emcee in {}s'.format(edur))
+            #sys.stdout = fout
+            if run_params['verbose']:
+                print('Finished emcee in {} seconds.'.format(edur))
             
-            # Write out more.
-        
-            write_results.write_pickles(run_params, model, obs, esampler, min_results,
-                                        outroot='{}_{}'.format(run_params['prefix'], objprefix),
-                                        toptimize=pdur, tsample=edur,
+            # Update the HDF5 file with the results.
+            write_results.write_pickles(run_params, model, obs, esampler, guesses,
+                                        outroot=outroot, toptimize=pdur, tsample=edur,
                                         sampling_initial_center=initial_center,
                                         post_burnin_center=burn_p0,
                                         post_burnin_prob=burn_prob0)
             write_results.write_hdf5(hfilename, run_params, model, obs, esampler, 
-                                     min_results, toptimize=pdur, tsample=edur,
+                                     guesses, toptimize=pdur, tsample=edur,
                                      sampling_initial_center=initial_center,
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
-            
 
+            pdb.set_trace()
+            
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
