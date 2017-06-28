@@ -417,14 +417,17 @@ def main():
         t0 = time()
         print('Initializing the CSPSpecBasis object...')
         sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
-                           compute_vega_mags=run_params['compute_vega_mags']) #,
-                           #vactoair_flag=run_params['vactoair_flag'])
+                           compute_vega_mags=run_params['compute_vega_mags'],
+                           vactoair_flag=run_params['vactoair_flag'])
         print('...took {:.1f} seconds.'.format(time() - t0))
             
         # Read the parent sample and loop on each object.
         cat = read_parent()
-        for obj in cat:
+        cat = cat[1:2]
+        
+        for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
+            print('Fitting object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
             
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
@@ -456,7 +459,7 @@ def main():
                 initial_prob = -1 * guesses[best]['fun']
                 pdur = time() - ts
                 if run_params['verbose']:
-                    print('Powell initialization took {} seconds.'.format(pdur))
+                    print('Powell initialization took {:.0f} seconds.'.format(pdur))
                     print('Best Powell guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
@@ -473,7 +476,7 @@ def main():
                 initial_prob = -1 * guesses['fun']
                 
                 if run_params['verbose']:
-                    print('Nelder-Mead initialization took {} seconds.'.format(pdur))
+                    print('Nelder-Mead initialization took {:.0f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
                     
@@ -499,7 +502,7 @@ def main():
                 initial_prob = None
                 pdur = time() - ts
                 if run_params['verbose']:
-                    print('Levenburg-Marquardt initialization took {} seconds.'.format(pdur))
+                    print('Levenburg-Marquardt initialization took {:.0f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
@@ -525,10 +528,6 @@ def main():
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
             
-            #fout = sys.stdout
-            #fnull = open(os.devnull, 'w')
-            #sys.stdout = fnull
-
             tstart = time()
             if run_params['verbose']:
                 print('Starting emcee sampling at {}'.format(asctime()))
@@ -540,9 +539,8 @@ def main():
                                             postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
-            #sys.stdout = fout
             if run_params['verbose']:
-                print('Finished emcee in {} seconds.'.format(edur))
+                print('Finished emcee in {:.0f} seconds.'.format(edur))
             
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
