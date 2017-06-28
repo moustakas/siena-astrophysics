@@ -25,7 +25,7 @@ def datadir():
 def read_redmapper():
     """Read the parent redmapper catalog."""
     redfile = os.path.join(os.sep, 'global', 'work', 'projects', 
-                           'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
+                    'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
     print('Reading {}'.format(redfile))
     cat = fitsio.read(redfile, ext=1)
     return cat
@@ -60,7 +60,7 @@ def getobs(cat):
     obs['maggies'] = np.squeeze(cat['MAGGIES'])
     mask = (cat['IVARMAGGIES'] > 0) * 1
     with np.errstate(divide='ignore'):
-        obs['maggies_unc'] = np.squeeze(1.0/np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
+        obs['maggies_unc'] = np.squeeze(1.0/np.sqrt(cat['IVARMAGGIES']))#[:3, :]
     obs['phot_mask'] = mask  # 1 = good, 0 = bad
 
     # Input spectroscopy (none for this dataset)
@@ -165,7 +165,8 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     
     return sedmodel.SedModel(model_params)
 
-def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None, verbose=False):
+def lnprobfn(theta, model, obs, sps, spec_noise=None, phot_noise=None,
+             verbose=False):
     """Define the likelihood function.
 
     Given a parameter vector and a dictionary of observational data and a model
@@ -215,14 +216,20 @@ def chisqfn(theta, model, obs, sps):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
-    parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
+    parser.add_argument('--prefix', type=str, default='test',
+                        help='String to prepend to I/O files.')
+    parser.add_argument('--build-sample', action='store_true',
+                        help='Build the sample.')
     parser.add_argument('--min-method', default='Powell', type=str,
                         help='Method to use for initial minimization.')
-    parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
-    parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
-    parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
-    parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
+    parser.add_argument('--do-fit', action='store_true',
+                        help='Run prospector!')
+    parser.add_argument('--qaplots', action='store_true',
+                        help='Make some neat plots.')
+    parser.add_argument('--threads', default=16,
+                        help='Number of cores to use concurrently.')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Be loquacious.')
 
     args = parser.parse_args()
 
@@ -255,20 +262,19 @@ def main():
         run_params = {
             'prefix': args.prefix,
             'debug':   False,
-            'nwalkers': 16, # 128,
+            'nwalkers': 128,
             'nburn': [32, 32, 64], 
-            'niter': 128, # 512,
+            'niter': 512,
             # set the powell convergence criteria 
             'do_powell': False,
             #'ftol': 0.5e-5, 'maxfev': 6000,
             'zcontinuous': 1, # interpolate the models in stellar metallicity
             }
-
-        cat = read_parent()
-
+            
         # Load the default SPS model.
         t0 = time()
-        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'], compute_vega_mags=False)
+        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
+                           compute_vega_mags=False)
         print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
 
         # Read the parent sample and loop on each object.
@@ -279,21 +285,23 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
-                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
+            model = load_model(zred=obs['zred'], mass=obs['mass'],
+                               logzsol=obs['logzsol'], tage=obs['tage'],
+                               tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             initial_theta = model.rectify_theta(model.initial_theta)
 
             if False:
                 t0 = time()
-                min_results = minimize(chisqfn, initial_theta, (model, obs, sps),
-                                       method=args.min_method)
+                min_results = minimize(chisqfn, initial_theta,
+                                       (model, obs, sps),method=args.min_method)
                 pdur = time() - t0
 
                 print('What is edge_trunc?')
                 initial_center = fitting.reinitialize(
-                    min_results.x, model, edge_trunc=run_params.get('edge_trunc', 0.1)
+                    min_results.x, model,
+                    edge_trunc=run_params.get('edge_trunc', 0.1)
                     )
                 initial_prob = -1 * min_results['fun']
                 
@@ -322,9 +330,11 @@ def main():
             sys.stdout = fnull
 
             tstart = time()
-            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, threads=args.threads, 
-                                initial_prob=initial_prob, hdf5=hfile, nwalkers=run_params.get('nwalkers'),
-                                nburn=run_params.get('nburn'), niter=run_params.get('niter'),
+            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model,
+                                threads=args.threads, initial_prob=initial_prob,
+                                hdf5=hfile, nwalkers=run_params.get('nwalkers'),
+                                nburn=run_params.get('nburn'),
+                                niter=run_params.get('niter'),
                                 postargs=(model, obs, sps))
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
@@ -334,7 +344,8 @@ def main():
             
             # Write out more.
         
-            write_results.write_pickles(run_params, model, obs, esampler, min_results,
+            write_results.write_pickles(run_params, model, obs, esampler,
+                                        min_results,
                                         outroot='{}_{}'.format(run_params['prefix'], objprefix),
                                         toptimize=pdur, tsample=edur,
                                         sampling_initial_center=initial_center,
@@ -351,16 +362,18 @@ def main():
         import h5py
         from prospect.io import read_results
         from prospector_plot_utilities import param_evol, subtriangle
-
+        #from matplotlib import rcParams
+        
         import seaborn as sns
-        sns.set(style='white', font_scale=1.8, palette='deep')
+        #sns.set(style='white', font_scale=1.8, palette='deep')
+        
         
         # Load the default SPS model.
         t0 = time()
         print('Note: hard-coding zcontinuous!')
         sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
         print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
-
+        
         # Read the parent sample and loop on each object.
         cat = read_parent()
         for obj in cat:
@@ -368,16 +381,20 @@ def main():
 
             # Grab the emcee / prospector outputs.
             #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
-            h5file = os.path.join( datadir(), 'test_{}_mcmc.h5'.format(objprefix) )
+            h5file = os.path.join( datadir(),
+                                   'test_{}_mcmc.h5'.format(objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, min_results, model = read_results.results_from(h5file, model_file=None)
+            results, min_results, model = read_results.results_from(h5file,model_file=None)
             
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
 
             # Figure 1: Visualize a random sampling of the MCMC chains.
-            chains = np.random.choice(results['run_params']['nwalkers'], size=10, replace=False)
+            sns.set(style='white', font_scale=3, palette='deep')
+
+            chains = np.random.choice(results['run_params']['nwalkers'],
+                                      size=10, replace=False)
             
             qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
             print('Generating {}'.format(qafile))
@@ -388,18 +405,26 @@ def main():
             # Figure 2: Generate a corner/triangle plot of the free parameters.
             params = model.free_params
             nparams = len(params)
-
+            sns.set(style='white', font_scale=4, palette='dark')
+            #sns.set_context("talk", rc={"lines.linewidth": 10})
+            sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
+                           'lines.markersize': 30})
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
             #fig.title('Corners')
             fig = subtriangle(results, start=0, thin=5, truths=None,
-                              fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
+                              fig=plt.subplots(nparams, nparams,
+                                               figsize=(27, 27))[0])
+         
+        
+            
             fig.savefig(qafile)
 
             # Figure 3: Generate the best-fitting SED.
-
+            sns.set(style='white', font_scale=1.8, palette='deep')
+            
             # Show the last iteration of a randomly selected walker.
-            nwalkers, niter = results['run_params']['nwalkers'], results['run_params']['niter']
+            nwalkers, niter = results['run_params']['nwalkers'],results['run_params']['niter']
             if False:
                 theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
             else:
@@ -440,12 +465,16 @@ def main():
             factor = 10**(0.4*16.4) # maggies --> mJy
             #factor = 10**(0.4*23.9) # maggies --> microJy
                     
-            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7, label='Model spectrum') # color='navy', 
-            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='', lw=3, markersize=20,
+            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7,
+                    label='Model spectrum') # color='navy', 
+            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7,
+                    #label='Model spectrum')
+            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='',
+                        lw=3, markersize=20,
                         markerfacecolor='none', markeredgewidth=3, # markeredgecolor='blue', 
                         alpha=0.8, label='Model photometry')
-            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'], yerr=factor * results['obs']['maggies_unc'],
+            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'],
+                        yerr=factor * results['obs']['maggies_unc'],
                         marker='o', ls='', lw=3, markersize=10, #markerfacecolor='none',
                         markeredgewidth=3, alpha=0.8, label='Observed photometry')
                         #ecolor='red', markeredgecolor='red', 
@@ -457,7 +486,7 @@ def main():
             ax.legend(loc='upper right', fontsize=20)
             fig.savefig(qafile)
 
-            pdb.set_trace()
+            
 
 if __name__ == "__main__":
     main()
