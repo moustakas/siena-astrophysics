@@ -415,7 +415,7 @@ def main():
 
         # Initialize the SPS object.
         t0 = time()
-        print('Initializing the CSPSpecBasis object...')
+        print('Initializing CSPSpecBasis...')
         sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
                            compute_vega_mags=run_params['compute_vega_mags'],
                            vactoair_flag=run_params['vactoair_flag'])
@@ -440,7 +440,7 @@ def main():
             initial_theta = model.rectify_theta(model.initial_theta) # make zeros tiny numbers
 
             if bool(run_params.get('do_powell', True)):
-                ts = time()
+                tstart = time()
                 # optimization options
                 powell_opt = {'ftol': run_params.get('ftol', 0.5e-5),
                               'xtol': 1e-6,
@@ -456,18 +456,18 @@ def main():
                 initial_center = fitting.reinitialize(guesses[best].x, model,
                                                       edge_trunc=run_params.get('edge_trunc', 0.1))
                 initial_prob = -1 * guesses[best]['fun']
-                pdur = time() - ts
+                pdur = time() - tstart
                 if run_params['verbose']:
-                    print('Powell initialization took {:.0f} seconds.'.format(pdur))
+                    print('Powell initialization took {:.1f} seconds.'.format(pdur))
                     print('Best Powell guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
             elif bool(run_params.get('do_nelder_mead', True)):
                 from scipy.optimize import minimize
-                ts = time()
+                tstart = time()
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
                 guesses = minimize(chisqfn, initial_theta, args=chi2args, method='nelder-mead')
-                pdur = time() - ts
+                pdur = time() - tstart
 
                 # Hack to recenter values outside the parameter bounds!
                 initial_center = fitting.reinitialize(guesses.x, model,
@@ -475,13 +475,13 @@ def main():
                 initial_prob = -1 * guesses['fun']
                 
                 if run_params['verbose']:
-                    print('Nelder-Mead initialization took {:.0f} seconds.'.format(pdur))
+                    print('Nelder-Mead initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
                     
             elif bool(run_params.get('do_levenburg', True)):
                 from scipy.optimize import least_squares
-                ts = time()
+                tstart = time()
                 nmin = run_params['nmin']
                 
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
@@ -499,9 +499,9 @@ def main():
                 initial_center = fitting.reinitialize(guesses[best].x, model,
                                                       edge_trunc=run_params.get('edge_trunc', 0.1))
                 initial_prob = None
-                pdur = time() - ts
+                pdur = time() - tstart
                 if run_params['verbose']:
-                    print('Levenburg-Marquardt initialization took {:.0f} seconds.'.format(pdur))
+                    print('Levenburg-Marquardt initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
@@ -514,21 +514,18 @@ def main():
                 initial_prob = None
 
             # Initialize the HDF5 output file and write some basic info.
-            if run_params['verbose']:
-                print('Starting emcee sampling at {}'.format(asctime()))
             outroot = '{}_{}'.format(run_params['prefix'], objprefix)
-
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
             if os.path.isfile(hfilename):
                 os.remove(hfilename)
             
             hfile = h5py.File(hfilename, 'a')
-            if run_params['verbose']:
-                print('Writing to HDF5 file {}'.format(hfilename))
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
             
+            if run_params['verbose']:
+                print('Started emcee sampling on {}'.format(asctime()))
             tstart = time()
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, verbose=run_params['verbose'],
                                             nthreads=run_params['nthreads'], nwalkers=run_params['nwalkers'],
@@ -538,7 +535,7 @@ def main():
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
             if run_params['verbose']:
-                print('Finished emcee in {:.0f} seconds.'.format(edur))
+                print('Finished emcee sampling in {:.1f} minutes.'.format(edur / 60.0))
             
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
@@ -551,6 +548,8 @@ def main():
                                      sampling_initial_center=initial_center,
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
+
+            pdb.set_trace()
 
     if args.qaplots:        
         import h5py
