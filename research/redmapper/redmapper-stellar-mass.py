@@ -58,10 +58,10 @@ def getobs(cat):
 
     # Input photometry
     obs['maggies'] = np.squeeze(cat['MAGGIES'])
-    mask = (cat['IVARMAGGIES'] > 0) * 1
+    mask = cat['IVARMAGGIES'] > 0
     with np.errstate(divide='ignore'):
-        obs['maggies_unc'] = np.squeeze(1.0/np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
-    obs['phot_mask'] = mask  # 1 = good, 0 = bad
+        obs['maggies_unc'] = np.squeeze(1.0 / np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
+    obs['phot_mask'] = mask
 
     # Input spectroscopy (none for this dataset)
     obs['wavelength'] = None 
@@ -357,10 +357,11 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
+    parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
+    parser.add_argument('--seed', type=int, default=None, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
-    parser.add_argument('--nthreads', default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
 
@@ -387,9 +388,9 @@ def main():
 
         # Specify the run parameters.
         run_params = {
-            'prefix':   args.prefix,
-            'verbose':  args.verbose,
-            'debug':    False,
+            'prefix':  args.prefix,
+            'verbose': args.verbose,
+            'seed':    args.seed,
             # initial optimization choices (nmin is only for L-M optimization)
             'do_levenburg': True,
             'do_powell': False,
@@ -398,7 +399,7 @@ def main():
             # emcee fitting parameters
             'nwalkers': 128,
             'nburn': [32, 32, 64], 
-            'niter': 128,
+            'niter': 512,
             'interval': 0.1, # save 10% of the chains at a time
             # Nestle fitting parameters
             'nestle_method': 'single',
@@ -479,10 +480,11 @@ def main():
             elif bool(run_params.get('do_levenburg', True)):
                 from scipy.optimize import least_squares
                 ts = time()
-                nmin = run_params.get('nmin', 10)
+                nmin = run_params['nmin']
                 
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
-                pinitial = fitting.minimizer_ball(model.initial_theta.copy(), nmin, model)
+                pinitial = fitting.minimizer_ball(model.initial_theta.copy(), nmin, model,
+                                                  seed=run_params['seed'])
                 guesses = []
                 for i, pinit in enumerate(pinitial):
                     res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)
@@ -554,8 +556,6 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
 
-            pdb.set_trace()
-            
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
