@@ -25,7 +25,7 @@ def datadir():
 def read_redmapper():
     """Read the parent redmapper catalog."""
     redfile = os.path.join(os.sep, 'global', 'work', 'projects', 
-                           'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
+                    'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
     print('Reading {}'.format(redfile))
     cat = fitsio.read(redfile, ext=1)
     return cat
@@ -430,8 +430,9 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
-                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
+            model = load_model(zred=obs['zred'], mass=obs['mass'],
+                               logzsol=obs['logzsol'], tage=obs['tage'],
+                               tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
@@ -555,16 +556,18 @@ def main():
         import h5py
         from prospect.io import read_results
         from prospector_plot_utilities import param_evol, subtriangle
-
+        #from matplotlib import rcParams
+        
         import seaborn as sns
-        sns.set(style='white', font_scale=1.8, palette='deep')
+        #sns.set(style='white', font_scale=1.8, palette='deep')
+        
         
         # Load the default SPS model.
         t0 = time()
         print('Note: hard-coding zcontinuous!')
         sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
         print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
-
+        
         # Read the parent sample and loop on each object.
         cat = read_parent()
         for obj in cat:
@@ -572,16 +575,20 @@ def main():
 
             # Grab the emcee / prospector outputs.
             #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
-            h5file = os.path.join( datadir(), 'test_{}_mcmc.h5'.format(objprefix) )
+            h5file = os.path.join( datadir(),
+                                   'test_{}_mcmc.h5'.format(objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, min_results, model = read_results.results_from(h5file, model_file=None)
+            results, min_results, model = read_results.results_from(h5file,model_file=None)
             
             # Reinitialize the model for this object since it's not written to disk(??).
             model = load_model(results['obs']['zred'])
 
             # Figure 1: Visualize a random sampling of the MCMC chains.
-            chains = np.random.choice(results['run_params']['nwalkers'], size=10, replace=False)
+            sns.set(style='white', font_scale=3, palette='deep')
+
+            chains = np.random.choice(results['run_params']['nwalkers'],
+                                      size=10, replace=False)
             
             qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
             print('Generating {}'.format(qafile))
@@ -592,18 +599,26 @@ def main():
             # Figure 2: Generate a corner/triangle plot of the free parameters.
             params = model.free_params
             nparams = len(params)
-
+            sns.set(style='white', font_scale=4, palette='dark')
+            #sns.set_context("talk", rc={"lines.linewidth": 10})
+            sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
+                           'lines.markersize': 30})
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Generating {}'.format(qafile))
             #fig.title('Corners')
             fig = subtriangle(results, start=0, thin=5, truths=None,
-                              fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
+                              fig=plt.subplots(nparams, nparams,
+                                               figsize=(27, 27))[0])
+         
+        
+            
             fig.savefig(qafile)
 
             # Figure 3: Generate the best-fitting SED.
-
+            sns.set(style='white', font_scale=1.8, palette='deep')
+            
             # Show the last iteration of a randomly selected walker.
-            nwalkers, niter = results['run_params']['nwalkers'], results['run_params']['niter']
+            nwalkers, niter = results['run_params']['nwalkers'],results['run_params']['niter']
             if False:
                 theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
             else:
@@ -644,12 +659,16 @@ def main():
             factor = 10**(0.4*16.4) # maggies --> mJy
             #factor = 10**(0.4*23.9) # maggies --> microJy
                     
-            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7, label='Model spectrum') # color='navy', 
-            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7, label='Model spectrum')
-            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='', lw=3, markersize=20,
+            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7,
+                    label='Model spectrum') # color='navy', 
+            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7,
+                    #label='Model spectrum')
+            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='',
+                        lw=3, markersize=20,
                         markerfacecolor='none', markeredgewidth=3, # markeredgecolor='blue', 
                         alpha=0.8, label='Model photometry')
-            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'], yerr=factor * results['obs']['maggies_unc'],
+            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'],
+                        yerr=factor * results['obs']['maggies_unc'],
                         marker='o', ls='', lw=3, markersize=10, #markerfacecolor='none',
                         markeredgewidth=3, alpha=0.8, label='Observed photometry')
                         #ecolor='red', markeredgecolor='red', 
