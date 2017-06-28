@@ -183,8 +183,6 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'isfree': False,
         'init': zred,
         'units': '',
-        'prior_function': priors.TopHat,
-        'prior_args': {'mini': 0.0, 'maxi': 4.0}
         })
     
     # Priors on stellar mass and stellar metallicity.
@@ -202,8 +200,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      mass, 
         'init_disp': 5e11, 
         'units': r'$M_{\odot}$',
-        'prior_function': priors.LogUniform,
-        'prior_args': {'mini': 1e8, 'maxi': 1e13}
+        'prior_function': priors.LogUniform(mini=1e8, maxi=1e13),
         })
 
     model_params.append({
@@ -213,8 +210,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': logzsol,
         'init_disp': 0.3, # dex
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior_function': priors.TopHat,
-        'prior_args': {'mini': -1.5, 'maxi': 0.19}
+        'prior_function': priors.TopHat(mini=-1.5, maxi=0.19),
         })
 
     # Priors on dust
@@ -225,8 +221,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': dust2,
         'init_disp': 0.3,
         'units': '',
-        'prior_function': priors.TopHat,
-        'prior_args': {'mini': 0.0, 'maxi': 2.0}
+        'prior_function': priors.TopHat(mini=0.0, maxi=2.0),
         })
     
     # Prior on the IMF.
@@ -254,8 +249,8 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': tau,
         'init_disp': 1.0,
         'units': 'Gyr',
-        'prior_function': priors.LogUniform
-        'prior_args': {'mini': 0.1, 'maxi': 10.0}})
+        'prior_function': priors.LogUniform(mini=0.1, maxi=10.0),
+        })
 
     model_params.append( {
         'name':   'tage',
@@ -264,15 +259,15 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      tage,
         'init_disp':  3.0,
         'units':       'Gyr',
-        'prior_function': priors.TopHat,
-        'prior_args': {'mini': 0.5, 'maxi': 15.0}
-        } )
+        'prior_function': priors.TopHat(mini=0.5, maxi=15),
+        })
 
     model = sedmodel.SedModel(model_params)
     
     return model
 
-def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None, phot_noise=None):
+def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
+             phot_noise=None, residuals=False):
     """Define the likelihood function.
 
     Given a parameter vector and a dictionary of observational data and a model
@@ -280,50 +275,61 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None, phot_noise=
     (and if using spectra and gaussian processes, a GP object) be instantiated.
 
     """
-    from prospect.likelihood import lnlike_spec, lnlike_phot, write_log
+    from prospect.likelihood import (lnlike_spec, lnlike_phot, write_log,
+                                     chi_spec, chi_phot)
 
     lnp_prior = model.prior_product(theta)
-    if np.isfinite(lnp_prior):
-        
-        # Generate mean model
-        t1 = time()
-        try:
-            model_spec, model_phot, model_extras = model.mean_model(theta, obs, sps=sps)
-        except(ValueError):
-            return -np.infty
-        d1 = time() - t1
-
-        # Noise modeling
-        if spec_noise:
-            spec_noise.update(**model.params)
-        if phot_noise:
-            phot_noise.update(**model.params)
-
-        vectors = {
-            'spec': model_spec,    # model spectrum
-            'phot': model_phot,    # model photometry
-            'sed': model._spec,    # object spectrum
-            #'unc': obs['unc'],     # object uncertainty spectrum
-            'cal': model._speccal, # object calibration spectrum
-            #'maggies_unc': obs['maggies_unc'] # object photometric uncertainty
-            }
-
-        # Calculate log-likelihoods
-        t2 = time()
-        lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
-        lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
-        d2 = time() - t2
-        if verbose:
-            write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
-
-        return lnp_prior + lnp_phot + lnp_spec
-
-    else:
+    if not np.isfinite(lnp_prior):
         return -np.infty
+        
+    # Generate the mean model--
+    t1 = time()
+    try:
+        model_spec, model_phot, model_extras = model.mean_model(theta, obs, sps=sps)
+    except(ValueError):
+        return -np.infty
+    d1 = time() - t1
+
+    # Return chi vectors for least-squares optimization--
+    if residuals:
+        chispec = chi_spec(model_spec, obs)
+        chiphot = chi_phot(model_phot, obs)
+        return np.concatenate([chispec, chiphot])
+
+    # Noise modeling--
+    if spec_noise:
+        spec_noise.update(**model.params)
+    if phot_noise:
+        phot_noise.update(**model.params)
+
+    vectors = {
+        'spec': model_spec,    # model spectrum
+        'phot': model_phot,    # model photometry
+        'sed': model._spec,    # object spectrum
+        #'unc': obs['unc'],     # object uncertainty spectrum
+        'cal': model._speccal, # object calibration spectrum
+        #'maggies_unc': obs['maggies_unc'] # object photometric uncertainty
+        }
+
+    # Calculate log-likelihoods--
+    t2 = time()
+    lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
+    lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
+    d2 = time() - t2
+    if verbose:
+        write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
+
+    return lnp_prior + lnp_phot + lnp_spec
 
 def chisqfn(theta, model, obs, sps, verbose):
     """Return the negative of lnprobfn for minimization."""
     return -lnprobfn(theta, model, obs, sps, verbose)
+
+def chivecfn(theta, model, obs, sps, verbose):
+    """Return the residuals instead of a posterior probability or negative
+    chisq, for use with least-squares optimization methods
+    """
+    return lnprobfn(theta, model, obs, sps, verbose, residuals=True)
 
 # MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
 # will only see up to sys.exit()
@@ -336,7 +342,7 @@ try:
         sys.exit(0)
 except(ImportError, ValueError):
     pool = None
-    print('Not using MPI')
+    print('Not using MPI.')
 
 def halt(message):
     """Exit, closing pool safely.
@@ -353,13 +359,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
-    parser.add_argument('--min-method', default='LM', type=str,
-                        help='Method to use for initial minimization (choices are LM, Powell, and NM).')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--threads', default=16, help='Number of cores to use concurrently.')
-    parser.add_argument('--remake-sps', action='store_true', help="""Remake (and write out) the
-                           CSPSpecBasis object, otherwise read it from disk.""")
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
 
@@ -387,16 +389,17 @@ def main():
         # Specify the run parameters.
         run_params = {
             'prefix':   args.prefix,
-            'verbose':  args.verbose
+            'verbose':  args.verbose,
             'debug':    False,
             # initial optimization choices
             'do_levenburg': True,
             'do_powell': False,
             'do_nelder_mead': False,
+            'nmin': 10, # number of starting conditions to sample from the prior for L-M optimization
             # emcee fitting parameters
             'nwalkers': 128,
             'nburn': [32, 32, 64], 
-            'niter': 256,
+            'niter': 128,
             'interval': 0.1, # save 10% of the chains at a time
             # Nestle fitting parameters
             'nestle_method': 'single',
@@ -432,7 +435,7 @@ def main():
                 print('Initial parameter values: {}'.format(model.initial_theta))
             initial_theta = model.rectify_theta(model.initial_theta) # make zeros tiny numbers
 
-            if bool(rp.get('do_powell', True)):
+            if bool(run_params.get('do_powell', True)):
                 ts = time()
                 # optimization options
                 powell_opt = {'ftol': run_params.get('ftol', 0.5e-5),
@@ -455,11 +458,11 @@ def main():
                     print('Best Powell guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
-            elif bool(rp.get('do_nelder_mead', True)):
+            elif bool(run_params.get('do_nelder_mead', True)):
                 from scipy.optimize import minimize
                 ts = time()
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
-                guesses = minimize(chisqfn, initial_theta, chi2args, method='nelder-mead')
+                guesses = minimize(chisqfn, initial_theta, args=chi2args, method='nelder-mead')
                 pdur = time() - ts
 
                 # Hack to recenter values outside the parameter bounds!
@@ -475,12 +478,13 @@ def main():
             elif bool(run_params.get('do_levenburg', True)):
                 from scipy.optimize import least_squares
                 ts = time()
-                pinitial = fitting.minimizer_ball(model.initial_theta.copy(),
-                                                  nmin=run_params.get('nmin', 10), model)
+                nmin = run_params.get('nmin', 10)
+                
+                chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
+                pinitial = fitting.minimizer_ball(model.initial_theta.copy(), nmin, model)
                 guesses = []
                 for i, pinit in enumerate(pinitial):
-                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac',
-                                        xtol=1e-18, ftol=1e-18)
+                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)
                     guesses.append(res)
         
                 chisq = [np.sum(r.fun**2) for r in guesses]
