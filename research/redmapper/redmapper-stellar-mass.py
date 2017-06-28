@@ -101,26 +101,75 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     Notes:
       FSPS parameters are documented here:
         http://dan.iel.fm/python-fsps/current/stellarpop_api/#api-reference
-      Some additional parameters that are not used include:
-        * pmetals (if zcontinuous>1 use 3-point smoothing)
-        * dust 1
+
+      Initialization parameters:
+        * compute_vega_mags (must be set at initialization)
+        * vactoair_flag (must be set at initialization)
+        * zcontinuous (must be set at initialization)
+    
+      Metallicity parameters:
+        * zmet (default 1, ignored if zcontinuous>0)
+        * logzsol (default 0.0, used if zcontinuous>0)
+        * pmetals (default 2.0, only used if zcontinuous=2)
+
+      Dust parameters:
+        * add_agb_dust_model (default True)
+        * add_dust_emission (default True)
+        * cloudy_dust (default False)
+        * agb_dust (default 1.0)
+        * dust_type (default 0=power law)
+        * dust_index, dust1_index
         * dust_tesc
-        * dust_index
-        * dust1_index
-        * dust_type
-        * add_dust_emission
-        * duste_umin
-        * ...many other dust parameters...
+        * dust1 (default 0.0) - extra optical depth towards young stars at 5500A
+        * dust2 (default 0.0) - diffuse dust optical depth towards all stars at 5500A
+        * dust_clumps, frac_nodust, frac_obrun
+        * mwr, uvb, wgp1, wgp2, wgp3, 
+        * duste_gamma, duste_umin, duste_qpah
+
+      Star formation history parameters:
+        * sfh (default 0=SSP, 1=tau, 4=delayed, 5=truncated delayed tau)
+        * tau (default 1)
+        * const, sf_start, sf_trunc
+        * tage (default 0.0)
+        * fburst, tburst, sf_slope
+    
+      Miscellaneous parameters:
+        * add_igm_absorption (default False)
+        * igm_factor (default 1.0)
+        * smooth_velocity (default True)
+        * sigma_smooth, min_wave_smooth, max_wave_smooth
+        * redshift_colors (default False, do not use)
+        * compute_light_ages (default False, do not use)
+       
+      Stellar population parameters:
+        * add_stellar_remnants (default True)
+        * tpagb_norm_type (default 2)
+        * dell (default 0.0, do not use)
+        * delt (default 0.0, do not use)
+        * redgb (default 1.0)
+        * fcstar (default 1.0)
+        * sbss (default 0.0)
+        * fbhb (default 0.0)
+        * pagb (default 1.0)
+        * imf_type (default 2=Kroupa01)
+        * imf1, imf2, imf3, vdmc, mdave, masscut
+        * evtype (default 1)
         * tpagb_norm_type
-        * add_agb_dust_model
-        * agb_dust
-        * tburst
-        * fburst
-        * fage_burst
-        * add_neb_emission
-        * gas_logz
-        * gas_logu
-        * ...calibration parameters...
+
+      Emission lines:
+        * add_neb_emission (default False)
+        * add_neb_continuum (default False)
+        * gas_logz (default 0.0)
+        * gas_logu (default -2)
+
+      Galaxy properties:
+        * zred (default 0.0)
+
+      AGN properties:
+        * fagn (default 0.0)
+        * agn_tau (default 10)
+
+      Calibration parameters:
         * phot_jitter
 
     """
@@ -170,8 +219,6 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         })
 
     # Priors on dust
-    #   dust2 - diffuse dust optical depth towards all stars at 5500A
-    #   dust1 - extra optical depth towards young stars at 5500A
     model_params.append({
         'name': 'dust2',
         'N': 1,
@@ -211,8 +258,6 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'units': 'Gyr',
         'prior_function': priors.LogUniform
         'prior_args': {'mini': 0.1, 'maxi': 10.0}})
-    #'prior_function': priors.tophat,
-    #'prior_args': {'mini': 0.01, 'maxi': 10.0}})
 
     model_params.append( {
         'name':   'tage',
