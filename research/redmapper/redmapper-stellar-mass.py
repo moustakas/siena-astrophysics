@@ -218,8 +218,8 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     model_params.append({
         'name': 'dust2',
         'N': 1,
-        'isfree': True,
-        'init': dust2,
+        'isfree': False,
+        'init': 0.0, # dust2,
         'init_disp': 0.2,
         'units': '', # optical depth
         'prior': priors.TopHat(mini=0.0, maxi=3.0),
@@ -409,8 +409,8 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = np.arange(2) # [300, 301, 302]
-        #these = np.arange(50) # [300, 301, 302]
+        #these = np.arange(2) # [300, 301, 302]
+        these = np.arange(50) # [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
         #out = cat[:200]
@@ -564,7 +564,8 @@ def main():
         #sns.set_context("talk", rc={"lines.linewidth": 10})
         #sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
         #               'lines.markersize': 30})
-        
+        #sns.set(style='white', font_scale=1.8, palette='deep')
+
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
         for obj in cat:
@@ -579,27 +580,27 @@ def main():
 
             # --------------------------------------------------
             # Figure: Visualize a random sampling of the MCMC chains.
-            thesechains = rand.choice(nwalkers, size=int(0.1*nwalkers), replace=False)
-            fig = param_evol(results, chains=thesechains)
-
             qafile = os.path.join(datadir(), '{}_{}_chains.png'.format(args.prefix, objprefix) )
             print('Writing {}'.format(qafile))
+
+            thesechains = rand.choice(nwalkers, size=int(0.1*nwalkers), replace=False)
+            fig = param_evol(results, chains=thesechains)
             fig.savefig(qafile)
 
             # --------------------------------------------------
             # Figure: Generate a corner/triangle plot of the free parameters.
-            params = model.free_params
-            nparams = len(params)
-            fig = subtriangle(results, start=0, thin=5, truths=None,
-                              fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
-        
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
+
+            fig = subtriangle(results)            
             fig.savefig(qafile)
+
+            pdb.set_trace()
 
             # --------------------------------------------------
             # Figure: Generate the best-fitting SED.
-            sns.set(style='white', font_scale=1.8, palette='deep')
+            qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
+            print('Writing {}'.format(qafile))
 
             # Grab the maximum likelihood values.
             flatchain = results['chain'].reshape(nwalkers * niter, nparams)
@@ -619,20 +620,8 @@ def main():
             ymin, ymax = -0.1, temp.max()/0.6
             #ymin, ymax = temp.min()*0.8, temp.max()/0.6
 
-            qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
-            print('Generating {}'.format(qafile))
             #fig.title('SED Best Fit')
             fig, ax = plt.subplots(figsize=(12, 8))
-
-            # Plot the filter curves...
-            if False:
-                for ff in range(len(wphot)):
-                    f = results['obs']['filters'][ff]
-                    w, t = f.wavelength.copy(), f.transmission.copy()
-                    while t.max() > 1:
-                        t /= 10.0
-                        t = 0.1*(ymax-ymin)*t + ymin
-                        ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
 
             wfactor = 1E-4
             factor = 10**(0.4*16.4) # maggies --> mJy

@@ -1,31 +1,10 @@
-import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sedpy.observate import load_filters
-
 """Convenience functions for reading and reconstructing results from a fitting
-run, including reconstruction of the model for making posterior samples
+run, including reconstruction of the model for making posterior samples.
+
 """
-
-__all__ = ["subtriangle", "param_evol"]
-
-#plt.rcParams.update({'xtick.major.pad': '7.0'})
-#plt.rcParams.update({'xtick.major.size': '7.5'})
-#plt.rcParams.update({'xtick.major.width': '1.5'})
-#plt.rcParams.update({'xtick.minor.pad': '7.0'})
-#plt.rcParams.update({'xtick.minor.size': '3.5'})
-#plt.rcParams.update({'xtick.minor.width': '1.0'})
-#plt.rcParams.update({'ytick.major.pad': '7.0'})
-#plt.rcParams.update({'ytick.major.size': '7.5'})
-#plt.rcParams.update({'ytick.major.width': '1.5'})
-#plt.rcParams.update({'ytick.minor.pad': '7.0'})
-#plt.rcParams.update({'ytick.minor.size': '3.5'})
-#plt.rcParams.update({'ytick.minor.width': '1.0'})
-#plt.rcParams.update({'xtick.color': 'k'})
-#plt.rcParams.update({'ytick.color': 'k'})
-#plt.rcParams.update({'font.size': 30})
-
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 
@@ -49,42 +28,6 @@ def _niceparnames(parnames):
             niceparnames[this] = nn
 
     return niceparnames
-
-def model_comp(theta, model, obs, sps, photflag=0, gp=None):
-    """Generate and return various components of the total model for a given
-    set of parameters.
-    """
-    logarithmic = obs.get('logify_spectrum')
-    obs, _, _ = obsdict(obs, photflag=photflag)
-    mask = obs['mask']
-    mu = model.mean_model(theta, obs, sps=sps)[photflag][mask]
-    sed = model.sed(theta, obs, sps=sps)[photflag][mask]
-    wave = obs['wavelength'][mask]
-
-    if photflag == 0:
-        cal = model.spec_calibration(theta, obs)
-        if type(cal) is not float:
-            cal = cal[mask]
-        try:
-            s, a, l = model.spec_gp_params()
-            gp.kernel[:] = np.log(np.array([s[0], a[0]**2, l[0]**2]))
-            spec = obs['spectrum'][mask]
-            if logarithmic:
-                gp.compute(wave, obs['unc'][mask])
-                delta = gp.predict(spec - mu, wave)
-            else:
-                gp.compute(wave, obs['unc'][mask], flux=mu)
-                delta = gp.predict(spec - mu)
-            if len(delta) == 2:
-                delta = delta[0]
-        except(TypeError, AttributeError, KeyError):
-            delta = 0
-    else:
-        mask = np.ones(len(obs['wavelength']), dtype=bool)
-        cal = np.ones(len(obs['wavelength']))
-        delta = np.zeros(len(obs['wavelength']))
-
-    return sed, cal, delta, mask, wave
 
 def param_evol(sample_results, showpars=None, start=0, figsize=None,
                chains=None, **plot_kwargs):
@@ -113,8 +56,6 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
         ln(posterior probability)
 
     """
-    import matplotlib.pyplot as pl
-
     if chains is None:
         chain = sample_results['chain'][:, start:, :]
         lnprob = sample_results['lnprobability'][:, start:]
@@ -153,9 +94,9 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
     dim = lbdim + plotdim + trdim
 
     if figsize is None:
-        fig, axes = pl.subplots(nx, ny, figsize=(dim[1], dim[0]))
+        fig, axes = plt.subplots(nx, ny, figsize=(dim[1], dim[0]))
     else:
-        fig, axes = pl.subplots(nx, ny, figsize=figsize)
+        fig, axes = plt.subplots(nx, ny, figsize=figsize)
     lb = lbdim / dim
     tr = (lbdim + plotdim) / dim
     fig.subplots_adjust(left=lb[1], bottom=lb[0], right=tr[1], top=tr[0],
@@ -173,13 +114,12 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
     for j in range(nwalk):
         ax.plot(lnprob[j, :])
     ax.set_title(r'$\ln\,P$', y=1.02)
-    pl.tight_layout()
+    plt.tight_layout()
 
     return fig
 
-def subtriangle(sample_results, outname=None, showpars=None,
-                start=0, thin=1, truths=None, trim_outliers=None,
-                extents=None, **kwargs):
+def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
+                truths=None, trim_outliers=None, extents=None, **kwargs):
     """Make a triangle plot of the (thinned, latter) samples of the posterior
     parameter space.  Optionally make the plot only for a supplied subset of
     the parameters.
@@ -200,9 +140,7 @@ def subtriangle(sample_results, outname=None, showpars=None,
     import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
-    #parnames = np.array(sample_results['theta_labels'])
-    parnames = np.array(sample_results['theta_labels'])
-    parnames = _niceparnames(parnames)
+    parnames = np.array(sample_results['theta_labels'], dtype='>U15')
     
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
@@ -212,8 +150,7 @@ def subtriangle(sample_results, outname=None, showpars=None,
     if 'mass' in parnames:
         midx = [l=='mass' for l in parnames]
         flatchain[:,midx] = np.log10(flatchain[:,midx])
-        #parnames[midx] = 'logmass'
-        parnames[midx] =  r'$\log_{10}\,(M / M_{\odot})$'
+        parnames[midx] = 'logmass'
 
     # restrict to parameters you want to show
     if showpars is not None:
@@ -221,54 +158,14 @@ def subtriangle(sample_results, outname=None, showpars=None,
         flatchain = flatchain[:, ind_show]
         #truths = truths[ind_show]
         parnames = parnames[ind_show]
-    if trim_outliers is not None:
+
+    # Make nice labels.
+    niceparnames = _niceparnames(parnames)
+        
+    if trim_outliers:
         trim_outliers = len(parnames) * [trim_outliers]
 
-    fig = triangle.corner(flatchain, labels=parnames, truths=truths,  verbose=False,
-                          quantiles=[0.16, 0.5, 0.84], range=trim_outliers, **kwargs)
-
-    if outname is not None:
-        fig.savefig('{0}.triangle.png'.format(outname))
-    else:
-        return fig
-
-def obsdict(inobs, photflag):
-    """Return a dictionary of observational data, generated depending on
-    whether you're matching photometry or spectroscopy.
-    """
-    obs = inobs.copy()
-    if photflag == 0:
-        outn = 'spectrum'
-        marker = None
-    elif photflag == 1:
-        outn = 'sed'
-        marker = 'o'
-        obs['wavelength'] = np.array([f.wave_effective for f in obs['filters']])
-        obs['spectrum'] = obs['maggies']
-        obs['unc'] = obs['maggies_unc']
-        obs['mask'] = obs['phot_mask'] > 0
-
-    return obs, outn, marker
-
-## All this because scipy changed the name of one class, which
-## shouldn't even be a class.
-#
-#renametable = {
-#    'Result': 'OptimizeResult',
-#    }
-#
-#def mapname(name):
-#    if name in renametable:
-#        return renametable[name]
-#    return name
-#
-#def mapped_load_global(self):
-#    module = mapname(self.readline()[:-1])
-#    name = mapname(self.readline()[:-1])
-#    klass = self.find_class(module, name)
-#    self.append(klass)
-
-#def load(file):
-#    unpickler = pickle.Unpickler(file)
-#    unpickler.dispatch[pickle.GLOBAL] = mapped_load_global
-#    return unpickler.load()
+    fig = triangle.corner(flatchain, labels=niceparnames, truths=truths,  verbose=False,
+                          quantiles=[0.25, 0.5, 0.75], range=trim_outliers, **kwargs)
+    
+    return fig
