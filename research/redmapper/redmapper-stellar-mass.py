@@ -3,6 +3,8 @@
 """Wrapper on prospector to derive stellar masses for a subset of the redmapper
 sample.
 
+python ~/repos/git/siena-astrophysics/research/redmapper/redmapper-stellar-mass.py --verbose --seed 999 --nthreads 24 --do-fit > log 2>& 1 &
+
 """
 from __future__ import division, print_function
 
@@ -573,10 +575,24 @@ def main():
 
             # Grab the emcee / prospector outputs.
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
+            if not os.path.isfile(h5file):
+                print('HDF5 file {} not found; skipping.'.format(h5file))
+                continue
+            
             print('Reading {}'.format(h5file))
 
             results, guesses, model = read_results.results_from(h5file, model_file=None)
             nwalkers, niter, nparams = results['chain'][:, :, :].shape
+
+            # --------------------------------------------------
+            # Figure: Generate the best-fitting SED.
+            qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
+            print('Writing {}'.format(qafile))
+
+            fig = bestfit_sed(results, sps=sps, model=model)
+            fig.savefig(qafile)
+
+            pdb.set_trace()
 
             # --------------------------------------------------
             # Figure: Visualize a random sampling of the MCMC chains.
@@ -592,63 +608,8 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
 
-            fig = subtriangle(results)            
+            fig = subtriangle(results, thin=2)
             fig.savefig(qafile)
-
-            pdb.set_trace()
-
-            # --------------------------------------------------
-            # Figure: Generate the best-fitting SED.
-            qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
-            print('Writing {}'.format(qafile))
-
-            # Grab the maximum likelihood values.
-            flatchain = results['chain'].reshape(nwalkers * niter, nparams)
-            lnp = results['lnprobability'].reshape(nwalkers * niter)
-            theta = flatchain[lnp.argmax(), :] # maximum likelihood values
-
-            mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
-
-            # Use the filters to set the wavelength and flux limits...
-            wspec = sps.csp.wavelengths * (1 + results['obs']['zred']) # spectral wavelengths
-            wphot = np.array([f.wave_effective for f in results['obs']['filters']])
-            wphot_width = np.array([f.effective_width for f in results['obs']['filters']])
-
-            xmin, xmax = 1000.0, 6E4 
-            #xmin, xmax = wphot.min()*0.6, wphot.max()/0.8
-            temp = np.interp(np.linspace(xmin, xmax, 10000), wspec, mspec)
-            ymin, ymax = -0.1, temp.max()/0.6
-            #ymin, ymax = temp.min()*0.8, temp.max()/0.6
-
-            #fig.title('SED Best Fit')
-            fig, ax = plt.subplots(figsize=(12, 8))
-
-            wfactor = 1E-4
-            factor = 10**(0.4*16.4) # maggies --> mJy
-            #factor = 10**(0.4*23.9) # maggies --> microJy
-                    
-            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7,
-                    label='Model spectrum') # color='navy', 
-            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7,
-                    #label='Model spectrum')
-            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='',
-                        lw=3, markersize=20,
-                        markerfacecolor='none', markeredgewidth=3, # markeredgecolor='blue', 
-                        alpha=0.8, label='Model photometry')
-            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'],
-                        yerr=factor * results['obs']['maggies_unc'],
-                        marker='o', ls='', lw=3, markersize=10, #markerfacecolor='none',
-                        markeredgewidth=3, alpha=0.8, label='Observed photometry')
-                        #ecolor='red', markeredgecolor='red', 
-                
-            ax.set_xlabel(r'Observed-frame Wavelength (${}$m)'.format('\mu'))
-            ax.set_ylabel('Flux Density (mJy)')
-            ax.set_xlim([wfactor * xmin, wfactor * xmax])
-            ax.set_ylim([ymin, factor * ymax])
-            ax.legend(loc='upper right', fontsize=20)
-            fig.savefig(qafile)
-
-            pdb.set_trace()
 
 if __name__ == "__main__":
     main()

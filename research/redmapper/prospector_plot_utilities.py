@@ -1,10 +1,14 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
 """Convenience functions for reading and reconstructing results from a fitting
 run, including reconstruction of the model for making posterior samples.
 
 """
+import numpy as np
+import matplotlib.pyplot as plt
+
+ang2micron = 1e-4 # Angstrom --> micron
+maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
+#maggies2muJy = 10**(0.4*23.9) # maggies --> microJy
+
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 
@@ -28,6 +32,76 @@ def _niceparnames(parnames):
             niceparnames[this] = nn
 
     return niceparnames
+
+def _galaxyphot(obs):
+    """Get the galaxy photometry and inverse variances (converted to mJy) and filter
+    effective wavelengths (converted to microns).
+
+    """
+    weff = np.array([f.wave_effective for f in obs['filters']]) * ang2micron
+    fwhm = np.array([f.effective_width for f in obs['filters']]) * ang2micron
+
+    galphot = obs['maggies'] * maggies2mJy
+    galphoterr = obs['maggies_unc'] * maggies2mJy
+
+    return weff, galphot, galphoterr
+
+def _sed(model, theta, obs, sps):
+    """Construct the SED for a given set of parameters.  Divide by mextra to account
+    for the *current* mass in stars (rather than the integrated stellar mass
+    based on the SFH.
+
+    Also convert wavelengths from Angstroms to microns and fluxes from maggies
+    to mJy.
+
+    """
+    modelwave = sps.csp.wavelengths * (1 + obs['zred']) # [observed-frame wavelengths]
+    modelwave *= ang2micron 
+    
+    modelspec, modelphot, mextra = model.mean_model(theta, obs, sps=sps)
+    modelspec = modelspec * maggies2mJy / mextra
+    modelphot = modelphot * maggies2mJy / mextra
+    
+    return modelwave, modelspec, modelphot
+
+def bestfit_sed(sample_results, sps=None, model=None):
+    """Plot the (photometric) best-fitting SED.
+
+    """
+    obs = sample_results['obs']
+    nwalkers, niter, nparams = sample_results['chain'][:, :, :].shape
+
+    # Grab the maximum likelihood parameter values.
+    flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
+    lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
+    theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
+
+    # Get the galaxy photometry and build the maximum likelihood model fit.
+    weff, galphot, galphoterr = _galaxyphot(obs)
+    
+    modelwave, modelspec, modelphot = _sed(model=model, theta=theta_ml, obs=obs, sps=sps)
+    
+    # Set the wavelength and flux limits.
+    #minwave, maxwave = 0.1, 6.0
+    minwave, maxwave = np.min( (weff, modelwave) / 0.8 ), np.max( (weff, modelwave) * 1.2 )
+    print(minwave, maxwave)
+
+    minflux, maxflux = -0.1, np.max( (galphot + 3*galphoterr, modelspec) )
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.plot(modelwave, modelspec, lw=0.7, alpha=0.7, label='Model spectrum') # color='navy', 
+    ax.errorbar(weff, modelphot, marker='s', ls='', lw=3, markersize=20, markerfacecolor='none',
+                markeredgewidth=3, alpha=0.8, label='Model photometry')
+    ax.errorbar(weff, galphot, yerr=galphoterr, marker='o', ls='', lw=3, markersize=10, 
+                markeredgewidth=3, alpha=0.8, label='Observed photometry')
+                
+    ax.set_xlabel(r'Observed-frame Wavelength (${}$m)'.format('\mu'))
+    ax.set_ylabel('Flux Density (mJy)')
+    ax.set_xlim(minwave, maxwave)
+    ax.set_ylim(minflux, maxflux)
+    ax.legend(loc='upper right', fontsize=20)
+
+    return fig
 
 def param_evol(sample_results, showpars=None, start=0, figsize=None,
                chains=None, **plot_kwargs):
