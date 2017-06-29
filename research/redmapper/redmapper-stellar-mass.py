@@ -201,7 +201,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      mass, 
         'init_disp': 5e11, 
         'units': r'$M_{\odot}$',
-        'prior_function': priors.LogUniform(mini=1e8, maxi=1e13),
+        'prior': priors.LogUniform(mini=1e8, maxi=1e13),
         })
 
     model_params.append({
@@ -211,18 +211,18 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': logzsol,
         'init_disp': 0.3, # dex
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior_function': priors.TopHat(mini=-1.5, maxi=0.19),
+        'prior': priors.TopHat(mini=-1.5, maxi=0.19),
         })
 
     # Priors on dust
     model_params.append({
         'name': 'dust2',
         'N': 1,
-        'isfree': False,
+        'isfree': True,
         'init': dust2,
-        'init_disp': 0.3,
-        'units': '',
-        'prior_function': priors.TopHat(mini=0.0, maxi=2.0),
+        'init_disp': 0.2,
+        'units': '', # optical depth
+        'prior': priors.TopHat(mini=0.0, maxi=3.0),
         })
     
     # Prior on the IMF.
@@ -250,7 +250,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': tau,
         'init_disp': 1.0,
         'units': 'Gyr',
-        'prior_function': priors.LogUniform(mini=0.1, maxi=10.0),
+        'prior': priors.LogUniform(mini=0.01, maxi=10.0),
         })
 
     model_params.append( {
@@ -260,7 +260,7 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      tage,
         'init_disp':  3.0,
         'units':       'Gyr',
-        'prior_function': priors.TopHat(mini=0.5, maxi=15),
+        'prior': priors.TopHat(mini=0.1, maxi=15),
         })
 
     model = sedmodel.SedModel(model_params)
