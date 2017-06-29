@@ -30,11 +30,11 @@ def read_redmapper():
     cat = fitsio.read(redfile, ext=1)
     return cat
 
-def read_parent():
+def read_parent(prefix):
     """Read the parent (pilot) catalog."""
-    fitsfile = os.path.join(datadir(), 'pilot-sample.fits')
+    fitsfile = os.path.join(datadir(), '{}_sample.fits'.format(prefix))
     print('Reading {}'.format(fitsfile))
-    cat = fitsio.read(fitsfile, ext=1)
+    cat = fitsio.read(fitsfile, ext=1, upper=True)
     return cat
 
 def getobs(cat):
@@ -358,7 +358,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
-    parser.add_argument('--seed', type=int, default=None, help='Random number seed.')
+    parser.add_argument('--seed', type=int, default=1, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
@@ -392,6 +392,8 @@ def main():
         'zcontinuous': 1,           # interpolate in metallicity
         }
 
+    rand = np.random.RandomState(args.seed)
+
     if not args.build_sample:
         t0 = time()
         print('Initializing CSPSpecBasis...')
@@ -407,13 +409,13 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = [300, 301, 302]
-        #these = np.arange(200)
+        these = np.arange(2) # [300, 301, 302]
+        #these = np.arange(50) # [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
         #out = cat[:200]
 
-        outfile = os.path.join(datadir(), 'pilot-sample.fits')
+        outfile = os.path.join(datadir(), '{}_sample.fits'.format(run_params['prefix']))
         print('Writing {}'.format(outfile))
         fitsio.write(outfile, out, clobber=True)
 
@@ -424,7 +426,7 @@ def main():
         from prospect.io import write_results
 
         # Read the parent sample and loop on each object.
-        cat = read_parent()
+        cat = read_parent(prefix=run_params['prefix'])
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Fitting object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -537,7 +539,7 @@ def main():
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
             if run_params['verbose']:
-                print('Finished emcee sampling in {:.1f} minutes.'.format(edur / 60.0))
+                print('Finished emcee sampling in {:.2f} minutes.'.format(edur / 60.0))
             
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
@@ -551,17 +553,20 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
 
-            pdb.set_trace()
-
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
         from prospector_plot_utilities import param_evol, subtriangle
-        import seaborn as sns
+        #import seaborn as sns
         #sns.set(style='white', font_scale=1.8, palette='deep')
+        #sns.set(style='white', font_scale=3, palette='deep')
+        #sns.set(style='white', font_scale=4, palette='dark')
+        #sns.set_context("talk", rc={"lines.linewidth": 10})
+        #sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
+        #               'lines.markersize': 30})
         
         # Read the parent sample and loop on each object.
-        cat = read_parent()
+        cat = read_parent(prefix=run_params['prefix'])
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
@@ -569,46 +574,34 @@ def main():
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             print('Reading {}'.format(h5file))
 
-            results, guesses, model = read_results.results_from(h5file,model_file=None)
-            
-            # Reinitialize the model for this object since it's not written to disk(??).
-            model = load_model(results['obs']['zred'])
+            results, guesses, model = read_results.results_from(h5file, model_file=None)
+            nwalkers, niter, nparams = results['chain'][:, :, :].shape
 
-            # Figure 1: Visualize a random sampling of the MCMC chains.
-            sns.set(style='white', font_scale=3, palette='deep')
+            # --------------------------------------------------
+            # Figure: Visualize a random sampling of the MCMC chains.
+            thesechains = rand.choice(nwalkers, size=int(0.1*nwalkers), replace=False)
+            fig = param_evol(results, chains=thesechains)
 
-            chains = np.random.choice(results['run_params']['nwalkers'],
-                                      size=10, replace=False)
-            
-            qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
-            print('Generating {}'.format(qafile))
-            fig = param_evol(results, figsize=(20, 10), chains=chains)
-            #fig.title('Minimization Chains')
+            qafile = os.path.join(datadir(), '{}_{}_chains.png'.format(args.prefix, objprefix) )
+            print('Writing {}'.format(qafile))
             fig.savefig(qafile)
 
-            # Figure 2: Generate a corner/triangle plot of the free parameters.
+            # --------------------------------------------------
+            # Figure: Generate a corner/triangle plot of the free parameters.
             params = model.free_params
             nparams = len(params)
-            sns.set(style='white', font_scale=4, palette='dark')
-            #sns.set_context("talk", rc={"lines.linewidth": 10})
-            sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
-                           'lines.markersize': 30})
-            qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
-            print('Generating {}'.format(qafile))
-            #fig.title('Corners')
             fig = subtriangle(results, start=0, thin=5, truths=None,
-                              fig=plt.subplots(nparams, nparams,
-                                               figsize=(27, 27))[0])
-         
+                              fig=plt.subplots(nparams, nparams, figsize=(27, 27))[0])
         
-            
+            qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
+            print('Writing {}'.format(qafile))
             fig.savefig(qafile)
 
-            # Figure 3: Generate the best-fitting SED.
+            # --------------------------------------------------
+            # Figure: Generate the best-fitting SED.
             sns.set(style='white', font_scale=1.8, palette='deep')
 
             # Grab the maximum likelihood values.
-            nwalkers, niter, nparams = results['chain'][:, :, :].shape
             flatchain = results['chain'].reshape(nwalkers * niter, nparams)
             lnp = results['lnprobability'].reshape(nwalkers * niter)
             theta = flatchain[lnp.argmax(), :] # maximum likelihood values
