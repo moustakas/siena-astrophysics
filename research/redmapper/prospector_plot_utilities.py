@@ -86,6 +86,7 @@ def bestfit_sed(sample_results, sps=None, model=None):
     flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
     lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
     theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
+    print('Maximum likelihood values {}'.format(theta_ml))
 
     # Grab a random sampling of the chains with weight equal to the posterior
     # probability.
