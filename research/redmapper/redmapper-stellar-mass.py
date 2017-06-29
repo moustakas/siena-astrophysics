@@ -407,8 +407,8 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = [300, 301, 302]
-        #these = np.arange(200)
+        #these = [300, 301, 302]
+        these = np.arange(200)
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
         #out = cat[:200]
@@ -551,8 +551,7 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
 
-            pdb.set_trace()
-
+            
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
@@ -666,7 +665,6 @@ def main():
             ax.legend(loc='upper right', fontsize=20)
             fig.savefig(qafile)
 
-            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
