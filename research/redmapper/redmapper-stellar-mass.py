@@ -3,6 +3,8 @@
 """Wrapper on prospector to derive stellar masses for a subset of the redmapper
 sample.
 
+python ~/repos/git/siena-astrophysics/research/redmapper/redmapper-stellar-mass.py --verbose --seed 999 --nthreads 24 --do-fit > log 2>& 1 &
+
 """
 from __future__ import division, print_function
 
@@ -30,11 +32,11 @@ def read_redmapper():
     cat = fitsio.read(redfile, ext=1)
     return cat
 
-def read_parent():
+def read_parent(prefix):
     """Read the parent (pilot) catalog."""
-    fitsfile = os.path.join(datadir(), 'pilot-sample.fits')
+    fitsfile = os.path.join(datadir(), '{}_sample.fits'.format(prefix))
     print('Reading {}'.format(fitsfile))
-    cat = fitsio.read(fitsfile, ext=1)
+    cat = fitsio.read(fitsfile, ext=1, upper=True)
     return cat
 
 def getobs(cat):
@@ -72,17 +74,17 @@ def getobs(cat):
     # Use initial values based on the iSEDfit results.
     obs['zred'] = cat['Z'] # redshift
     obs['mass'] = 10**cat['MSTAR'] # stellar mass
-    obs['logzsol'] = np.log10(cat['ZMETAL']) # stellar metallicity
+    obs['logzsol'] = np.log10(cat['ZMETAL'] / 0.19) # stellar metallicity
     obs['tage'] = cat['AGE']  # age
     obs['tau'] = cat['TAU']   # tau (for a delayed SFH)
-    obs['dust2'] = 0.05
+    obs['dust2'] = 0.1
 
     # Additional informational keys.
     obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
 
-def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
+def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
     """Initialize the priors on each free and fixed parameter.
 
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
@@ -201,28 +203,28 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init':      mass, 
         'init_disp': 5e11, 
         'units': r'$M_{\odot}$',
-        'prior_function': priors.LogUniform(mini=1e8, maxi=1e13),
+        'prior': priors.LogUniform(mini=1e8, maxi=1e13),
         })
 
     model_params.append({
         'name': 'logzsol',
         'N': 1,
-        'isfree': False,
+        'isfree': True,
         'init': logzsol,
         'init_disp': 0.3, # dex
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior_function': priors.TopHat(mini=-1.5, maxi=0.19),
+        'prior': priors.TopHat(mini=np.log10(0.004/0.19), maxi=np.log10(0.04/0.19)), # roughly (0.2-2)*Z_sun
         })
 
     # Priors on dust
     model_params.append({
         'name': 'dust2',
         'N': 1,
-        'isfree': False,
+        'isfree': True,
         'init': dust2,
-        'init_disp': 0.3,
-        'units': '',
-        'prior_function': priors.TopHat(mini=0.0, maxi=2.0),
+        'init_disp': 0.2,
+        'units': '', # optical depth
+        'prior': priors.TopHat(mini=0.0, maxi=3.0),
         })
     
     # Prior on the IMF.
@@ -250,17 +252,17 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': tau,
         'init_disp': 1.0,
         'units': 'Gyr',
-        'prior_function': priors.LogUniform(mini=0.1, maxi=10.0),
+        'prior': priors.LogUniform(mini=0.1, maxi=10.0),
         })
 
     model_params.append( {
         'name':   'tage',
-        'N':       1,
+        'N':          1,
         'isfree':    True,
         'init':      tage,
         'init_disp':  3.0,
-        'units':       'Gyr',
-        'prior_function': priors.TopHat(mini=0.5, maxi=15),
+        'units':    'Gyr',
+        'prior': priors.TopHat(mini=0.5, maxi=15),
         })
 
     model = sedmodel.SedModel(model_params)
@@ -279,8 +281,9 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     from prospect.likelihood import (lnlike_spec, lnlike_phot, write_log,
                                      chi_spec, chi_phot)
 
+    # Calculate log-likelihoods--
     lnp_prior = model.prior_product(theta)
-    if not np.isfinite(lnp_prior):
+    if np.isinf(lnp_prior):
         return -np.infty
         
     # Generate the mean model--
@@ -294,7 +297,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     # Return chi vectors for least-squares optimization--
     if residuals:
         chispec = chi_spec(model_spec, obs)
-        chiphot = chi_phot(model_phot, obs)
+        chiphot = chi_phot(model_phot, obs)        
         return np.concatenate([chispec, chiphot])
 
     # Noise modeling--
@@ -310,7 +313,6 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         'cal': model._speccal, # object calibration spectrum
         }
 
-    # Calculate log-likelihoods--
     t2 = time()
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
@@ -322,13 +324,17 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
 
 def chisqfn(theta, model, obs, sps, verbose):
     """Return the negative of lnprobfn for minimization."""
-    return -lnprobfn(theta, model, obs, sps, verbose)
+    return -lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
+                     verbose=verbose)
 
 def chivecfn(theta, model, obs, sps, verbose):
-    """Return the residuals instead of a posterior probability or negative
-    chisq, for use with least-squares optimization methods
+    """Return the residuals instead of a posterior probability or negative chisq,
+    for use with least-squares optimization methods.
+
     """
-    return lnprobfn(theta, model, obs, sps, verbose, residuals=True)
+    resid = lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
+                     verbose=verbose, residuals=True)
+    return resid
 
 # MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
 # will only see up to sys.exit()
@@ -356,15 +362,52 @@ def halt(message):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--prefix', type=str, default='test', help='String to prepend to I/O files.')
+    parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
-    parser.add_argument('--seed', type=int, default=None, help='Random number seed.')
+    parser.add_argument('--seed', type=int, default=1, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
 
+    # Specify the run parameters and initialize the SPS object.
+    run_params = {
+        'prefix':  args.prefix,
+        'verbose': args.verbose,
+        'seed':    args.seed,
+        # initial optimization choices (nmin is only for L-M optimization)
+        'do_levenburg': True,
+        'do_powell': False,
+        'do_nelder_mead': False,
+        'nmin': 10,
+        # emcee fitting parameters
+        'nwalkers': 128,
+        'nburn': [32, 32, 64], 
+        'niter': 512,
+        'interval': 0.1, # save 10% of the chains at a time
+        # Nestle fitting parameters
+        'nestle_method': 'single',
+        'nestle_npoints': 200,
+        'nestle_maxcall': int(1e6),
+        # Multiprocessing
+        'nthreads': args.nthreads,
+        # SPS initialization parameters
+        'compute_vega_mags': False,
+        'vactoair_flag':      True, # use wavelengths in air
+        'zcontinuous': 1,           # interpolate in metallicity
+        }
+
+    rand = np.random.RandomState(args.seed)
+
+    if not args.build_sample:
+        t0 = time()
+        print('Initializing CSPSpecBasis...')
+        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
+                           compute_vega_mags=run_params['compute_vega_mags'],
+                           vactoair_flag=run_params['vactoair_flag'])
+        print('...took {:.1f} seconds.'.format(time() - t0))
+            
     if args.build_sample:
         # Read the parent redmapper catalog, choose a subset of objects and
         # write out.
@@ -372,11 +415,13 @@ def main():
 
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
-        these = [300, 301, 302]
+        #these = np.arange(2) # [300, 301, 302]
+        these = np.arange(50) # [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
+        #out = cat[:200]
 
-        outfile = os.path.join(datadir(), 'pilot-sample.fits')
+        outfile = os.path.join(datadir(), '{}_sample.fits'.format(run_params['prefix']))
         print('Writing {}'.format(outfile))
         fitsio.write(outfile, out, clobber=True)
 
@@ -386,43 +431,8 @@ def main():
         from prospect import fitting
         from prospect.io import write_results
 
-        # Specify the run parameters.
-        run_params = {
-            'prefix':  args.prefix,
-            'verbose': args.verbose,
-            'seed':    args.seed,
-            # initial optimization choices (nmin is only for L-M optimization)
-            'do_levenburg': True,
-            'do_powell': False,
-            'do_nelder_mead': False,
-            'nmin': 10,
-            # emcee fitting parameters
-            'nwalkers': 128,
-            'nburn': [32, 32, 64], 
-            'niter': 512,
-            'interval': 0.1, # save 10% of the chains at a time
-            # Nestle fitting parameters
-            'nestle_method': 'single',
-            'nestle_npoints': 200,
-            'nestle_maxcall': int(1e6),
-            # Multiprocessing
-            'nthreads': args.nthreads,
-            # SPS initialization parameters
-            'compute_vega_mags': False,
-            'vactoair_flag':      True, # use wavelengths in air
-            'zcontinuous': 1,           # interpolate in metallicity
-            }
-
-        # Initialize the SPS object.
-        t0 = time()
-        print('Initializing the CSPSpecBasis object...')
-        sps = CSPSpecBasis(zcontinuous=run_params['zcontinuous'],
-                           compute_vega_mags=run_params['compute_vega_mags'],
-                           vactoair_flag=run_params['vactoair_flag'])
-        print('...took {:.1f} seconds.'.format(time() - t0))
-            
         # Read the parent sample and loop on each object.
-        cat = read_parent()
+        cat = read_parent(prefix=run_params['prefix'])
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Fitting object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -430,17 +440,18 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(zred=obs['zred'], mass=obs['mass'],
-                               logzsol=obs['logzsol'], tage=obs['tage'],
-                               tau=obs['tau'], dust2=obs['dust2'])
+            #model = load_model(zred=obs['zred'])
+            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
+                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
+                print('Free parameters: {}'.format(model.free_params))
                 print('Initial parameter values: {}'.format(model.initial_theta))
             initial_theta = model.rectify_theta(model.initial_theta) # make zeros tiny numbers
 
             if bool(run_params.get('do_powell', True)):
-                ts = time()
+                tstart = time()
                 # optimization options
                 powell_opt = {'ftol': run_params.get('ftol', 0.5e-5),
                               'xtol': 1e-6,
@@ -456,18 +467,18 @@ def main():
                 initial_center = fitting.reinitialize(guesses[best].x, model,
                                                       edge_trunc=run_params.get('edge_trunc', 0.1))
                 initial_prob = -1 * guesses[best]['fun']
-                pdur = time() - ts
+                pdur = time() - tstart
                 if run_params['verbose']:
-                    print('Powell initialization took {:.0f} seconds.'.format(pdur))
+                    print('Powell initialization took {:.1f} seconds.'.format(pdur))
                     print('Best Powell guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
             elif bool(run_params.get('do_nelder_mead', True)):
                 from scipy.optimize import minimize
-                ts = time()
+                tstart = time()
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
                 guesses = minimize(chisqfn, initial_theta, args=chi2args, method='nelder-mead')
-                pdur = time() - ts
+                pdur = time() - tstart
 
                 # Hack to recenter values outside the parameter bounds!
                 initial_center = fitting.reinitialize(guesses.x, model,
@@ -475,21 +486,20 @@ def main():
                 initial_prob = -1 * guesses['fun']
                 
                 if run_params['verbose']:
-                    print('Nelder-Mead initialization took {:.0f} seconds.'.format(pdur))
+                    print('Nelder-Mead initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
                     
             elif bool(run_params.get('do_levenburg', True)):
                 from scipy.optimize import least_squares
-                ts = time()
+                tstart = time()
                 nmin = run_params['nmin']
                 
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
-                pinitial = fitting.minimizer_ball(model.initial_theta.copy(), nmin, model,
-                                                  seed=run_params['seed'])
+                pinitial = fitting.minimizer_ball(initial_theta, nmin, model, seed=run_params['seed'])
                 guesses = []
-                for i, pinit in enumerate(pinitial):
-                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)
+                for pinit in pinitial:
+                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)#, verbose=1)
                     guesses.append(res)
         
                 chisq = [np.sum(r.fun**2) for r in guesses]
@@ -499,9 +509,9 @@ def main():
                 initial_center = fitting.reinitialize(guesses[best].x, model,
                                                       edge_trunc=run_params.get('edge_trunc', 0.1))
                 initial_prob = None
-                pdur = time() - ts
+                pdur = time() - tstart
                 if run_params['verbose']:
-                    print('Levenburg-Marquardt initialization took {:.0f} seconds.'.format(pdur))
+                    print('Levenburg-Marquardt initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
         
@@ -514,21 +524,18 @@ def main():
                 initial_prob = None
 
             # Initialize the HDF5 output file and write some basic info.
-            if run_params['verbose']:
-                print('Starting emcee sampling at {}'.format(asctime()))
             outroot = '{}_{}'.format(run_params['prefix'], objprefix)
-
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
             if os.path.isfile(hfilename):
                 os.remove(hfilename)
             
             hfile = h5py.File(hfilename, 'a')
-            if run_params['verbose']:
-                print('Writing to HDF5 file {}'.format(hfilename))
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
             
+            if run_params['verbose']:
+                print('Started emcee sampling on {}'.format(asctime()))
             tstart = time()
             out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, verbose=run_params['verbose'],
                                             nthreads=run_params['nthreads'], nwalkers=run_params['nwalkers'],
@@ -538,7 +545,7 @@ def main():
             esampler, burn_p0, burn_prob0 = out
             edur = time() - tstart
             if run_params['verbose']:
-                print('Finished emcee in {:.0f} seconds.'.format(edur))
+                print('Finished emcee sampling in {:.2f} minutes.'.format(edur / 60.0))
             
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
@@ -552,133 +559,54 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
 
+            pdb.set_trace()
+
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
-        from prospector_plot_utilities import param_evol, subtriangle
-        #from matplotlib import rcParams
-        
-        import seaborn as sns
-        #sns.set(style='white', font_scale=1.8, palette='deep')
-        
-        
-        # Load the default SPS model.
-        t0 = time()
-        print('Note: hard-coding zcontinuous!')
-        sps = CSPSpecBasis(zcontinuous=1, compute_vega_mags=False)
-        print('Initializing the CSPSpecBasis Class took {:.1f} seconds.'.format(time() - t0))
-        
+        from prospector_plot_utilities import param_evol, subtriangle, bestfit_sed
+
         # Read the parent sample and loop on each object.
-        cat = read_parent()
+        cat = read_parent(prefix=run_params['prefix'])
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
             # Grab the emcee / prospector outputs.
-            #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(args.prefix, objprefix) )
-            h5file = os.path.join( datadir(),
-                                   'test_{}_mcmc.h5'.format(objprefix) )
+            h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
+            if not os.path.isfile(h5file):
+                print('HDF5 file {} not found; skipping.'.format(h5file))
+                continue
             print('Reading {}'.format(h5file))
 
-            results, min_results, model = read_results.results_from(h5file,model_file=None)
-            
-            # Reinitialize the model for this object since it's not written to disk(??).
-            model = load_model(results['obs']['zred'])
+            results, guesses, model = read_results.results_from(h5file, model_file=None)
+            nwalkers, niter, nparams = results['chain'][:, :, :].shape
 
-            # Figure 1: Visualize a random sampling of the MCMC chains.
-            sns.set(style='white', font_scale=3, palette='deep')
-
-            chains = np.random.choice(results['run_params']['nwalkers'],
-                                      size=10, replace=False)
-            
-            qafile = os.path.join(datadir(), '{}_{}_traces.png'.format(args.prefix, objprefix) )
-            print('Generating {}'.format(qafile))
-            fig = param_evol(results, figsize=(20, 10), chains=chains)
-            #fig.title('Minimization Chains')
-            fig.savefig(qafile)
-
-            # Figure 2: Generate a corner/triangle plot of the free parameters.
-            params = model.free_params
-            nparams = len(params)
-            sns.set(style='white', font_scale=4, palette='dark')
-            #sns.set_context("talk", rc={"lines.linewidth": 10})
-            sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
-                           'lines.markersize': 30})
-            qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
-            print('Generating {}'.format(qafile))
-            #fig.title('Corners')
-            fig = subtriangle(results, start=0, thin=5, truths=None,
-                              fig=plt.subplots(nparams, nparams,
-                                               figsize=(27, 27))[0])
-         
-        
-            
-            fig.savefig(qafile)
-
-            # Figure 3: Generate the best-fitting SED.
-            sns.set(style='white', font_scale=1.8, palette='deep')
-            
-            # Show the last iteration of a randomly selected walker.
-            nwalkers, niter = results['run_params']['nwalkers'],results['run_params']['niter']
-            if False:
-                theta = results['chain'][nwalkers // 2, niter-1] # initial parameters
-            else:
-                #print('Plotting based on Powell!!!')
-                #theta = min_results.x # initial parameters
-                theta = results['model'].initial_theta
-            
-            mspec, mphot, mextra = model.mean_model(theta, results['obs'], sps=sps)
-            print(mextra)
-
-            # Use the filters to set the wavelength and flux limits...
-            wspec = sps.csp.wavelengths * (1 + results['obs']['zred']) # spectral wavelengths
-            wphot = np.array([f.wave_effective for f in results['obs']['filters']])
-            wphot_width = np.array([f.effective_width for f in results['obs']['filters']])
-
-            xmin, xmax = 1000.0, 6E4 
-            #xmin, xmax = wphot.min()*0.6, wphot.max()/0.8
-            temp = np.interp(np.linspace(xmin, xmax, 10000), wspec, mspec)
-            ymin, ymax = -0.1, temp.max()/0.6
-            #ymin, ymax = temp.min()*0.8, temp.max()/0.6
-
+            # --------------------------------------------------
+            # Figure: Generate the best-fitting SED.
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
-            print('Generating {}'.format(qafile))
-            #fig.title('SED Best Fit')
-            fig, ax = plt.subplots(figsize=(12, 8))
+            print('Writing {}'.format(qafile))
 
-            # Plot the filter curves...
-            if False:
-                for ff in range(len(wphot)):
-                    f = results['obs']['filters'][ff]
-                    w, t = f.wavelength.copy(), f.transmission.copy()
-                    while t.max() > 1:
-                        t /= 10.0
-                        t = 0.1*(ymax-ymin)*t + ymin
-                        ax.loglog(w, t, lw=3, color='gray', alpha=0.7)
-
-            wfactor = 1E-4
-            factor = 10**(0.4*16.4) # maggies --> mJy
-            #factor = 10**(0.4*23.9) # maggies --> microJy
-                    
-            ax.plot(wfactor * wspec, factor * mspec /  mextra, lw=0.7, alpha=0.7,
-                    label='Model spectrum') # color='navy', 
-            #ax.loglog(wspec, mspec / mextra, lw=0.7, color='navy', alpha=0.7,
-                    #label='Model spectrum')
-            ax.errorbar(wfactor * wphot, factor * mphot / mextra, marker='s', ls='',
-                        lw=3, markersize=20,
-                        markerfacecolor='none', markeredgewidth=3, # markeredgecolor='blue', 
-                        alpha=0.8, label='Model photometry')
-            ax.errorbar(wfactor * wphot, factor * results['obs']['maggies'],
-                        yerr=factor * results['obs']['maggies_unc'],
-                        marker='o', ls='', lw=3, markersize=10, #markerfacecolor='none',
-                        markeredgewidth=3, alpha=0.8, label='Observed photometry')
-                        #ecolor='red', markeredgecolor='red', 
-                
-            ax.set_xlabel(r'Observed-frame Wavelength (${}$m)'.format('\mu'))
-            ax.set_ylabel('Flux Density (mJy)')
-            ax.set_xlim([wfactor * xmin, wfactor * xmax])
-            ax.set_ylim([ymin, factor * ymax])
-            ax.legend(loc='upper right', fontsize=20)
+            fig = bestfit_sed(results, sps=sps, model=model)
             fig.savefig(qafile)
+
+            # --------------------------------------------------
+            # Figure: Visualize a random sampling of the MCMC chains.
+            qafile = os.path.join(datadir(), '{}_{}_chains.png'.format(args.prefix, objprefix) )
+            print('Writing {}'.format(qafile))
+
+            thesechains = rand.choice(nwalkers, size=int(0.1*nwalkers), replace=False)
+            fig = param_evol(results, chains=thesechains)
+            fig.savefig(qafile)
+
+            # --------------------------------------------------
+            # Figure: Generate a corner/triangle plot of the free parameters.
+            qafile = os.path.join(datadir(), '{}_{}_corner.png'.format(args.prefix, objprefix))
+            print('Writing {}'.format(qafile))
+
+            fig = subtriangle(results, thin=2)
+            fig.savefig(qafile)
+
+            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
