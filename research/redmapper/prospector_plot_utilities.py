@@ -2,8 +2,19 @@
 run, including reconstruction of the model for making posterior samples.
 
 """
+import pdb
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style='white', font_scale=1.8, palette='deep')
+setcolors = sns.color_palette()
+    
+#sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3, 'lines.markersize': 30})
+#sns.set(style='white', font_scale=1.8, palette='deep')
+#sns.set(style='white', font_scale=3, palette='deep')
+#sns.set(style='white', font_scale=4, palette='dark')
+#sns.set_context("talk", rc={"lines.linewidth": 10})
+#sns.set(style='white', font_scale=1.8, palette='deep')
 
 ang2micron = 1e-4 # Angstrom --> micron
 maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
@@ -44,7 +55,7 @@ def _galaxyphot(obs):
     galphot = obs['maggies'] * maggies2mJy
     galphoterr = obs['maggies_unc'] * maggies2mJy
 
-    return weff, galphot, galphoterr
+    return weff, fwhm, galphot, galphoterr
 
 def _sed(model, theta, obs, sps):
     """Construct the SED for a given set of parameters.  Divide by mextra to account
@@ -76,30 +87,38 @@ def bestfit_sed(sample_results, sps=None, model=None):
     lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
     theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
 
+    # Grab a random sampling of the chains with weight equal to the posterior
+    # probability.
+
+
     # Get the galaxy photometry and build the maximum likelihood model fit.
-    weff, galphot, galphoterr = _galaxyphot(obs)
+    weff, fwhm, galphot, galphoterr = _galaxyphot(obs)
     
     modelwave, modelspec, modelphot = _sed(model=model, theta=theta_ml, obs=obs, sps=sps)
     
     # Set the wavelength and flux limits.
     #minwave, maxwave = 0.1, 6.0
-    minwave, maxwave = np.min( (weff, modelwave) / 0.8 ), np.max( (weff, modelwave) * 1.2 )
-    print(minwave, maxwave)
+    minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + 2*fwhm)
 
-    minflux, maxflux = -0.1, np.max( (galphot + 3*galphoterr, modelspec) )
+    inrange = (modelwave > minwave) * (modelwave < maxwave)
+    #maxflux = np.max(galphot + 5*galphoterr)
+    #maxflux = np.hstack( (galphot + 3*galphoterr, modelphot) ).max() * 1.05
+    maxflux = np.hstack( (galphot + 3*galphoterr, modelspec[inrange]) ).max() * 1.05
+    minflux = -0.05 * maxflux
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(modelwave, modelspec, lw=0.7, alpha=0.7, label='Model spectrum') # color='navy', 
+    ax.plot(modelwave, modelspec, label='Model spectrum')
     ax.errorbar(weff, modelphot, marker='s', ls='', lw=3, markersize=20, markerfacecolor='none',
                 markeredgewidth=3, alpha=0.8, label='Model photometry')
-    ax.errorbar(weff, galphot, yerr=galphoterr, marker='o', ls='', lw=3, markersize=10, 
+    ax.errorbar(weff, galphot, yerr=galphoterr, marker='o', ls='', lw=3, markersize=10,
                 markeredgewidth=3, alpha=0.8, label='Observed photometry')
                 
     ax.set_xlabel(r'Observed-frame Wavelength (${}$m)'.format('\mu'))
     ax.set_ylabel('Flux Density (mJy)')
     ax.set_xlim(minwave, maxwave)
     ax.set_ylim(minflux, maxflux)
-    ax.legend(loc='upper right', fontsize=20)
+    ax.legend(loc='upper right', fontsize=18, frameon=False)
+    fig.subplots_adjust(left=0.1, right=0.95, bottom=0.12, top=0.95)
 
     return fig
 
@@ -240,6 +259,7 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
         trim_outliers = len(parnames) * [trim_outliers]
 
     fig = triangle.corner(flatchain, labels=niceparnames, truths=truths,  verbose=False,
-                          quantiles=[0.25, 0.5, 0.75], range=trim_outliers, **kwargs)
+                          quantiles=[0.25, 0.5, 0.75], range=trim_outliers,
+                          color=setcolors[3], label_kwargs={'fontsize': 10}, **kwargs)
     
     return fig

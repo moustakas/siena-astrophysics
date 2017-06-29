@@ -74,17 +74,17 @@ def getobs(cat):
     # Use initial values based on the iSEDfit results.
     obs['zred'] = cat['Z'] # redshift
     obs['mass'] = 10**cat['MSTAR'] # stellar mass
-    obs['logzsol'] = np.log10(cat['ZMETAL']) # stellar metallicity
+    obs['logzsol'] = np.log10(cat['ZMETAL'] / 0.19) # stellar metallicity
     obs['tage'] = cat['AGE']  # age
     obs['tau'] = cat['TAU']   # tau (for a delayed SFH)
-    obs['dust2'] = 0.05
+    obs['dust2'] = 0.1
 
     # Additional informational keys.
     obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
 
-def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
+def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
     """Initialize the priors on each free and fixed parameter.
 
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
@@ -209,19 +209,19 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
     model_params.append({
         'name': 'logzsol',
         'N': 1,
-        'isfree': False,
+        'isfree': True,
         'init': logzsol,
         'init_disp': 0.3, # dex
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior': priors.TopHat(mini=-1.5, maxi=0.19),
+        'prior': priors.TopHat(mini=np.log10(0.004/0.19), maxi=np.log10(0.04/0.19)), # roughly (0.2-2)*Z_sun
         })
 
     # Priors on dust
     model_params.append({
         'name': 'dust2',
         'N': 1,
-        'isfree': False,
-        'init': 0.0, # dust2,
+        'isfree': True,
+        'init': dust2,
         'init_disp': 0.2,
         'units': '', # optical depth
         'prior': priors.TopHat(mini=0.0, maxi=3.0),
@@ -252,17 +252,17 @@ def load_model(zred=0.0, mass=1e11, logzsol=0.0, tage=12.0, tau=1.0, dust2=0.1):
         'init': tau,
         'init_disp': 1.0,
         'units': 'Gyr',
-        'prior': priors.LogUniform(mini=0.01, maxi=10.0),
+        'prior': priors.LogUniform(mini=0.1, maxi=10.0),
         })
 
     model_params.append( {
         'name':   'tage',
-        'N':       1,
+        'N':          1,
         'isfree':    True,
         'init':      tage,
         'init_disp':  3.0,
-        'units':       'Gyr',
-        'prior': priors.TopHat(mini=0.1, maxi=15),
+        'units':    'Gyr',
+        'prior': priors.TopHat(mini=0.5, maxi=15),
         })
 
     model = sedmodel.SedModel(model_params)
@@ -281,8 +281,9 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     from prospect.likelihood import (lnlike_spec, lnlike_phot, write_log,
                                      chi_spec, chi_phot)
 
+    # Calculate log-likelihoods--
     lnp_prior = model.prior_product(theta)
-    if not np.isfinite(lnp_prior):
+    if np.isinf(lnp_prior):
         return -np.infty
         
     # Generate the mean model--
@@ -296,7 +297,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     # Return chi vectors for least-squares optimization--
     if residuals:
         chispec = chi_spec(model_spec, obs)
-        chiphot = chi_phot(model_phot, obs)
+        chiphot = chi_phot(model_phot, obs)        
         return np.concatenate([chispec, chiphot])
 
     # Noise modeling--
@@ -312,7 +313,6 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         'cal': model._speccal, # object calibration spectrum
         }
 
-    # Calculate log-likelihoods--
     t2 = time()
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
@@ -324,13 +324,17 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
 
 def chisqfn(theta, model, obs, sps, verbose):
     """Return the negative of lnprobfn for minimization."""
-    return -lnprobfn(theta, model, obs, sps, verbose)
+    return -lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
+                     verbose=verbose)
 
 def chivecfn(theta, model, obs, sps, verbose):
-    """Return the residuals instead of a posterior probability or negative
-    chisq, for use with least-squares optimization methods
+    """Return the residuals instead of a posterior probability or negative chisq,
+    for use with least-squares optimization methods.
+
     """
-    return lnprobfn(theta, model, obs, sps, verbose, residuals=True)
+    resid = lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
+                     verbose=verbose, residuals=True)
+    return resid
 
 # MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
 # will only see up to sys.exit()
@@ -436,12 +440,13 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(zred=obs['zred'], mass=obs['mass'],
-                               logzsol=obs['logzsol'], tage=obs['tage'],
-                               tau=obs['tau'], dust2=obs['dust2'])
+            #model = load_model(zred=obs['zred'])
+            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
+                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
+                print('Free parameters: {}'.format(model.free_params))
                 print('Initial parameter values: {}'.format(model.initial_theta))
             initial_theta = model.rectify_theta(model.initial_theta) # make zeros tiny numbers
 
@@ -491,11 +496,10 @@ def main():
                 nmin = run_params['nmin']
                 
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
-                pinitial = fitting.minimizer_ball(model.initial_theta.copy(), nmin, model,
-                                                  seed=run_params['seed'])
+                pinitial = fitting.minimizer_ball(initial_theta, nmin, model, seed=run_params['seed'])
                 guesses = []
-                for i, pinit in enumerate(pinitial):
-                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)
+                for pinit in pinitial:
+                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)#, verbose=1)
                     guesses.append(res)
         
                 chisq = [np.sum(r.fun**2) for r in guesses]
@@ -555,18 +559,12 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
 
+            pdb.set_trace()
+
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
-        from prospector_plot_utilities import param_evol, subtriangle
-        #import seaborn as sns
-        #sns.set(style='white', font_scale=1.8, palette='deep')
-        #sns.set(style='white', font_scale=3, palette='deep')
-        #sns.set(style='white', font_scale=4, palette='dark')
-        #sns.set_context("talk", rc={"lines.linewidth": 10})
-        #sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3,
-        #               'lines.markersize': 30})
-        #sns.set(style='white', font_scale=1.8, palette='deep')
+        from prospector_plot_utilities import param_evol, subtriangle, bestfit_sed
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
@@ -578,7 +576,6 @@ def main():
             if not os.path.isfile(h5file):
                 print('HDF5 file {} not found; skipping.'.format(h5file))
                 continue
-            
             print('Reading {}'.format(h5file))
 
             results, guesses, model = read_results.results_from(h5file, model_file=None)
@@ -591,8 +588,6 @@ def main():
 
             fig = bestfit_sed(results, sps=sps, model=model)
             fig.savefig(qafile)
-
-            pdb.set_trace()
 
             # --------------------------------------------------
             # Figure: Visualize a random sampling of the MCMC chains.
@@ -610,6 +605,8 @@ def main():
 
             fig = subtriangle(results, thin=2)
             fig.savefig(qafile)
+
+            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
