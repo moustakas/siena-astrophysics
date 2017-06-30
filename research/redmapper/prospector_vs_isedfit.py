@@ -7,13 +7,14 @@ import sys
 import pdb
 import argparse
 
-import matplotlib as plt
+import matplotlib.pylab as plt
 import numpy as np
 from glob import glob
 
 import h5py
 from prospect.io import read_results
 import fitsio
+import seaborn as sns
 
 def datadir():
     """Return the top-level data directory."""
@@ -40,28 +41,39 @@ def main():
         }
         
     if args.plottype:
-        these = np.arange(4)
+        # read in the iSEDfit masses
+        these = np.arange(4) # prospector sample objects
         cat = read_redmapper()
-        out = cat[these]
+        out = cat[these] # match the cat catalog with the prospector sample objects
         # read in the hdf5 files and isedfit catalog values
         pros_results = []
-        for obj in cat:
+        for obj in out:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format('test', objprefix) )
-            results, guesses, model = read_results.results_from(h5file,model_file=None)
+            results, guesses, model = read_results.results_from(h5file,model_file=None) #just care about the results
         
-        
+            # calculate the max likehood value
             nwalkers, niter, nparams = results['chain'][:, :, :].shape
             flatchain = results['chain'].reshape(nwalkers * niter, nparams)
             lnp = results['lnprobability'].reshape(nwalkers * niter)
             theta = flatchain[lnp.argmax(), :] # maximum likelihood values
 
-            
+            # make an array with the max liklihood values of each object in the sample. 
             pros_results.append(theta[0])
+            
         # make plots of our results vs isedfit. Default is mass vs mass.
-        plt.plot(np.log(pros_results), cat['MSTAR'])
-        qafile = os.path.join(datadir(), '{}_{}_compare.png'.format(args.prefix, objprefix))
+        pros_results = np.asarray(pros_results)
+        log_results = np.log10(pros_results)
+
+        #seaborn.regplot(log_results, out['MSTAR'], x = 'prospector (logm)', y = 'iSEDfit (logm)') 
+        plt.figure()
+        plt.plot(log_results, out['MSTAR'], color='b')
+        plt.xlabel('Prospector log M')
+        plt.ylabel('iSEDfit log M')
+        plt.title('Prospector vs. iSEDfit')
+        
+        qafile = os.path.join(datadir(), '{}_compare.png'.format(args.prefix))
         plt.savefig(qafile)
 
         
