@@ -66,9 +66,10 @@ def main():
         pros_results = np.asarray(pros_results)
         log_results = np.log10(pros_results)
 
+    
         #seaborn.regplot(log_results, out['MSTAR'], x = 'prospector (logm)', y = 'iSEDfit (logm)') 
         plt.figure()
-        plt.plot(log_results, out['MSTAR'], color='b')
+        plt.scatter(log_results, out['MSTAR'], color='b')
         plt.xlabel('Prospector log M')
         plt.ylabel('iSEDfit log M')
         plt.title('Prospector vs. iSEDfit')
