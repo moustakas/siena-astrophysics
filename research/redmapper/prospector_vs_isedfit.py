@@ -32,15 +32,26 @@ def read_redmapper():
 def main():
     # gather information from hdf5 files and make a plot of results vs isedfit results
     parser = argparse.ArgumentParser()
-    parser.add_argument('--plottype', action='store_true', help='choose axis for plot')
+    parser.add_argument('--plottype', type=str, default='mass', help='make a mass vs mass plot.')
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     args = parser.parse_args()
 
     run_params = {
         'prefix':  args.prefix,
         }
+
+    # If gather_results::
+    #    Find the set of galaxies fitted using glob
+    #    Create an empty Table() with all the columns you want.
+    #       mass, logzsol, tage, tau, dust1, filename(?), chi2 (convert from lnp), ...
+    #    Loop on each object, read the HDF5 file and populate your table.
+    #    Write out the table.
+    # If makeplots:
+    #    Read previous table.
+    #    Read iSEDfit results + match.
+    #    Make super awesome plots.
         
-    if args.plottype:
+    if args.plottype.lower() == 'mass':
         # read in the iSEDfit masses
         these = np.arange(4) # prospector sample objects
         cat = read_redmapper()
@@ -65,17 +76,15 @@ def main():
         # make plots of our results vs isedfit. Default is mass vs mass.
         pros_results = np.asarray(pros_results)
         log_results = np.log10(pros_results)
-
     
-        #seaborn.regplot(log_results, out['MSTAR'], x = 'prospector (logm)', y = 'iSEDfit (logm)') 
-        plt.figure()
-        plt.scatter(log_results, out['MSTAR'], color='b')
-        plt.xlabel('Prospector log M')
-        plt.ylabel('iSEDfit log M')
-        plt.title('Prospector vs. iSEDfit')
+        #seaborn.regplot(log_results, out['MSTAR'], x = 'prospector (logm)', y = 'iSEDfit (logm)')
+        fig, ax = plt.subplots()
+        ax.scatter(log_results, out['MSTAR'], color='b')
+        ax.set_xlabel('Prospector log M')
+        ax.set_ylabel('iSEDfit log M')
         
-        qafile = os.path.join(datadir(), '{}_compare.png'.format(args.prefix))
-        plt.savefig(qafile)
+        qafile = os.path.join(datadir(), '{}_mass.png'.format(args.prefix))
+        fig.savefig(qafile)
 
         
 if __name__ == "__main__":
