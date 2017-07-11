@@ -416,7 +416,7 @@ def main():
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
         #these = np.arange(2) # [300, 301, 302]
-        these = np.arange(50) # [300, 301, 302]
+        these = np.arange(10) # [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
         #out = cat[:200]
@@ -585,7 +585,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
 
-            fig = bestfit_sed(results, sps=sps, model=model)
+            fig = bestfit_sed(results, sps=None, model=None)
             fig.savefig(qafile)
 
             # --------------------------------------------------

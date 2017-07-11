@@ -10,6 +10,7 @@ import argparse
 import matplotlib.pylab as plt
 import numpy as np
 from glob import glob
+from astropy.table import Table
 
 import h5py
 from prospect.io import read_results
@@ -32,6 +33,7 @@ def read_redmapper():
 def main():
     # gather information from hdf5 files and make a plot of results vs isedfit results
     parser = argparse.ArgumentParser()
+    #parser.add_argument('--gather-results', action='store_true', help='gather the objects sampled on')
     parser.add_argument('--plottype', type=str, default='mass', help='make a mass vs mass plot.')
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     args = parser.parse_args()
@@ -40,6 +42,10 @@ def main():
         'prefix':  args.prefix,
         }
 
+    #if args.gather_results():
+        
+    sample = glob(os.path.join('redmapper_sdssphot_*_mcmc.h5'))
+    pdb.set_trace()
     # If gather_results::
     #    Find the set of galaxies fitted using glob
     #    Create an empty Table() with all the columns you want.
