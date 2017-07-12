@@ -179,7 +179,10 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
     
     model_params = []
 
-    # (Fixed) prior on galaxy redshift.
+    ##################################################
+    # Fixed priors
+
+    # Galaxy redshift
     model_params.append({
         'name': 'zred',
         'N': 1,
@@ -187,8 +190,8 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'init': zred,
         'units': '',
         })
-    
-    # Priors on stellar mass and stellar metallicity.
+
+    # Stellar mass units
     model_params.append({
         'name': 'mass_units',
         'N': 1,
@@ -196,38 +199,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'init': 'mformed'
         })
 
-    model_params.append({
-        'name': 'mass',
-        'N': 1,
-        'isfree': True,
-        'init':      mass, 
-        'init_disp': 5e11, 
-        'units': r'$M_{\odot}$',
-        'prior': priors.LogUniform(mini=1e8, maxi=1e13),
-        })
-
-    model_params.append({
-        'name': 'logzsol',
-        'N': 1,
-        'isfree': True,
-        'init': logzsol,
-        'init_disp': 0.3, # dex
-        'units': r'$\log_{10}\, (Z/Z_\odot)$',
-        'prior': priors.TopHat(mini=np.log10(0.004/0.19), maxi=np.log10(0.04/0.19)), # roughly (0.2-2)*Z_sun
-        })
-
-    # Priors on dust
-    model_params.append({
-        'name': 'dust2',
-        'N': 1,
-        'isfree': True,
-        'init': dust2,
-        'init_disp': 0.2,
-        'units': '', # optical depth
-        'prior': priors.TopHat(mini=0.0, maxi=3.0),
-        })
-    
-    # Prior on the IMF.
+    # IMF (Chabrier)
     model_params.append({
         'name': 'imf_type',
         'N': 1,
@@ -236,7 +208,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'units': ''
         })
 
-    # Priors on SFH type (fixed), tau, and age.
+    # SFH parameterization (delayed-tau)
     model_params.append({
         'name': 'sfh',
         'N': 1,
@@ -245,24 +217,65 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'units': 'type'
         })
 
+    ##################################################
+    # Free priors / parameters
+    
+    # Priors on stellar mass and stellar metallicity
+    mass_prior = priors.LogUniform(mini=1e8, maxi=1e13)
+    model_params.append({
+        'name': 'mass',
+        'N': 1,
+        'isfree': True,
+        'init':      mass_prior.sample(), # mass, 
+        #'init_disp': 5e11, 
+        'units': r'$M_{\odot}$',
+        'prior': mass_prior,
+        })
+
+    logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.19), maxi=np.log10(0.04/0.19))
+    model_params.append({
+        'name': 'logzsol',
+        'N': 1,
+        'isfree': True,
+        'init': logzsol_prior.sample(), # logzsol,
+        #'init_disp': 0.3, # dex
+        'units': r'$\log_{10}\, (Z/Z_\odot)$',
+        'prior': logzsol_prior, # roughly (0.2-2)*Z_sun
+        })
+
+    # Prior(s) on dust content
+    dust2_prior = priors.TopHat(mini=0.0, maxi=3.0)
+    model_params.append({
+        'name': 'dust2',
+        'N': 1,
+        'isfree': True,
+        'init': dust2_prior.sample(), # dust2,
+        #'init_disp': 0.2,
+        'units': '', # optical depth
+        'prior': dust2_prior,
+        })
+    
+    # Priors on tau and age
+    tau_prior = priors.LogUniform(mini=0.1, maxi=10.0)
     model_params.append({
         'name': 'tau',
         'N': 1,
         'isfree': True,
-        'init': tau,
-        'init_disp': 1.0,
+        'init': tau_prior.sample(), # tau,
+        #'init_disp': 1.0,
         'units': 'Gyr',
-        'prior': priors.LogUniform(mini=0.1, maxi=10.0),
+        'prior': tau_prior,
         })
 
+    tage_prior = priors.TopHat(mini=0.5, maxi=15)
     model_params.append( {
-        'name':   'tage',
-        'N':          1,
-        'isfree':    True,
-        'init':      tage,
-        'init_disp':  3.0,
+        'name': 'tage',
+        'N': 1,
+        'isfree': True,
+        'init': tage_prior.sample(), # tage,
+        #'init_disp':  3.0,
         'units':    'Gyr',
-        'prior': priors.TopHat(mini=0.5, maxi=15),
+        'prior': tage_prior,
         })
 
     model = sedmodel.SedModel(model_params)
@@ -278,14 +291,13 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     (and if using spectra and gaussian processes, a GP object) be instantiated.
 
     """
-    from prospect.likelihood import (lnlike_spec, lnlike_phot, write_log,
-                                     chi_spec, chi_phot)
+    from prospect.likelihood import lnlike_spec, lnlike_phot, write_log, chi_spec, chi_phot
 
-    # Calculate log-likelihoods--
+    # Calculate the prior probability and exit if not within the prior
     lnp_prior = model.prior_product(theta)
-    if np.isinf(lnp_prior):
+    if not np.isfinite(lnp_prior):
         return -np.infty
-        
+
     # Generate the mean model--
     t1 = time()
     try:
@@ -313,6 +325,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         'cal': model._speccal, # object calibration spectrum
         }
 
+    # Calculate likelihoods--
     t2 = time()
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
@@ -446,15 +459,15 @@ def main():
                 if args.refit:
                     os.remove(hfilename)
                 else:
-                    print('Prospector fitting results {} exist; skipping.')
+                    print('Prospector fitting results {} exist; skipping.'.format(hfilename))
                     continue
             
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            #model = load_model(zred=obs['zred'])
-            model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
-                               tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
+            model = load_model(zred=obs['zred'])
+            #model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
+            #                   tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
