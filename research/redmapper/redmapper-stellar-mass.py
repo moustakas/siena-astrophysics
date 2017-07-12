@@ -453,7 +453,7 @@ def main():
             print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
 
             # Check for the HDF5 output file / fitting results -- 
-            outroot = '{}_{}'.format(run_params['prefix'], objprefix)
+            outroot = os.path.join( datadir(), '{}_{}'.format(run_params['prefix'], objprefix) )
             hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
                 run_params['prefix'], objprefix) )
             if os.path.isfile(hfilename):
@@ -549,13 +549,7 @@ def main():
                 initial_center = initial_theta.copy()
                 initial_prob = None
 
-            # Initialize the HDF5 output file and write some basic info.
-            outroot = '{}_{}'.format(run_params['prefix'], objprefix)
-            hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
-                run_params['prefix'], objprefix) )
-            if os.path.isfile(hfilename):
-                os.remove(hfilename)
-            
+            # Write some basic info to the HDF5 file--
             hfile = h5py.File(hfilename, 'a')
             write_results.write_h5_header(hfile, run_params, model)
             write_results.write_obs_to_h5(hfile, obs)
