@@ -3,7 +3,7 @@
 """Wrapper on prospector to derive stellar masses for a subset of the redmapper
 sample.
 
-python ~/repos/git/siena-astrophysics/research/redmapper/redmapper-stellar-mass.py --verbose --seed 999 --nthreads 24 --do-fit > log 2>& 1 &
+python ~/repos/git/siena-astrophysics/research/redmapper/redmapper-stellar-mass.py --verbose --seed 333 --nthreads 24 --dofit > redmapper-100.log 2>& 1 &
 
 """
 from __future__ import division, print_function
@@ -83,6 +83,9 @@ def getobs(cat):
     obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
+
+def logmass2mass(logmass=9.0, **extras):
+    return 10**logmass
 
 def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
     """Initialize the priors on each free and fixed parameter.
@@ -217,22 +220,41 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'units': 'type'
         })
 
+    # Do not include dust emission
+    model_params.append({
+        'name': 'add_dust_emission',
+        'N': 1,
+        'isfree': False,
+        'init':   False, # do not include dust emission
+        'units': ''
+        })
+
     ##################################################
     # Free priors / parameters
-    
+
     # Priors on stellar mass and stellar metallicity
-    mass_prior = priors.LogUniform(mini=1e8, maxi=1e13)
+    logmass_prior = priors.TopHat(mini=8.0, maxi=13.0)
+    logmass_init = logmass_prior.sample()
+    model_params.append({
+        'name': 'logmass',
+        'N': 1,
+        'isfree': True,
+        'init': logmass_init, # mass, 
+        'init_disp': logmass_init * 0.1,
+        'units': r'$M_{\odot}$',
+        'prior': logmass_prior,
+        })
+
+    #mass_prior = priors.TopHat(mini=1e8, maxi=1e13)
     model_params.append({
         'name': 'mass',
         'N': 1,
-        'isfree': True,
-        'init': mass_prior.sample(), # mass, 
-        'init_disp': 5e11,
-        'units': r'$M_{\odot}$',
-        'prior': mass_prior,
+        'isfree': False,
+        'init': 10**logmass_init,
+        'depends_on': logmass2mass,
         })
 
-    logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.19), maxi=np.log10(0.04/0.19))
+    logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.019), maxi=np.log10(0.04/0.019))
     model_params.append({
         'name': 'logzsol',
         'N': 1,
@@ -587,6 +609,7 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
+        cat = cat[0:1]
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 

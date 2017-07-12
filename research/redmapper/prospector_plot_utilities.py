@@ -85,6 +85,9 @@ def bestfit_sed(sample_results, sps=None, model=None):
     # Grab the maximum likelihood parameter values.
     flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
     lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
+
+    pdb.set_trace()
+
     theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
     print('Maximum likelihood values {}'.format(theta_ml))
 
