@@ -431,7 +431,7 @@ def main():
         # Choose objects with masses from iSEDfit, Kravtsov, and pymorph, but
         # for now just pick three random galaxies.
         #these = np.arange(2) # [300, 301, 302]
-        these = np.arange(10) # [300, 301, 302]
+        these = np.arange(100) # [300, 301, 302]
         print('Selecting {} galaxies.'.format(len(these)))
         out = cat[these]
         #out = cat[:200]
