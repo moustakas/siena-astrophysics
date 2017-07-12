@@ -398,7 +398,7 @@ def main():
         # emcee fitting parameters
         'nwalkers': 128,
         'nburn': [32, 32, 64], 
-        'niter': 64, # 512,
+        'niter': 256, # 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
         'nestle_method': 'single',
@@ -610,7 +610,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
 
-            fig = bestfit_sed(results, sps=None, model=None)
+            fig = bestfit_sed(results, sps=sps, model=model)
             fig.savefig(qafile)
 
             # --------------------------------------------------
