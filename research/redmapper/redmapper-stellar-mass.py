@@ -61,7 +61,7 @@ def getobs(cat):
     # Input photometry
     obs['maggies'] = np.squeeze(cat['MAGGIES'])
     mask = cat['IVARMAGGIES'] > 0
-    with np.errstate(divide='ignore'):
+    with np.errstate(invalid='ignore', divide='ignore'):
         obs['maggies_unc'] = np.squeeze(1.0 / np.sqrt(cat['IVARMAGGIES'])) #[:3, :])
     obs['phot_mask'] = mask
 
@@ -226,8 +226,8 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'name': 'mass',
         'N': 1,
         'isfree': True,
-        'init':      mass_prior.sample(), # mass, 
-        #'init_disp': 5e11, 
+        'init': mass_prior.sample(), # mass, 
+        'init_disp': 5e11,
         'units': r'$M_{\odot}$',
         'prior': mass_prior,
         })
@@ -238,7 +238,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'N': 1,
         'isfree': True,
         'init': logzsol_prior.sample(), # logzsol,
-        #'init_disp': 0.3, # dex
+        'init_disp': logzsol_prior.range[1] * 0.1,
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
         'prior': logzsol_prior, # roughly (0.2-2)*Z_sun
         })
@@ -250,7 +250,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'N': 1,
         'isfree': True,
         'init': dust2_prior.sample(), # dust2,
-        #'init_disp': 0.2,
+        'init_disp': dust2_prior.range[1] * 0.1,
         'units': '', # optical depth
         'prior': dust2_prior,
         })
@@ -262,7 +262,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'N': 1,
         'isfree': True,
         'init': tau_prior.sample(), # tau,
-        #'init_disp': 1.0,
+        'init_disp': tau_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tau_prior,
         })
@@ -273,7 +273,7 @@ def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
         'N': 1,
         'isfree': True,
         'init': tage_prior.sample(), # tage,
-        #'init_disp':  3.0,
+        'init_disp':  tage_prior.range[1] * 0.1,
         'units':    'Gyr',
         'prior': tage_prior,
         })
@@ -291,7 +291,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     (and if using spectra and gaussian processes, a GP object) be instantiated.
 
     """
-    from prospect.likelihood import lnlike_spec, lnlike_phot, write_log, chi_spec, chi_phot
+    from prospect.likelihood import lnlike_spec, lnlike_phot, chi_spec, chi_phot
 
     # Calculate the prior probability and exit if not within the prior
     lnp_prior = model.prior_product(theta)
@@ -330,7 +330,8 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
     d2 = time() - t2
-    if verbose:
+    if False:
+        from prospect.likelihood import write_log
         write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
 
     return lnp_prior + lnp_phot + lnp_spec
@@ -398,7 +399,7 @@ def main():
         # emcee fitting parameters
         'nwalkers': 128,
         'nburn': [32, 32, 64], 
-        'niter': 256, # 512,
+        'niter': 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
         'nestle_method': 'single',
@@ -629,7 +630,6 @@ def main():
 
             fig = subtriangle(results, thin=2)
             fig.savefig(qafile)
-
 
 if __name__ == "__main__":
     main()

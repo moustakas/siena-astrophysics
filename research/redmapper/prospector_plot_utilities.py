@@ -6,7 +6,7 @@ import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set(style='white', font_scale=1.8, palette='deep')
+sns.set(style='white', font_scale=1.7, palette='deep')
 setcolors = sns.color_palette()
     
 #sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3, 'lines.markersize': 30})
@@ -23,26 +23,26 @@ maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 
-    old = np.array(['tau',
+    old = list(['tau',
            'tage',
            'mass',
            'logmass',
            'logzsol',
            'dust2'])
-    new = np.array([r'$\tau$ (Gyr)',
+    new = list([r'$\tau$ (Gyr)',
            'Age (Gyr)',
            r'$M / M_{\odot}$',
            r'$\log_{10}\,(M / M_{\odot})$',
            r'$\log_{10}\, (Z / Z_{\odot})$',
            r'$\tau_{diffuse}$'])
 
-    niceparnames = parnames.copy().astype(new.dtype)
+    niceparnames = list(parnames).copy()
     for oo, nn in zip( old, new ):
-        this = np.in1d(parnames, oo)
-        if np.sum(this) > 0:
-            niceparnames[this] = nn
-
-    return niceparnames
+        this = np.where(np.in1d(parnames, oo))[0]
+        if len(this) > 0:
+            niceparnames[this[0]] = nn
+            
+    return np.array(niceparnames)
 
 def _galaxyphot(obs):
     """Get the galaxy photometry and inverse variances (converted to mJy) and filter
@@ -118,7 +118,7 @@ def bestfit_sed(sample_results, sps=None, model=None):
     ax.set_ylabel('Flux Density (mJy)')
     ax.set_xlim(minwave, maxwave)
     ax.set_ylim(minflux, maxflux)
-    ax.legend(loc='upper right', fontsize=18, frameon=False)
+    ax.legend(loc='upper right', fontsize=16, frameon=True)
     fig.subplots_adjust(left=0.1, right=0.95, bottom=0.12, top=0.95)
 
     return fig
@@ -158,13 +158,15 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
         lnprob = sample_results['lnprobability'][:, start:]
     nwalk = chain.shape[0]
     
-    parnames = np.array(sample_results['theta_labels'], dtype='>U15')
+    parnames = sample_results['theta_labels']
 
     # logify mass
     if 'mass' in parnames:
-        midx = [l == 'mass' for l in parnames]
-        chain[:, :, midx] = np.log10(chain[:, :, midx])
-        parnames[midx] = 'logmass'
+        midx = np.where(np.in1d(parnames, 'mass'))[0]
+        if len(midx) > 0:
+            chain[:, :, midx[0]] = np.log10(chain[:, :, midx[0]])
+            parnames[midx[0]] = 'logmass'
+    parnames = np.array(parnames)
 
     # Restrict to desired parameters
     if showpars is not None:
@@ -234,7 +236,7 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
     import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
-    parnames = np.array(sample_results['theta_labels'], dtype='>U15')
+    parnames = sample_results['theta_labels']
     
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
@@ -242,9 +244,11 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
 
     # logify mass
     if 'mass' in parnames:
-        midx = [l=='mass' for l in parnames]
-        flatchain[:,midx] = np.log10(flatchain[:,midx])
-        parnames[midx] = 'logmass'
+        midx = np.where(np.in1d(parnames, 'mass'))[0]
+        if len(midx) > 0:
+            flatchain[:, midx[0]] = np.log10(flatchain[:, midx[0]])
+            parnames[midx[0]] = 'logmass'
+    parnames = np.array(parnames)
 
     # restrict to parameters you want to show
     if showpars is not None:
@@ -261,6 +265,6 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
 
     fig = triangle.corner(flatchain, labels=niceparnames, truths=truths,  verbose=False,
                           quantiles=[0.25, 0.5, 0.75], range=trim_outliers,
-                          color=setcolors[3], label_kwargs={'fontsize': 10}, **kwargs)
+                          color='k', **kwargs)
     
     return fig
