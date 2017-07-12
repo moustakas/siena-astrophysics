@@ -366,7 +366,8 @@ def main():
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
     parser.add_argument('--seed', type=int, default=1, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
-    parser.add_argument('--do-fit', action='store_true', help='Run prospector!')
+    parser.add_argument('--dofit', action='store_true', help='Run prospector!')
+    parser.add_argument('--refit', action='store_true', help='Refit even if the prospector output files exist.')
     parser.add_argument('--qaplots', action='store_true', help='Make some neat plots.')
     parser.add_argument('--verbose', action='store_true', help='Be loquacious.')
     args = parser.parse_args()
@@ -384,7 +385,7 @@ def main():
         # emcee fitting parameters
         'nwalkers': 128,
         'nburn': [32, 32, 64], 
-        'niter': 512,
+        'niter': 64, # 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
         'nestle_method': 'single',
@@ -425,7 +426,7 @@ def main():
         print('Writing {}'.format(outfile))
         fitsio.write(outfile, out, clobber=True)
 
-    if args.do_fit:
+    if args.dofit:
         import h5py
         import emcee
         from prospect import fitting
@@ -435,7 +436,18 @@ def main():
         cat = read_parent(prefix=run_params['prefix'])
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
-            print('Fitting object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
+            print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
+
+            # Check for the HDF5 output file / fitting results -- 
+            outroot = '{}_{}'.format(run_params['prefix'], objprefix)
+            hfilename = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(
+                run_params['prefix'], objprefix) )
+            if os.path.isfile(hfilename):
+                if args.refit:
+                    os.remove(hfilename)
+                else:
+                    print('Prospector fitting results {} exist; skipping.')
+                    continue
             
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
