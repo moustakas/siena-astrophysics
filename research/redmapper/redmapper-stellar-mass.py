@@ -351,7 +351,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
     d2 = time() - t2
-    if False:
+    if True:
         from prospect.likelihood import write_log
         write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
 
@@ -586,7 +586,9 @@ def main():
             edur = time() - tstart
             if run_params['verbose']:
                 print('Finished emcee sampling in {:.2f} minutes.'.format(edur / 60.0))
-            
+
+            pdb.set_trace()
+                
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
                                         outroot=outroot, toptimize=pdur, tsample=edur,
@@ -626,7 +628,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
 
-            fig = bestfit_sed(results, sps=sps, model=model)
+            fig = bestfit_sed(results, sps=sps, model=model, seed=results['run_params']['seed'])
             fig.savefig(qafile)
 
             # --------------------------------------------------

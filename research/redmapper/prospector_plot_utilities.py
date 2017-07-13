@@ -75,42 +75,46 @@ def _sed(model, theta, obs, sps):
     
     return modelwave, modelspec, modelphot
 
-def bestfit_sed(sample_results, sps=None, model=None):
+def bestfit_sed(results, sps=None, model=None, seed=None, nrand=100):
     """Plot the (photometric) best-fitting SED.
 
     """
-    obs = sample_results['obs']
-    nwalkers, niter, nparams = sample_results['chain'][:, :, :].shape
+    rand = np.random.RandomState(seed)
+    
+    obs = results['obs']
+    nwalkers, niter, nparams = results['chain'][:, :, :].shape
 
-    # Grab the maximum likelihood parameter values.
-    flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
-    lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
+    ntot = nwalkers * niter
+    flatchain = results['chain'].reshape(ntot, nparams)
+    lnp = results['lnprobability'].reshape(ntot)
 
-    theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
-    #theta_ml = sample_results['chain'][nwalkers // 2, niter - 1, :]
-    #theta_ml = flatchain[np.nanargmax(lnp), :] # maximum likelihood values
-    print('Maximum likelihood values {}'.format(theta_ml))
-
-    # Grab a random sampling of the chains with weight equal to the posterior
-    # probability.
-
-    # Get the galaxy photometry and build the maximum likelihood model fit.
+    # Get the galaxy photometry and filter info.
     weff, fwhm, galphot, galphoterr = _galaxyphot(obs)
-    
+
+    # Build the maximum likelihood model fit and also grab a random sampling of
+    # the chains with weight equal to the posterior probability.    
+    theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
     modelwave, modelspec, modelphot = _sed(model=model, theta=theta_ml, obs=obs, sps=sps)
+
+    prob = np.exp(-lnp)
+    prob /= prob.sum()
+    rand_indx = rand.choice(ntot, size=nrand, replace=False, p=prob)
+    theta_rand = flatchain[rand_indx, :]
     
-    # Set the wavelength and flux limits.
+    # Establish the wavelength and flux limits.
     #minwave, maxwave = 0.1, 6.0
-    minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + 2*fwhm)
+    minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + fwhm)
 
     inrange = (modelwave > minwave) * (modelwave < maxwave)
-    #maxflux = np.max(galphot + 5*galphoterr)
-    #maxflux = np.hstack( (galphot + 3*galphoterr, modelphot) ).max() * 1.05
     maxflux = np.hstack( (galphot + 3*galphoterr, modelspec[inrange]) ).max() * 1.05
     minflux = -0.05 * maxflux
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(modelwave, modelspec, label='Model spectrum')
+    for ii in range(nrand):
+        _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
+        ax.plot(modelwave, r_modelspec, alpha=0.2, color='gray')
+    ax.plot(modelwave, modelspec, alpha=1.0, label='Model spectrum')
+    
     ax.errorbar(weff, modelphot, marker='s', ls='', lw=3, markersize=20, markerfacecolor='none',
                 markeredgewidth=3, alpha=0.8, label='Model photometry')
     ax.errorbar(weff, galphot, yerr=galphoterr, marker='o', ls='', lw=3, markersize=10,
