@@ -70,8 +70,8 @@ def _sed(model, theta, obs, sps):
     modelwave *= ang2micron 
     
     modelspec, modelphot, mextra = model.mean_model(theta, obs, sps=sps)
-    modelspec = modelspec * maggies2mJy / mextra
-    modelphot = modelphot * maggies2mJy / mextra
+    modelspec = modelspec * maggies2mJy
+    modelphot = modelphot * maggies2mJy
     
     return modelwave, modelspec, modelphot
 

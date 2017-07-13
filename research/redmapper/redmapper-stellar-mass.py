@@ -194,12 +194,11 @@ def load_model(zred=0.1):
         'units': '',
         })
 
-    # Stellar mass units
-    model_params.append({
+    model_params.append({ # current mass in stars, not integral of SFH
         'name': 'mass_units',
         'N': 1,
         'isfree': False,
-        'init': 'mformed'
+        'init': 'mstar' # 'mformed'
         })
 
     # IMF (Chabrier)
@@ -421,7 +420,7 @@ def main():
         # emcee fitting parameters
         'nwalkers': 128,
         'nburn': [32, 32, 64], 
-        'niter': 512,
+        'niter': 256, # 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
         'nestle_method': 'single',
@@ -431,8 +430,8 @@ def main():
         'nthreads': args.nthreads,
         # SPS initialization parameters
         'compute_vega_mags': False,
-        'vactoair_flag':      True, # use wavelengths in air
-        'zcontinuous': 1,           # interpolate in metallicity
+        'vactoair_flag': False, # use wavelengths in air
+        'zcontinuous': 1,      # interpolate in metallicity
         }
 
     rand = np.random.RandomState(args.seed)
@@ -470,7 +469,7 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
-        cat = cat[1:2]
+        cat = cat[0:1]
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -600,10 +599,6 @@ def main():
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
             hfile.close()
-
-            #pdb.set_trace()
-            #from prospect.io import read_results
-            #rr, gg, mm = read_results.results_from(hfilename, model_file=None)
             
     if args.qaplots:        
         import h5py
@@ -612,7 +607,7 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
-        cat = cat[1:2]
+        cat = cat[0:1]
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
