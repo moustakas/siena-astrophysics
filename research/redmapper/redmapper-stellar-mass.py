@@ -87,7 +87,7 @@ def getobs(cat):
 def logmass2mass(logmass=9.0, **extras):
     return 10**logmass
 
-def load_model(zred=0.1, mass=1e11, logzsol=0.1, tage=12.0, tau=1.0, dust2=0.1):
+def load_model(zred=0.1):
     """Initialize the priors on each free and fixed parameter.
 
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
@@ -470,6 +470,7 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
+        cat = cat[1:2]
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -489,8 +490,6 @@ def main():
             # and the SED model.
             obs = getobs(obj)
             model = load_model(zred=obs['zred'])
-            #model = load_model(zred=obs['zred'], mass=obs['mass'], logzsol=obs['logzsol'],
-            #                   tage=obs['tage'], tau=obs['tau'], dust2=obs['dust2'])
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
@@ -600,7 +599,11 @@ def main():
                                      sampling_initial_center=initial_center,
                                      post_burnin_center=burn_p0,
                                      post_burnin_prob=burn_prob0)
+            hfile.close()
 
+            #pdb.set_trace()
+            #from prospect.io import read_results
+            #rr, gg, mm = read_results.results_from(hfilename, model_file=None)
             
     if args.qaplots:        
         import h5py
@@ -609,7 +612,7 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])
-        cat = cat[0:1]
+        cat = cat[1:2]
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 
@@ -620,7 +623,7 @@ def main():
                 continue
             print('Reading {}'.format(h5file))
 
-            results, guesses, model = read_results.results_from(h5file, model_file=None)
+            results, guesses, model = read_results.results_from(h5file)
             nwalkers, niter, nparams = results['chain'][:, :, :].shape
 
             # --------------------------------------------------
@@ -636,7 +639,7 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_chains.png'.format(args.prefix, objprefix) )
             print('Writing {}'.format(qafile))
 
-            thesechains = rand.choice(nwalkers, size=int(0.1*nwalkers), replace=False)
+            thesechains = rand.choice(nwalkers, size=int(0.3*nwalkers), replace=False)
             fig = param_evol(results, chains=thesechains)
             fig.savefig(qafile)
 

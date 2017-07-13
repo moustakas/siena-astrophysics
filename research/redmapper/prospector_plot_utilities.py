@@ -86,14 +86,13 @@ def bestfit_sed(sample_results, sps=None, model=None):
     flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
     lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
 
-    pdb.set_trace()
-
     theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
+    #theta_ml = sample_results['chain'][nwalkers // 2, niter - 1, :]
+    #theta_ml = flatchain[np.nanargmax(lnp), :] # maximum likelihood values
     print('Maximum likelihood values {}'.format(theta_ml))
 
     # Grab a random sampling of the chains with weight equal to the posterior
     # probability.
-
 
     # Get the galaxy photometry and build the maximum likelihood model fit.
     weff, fwhm, galphot, galphoterr = _galaxyphot(obs)
@@ -164,7 +163,8 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
     parnames = sample_results['theta_labels']
 
     # logify mass
-    if 'mass' in parnames:
+    #if 'mass' in parnames:
+    if 'mass' in parnames and 'logmass' not in parnames:
         midx = np.where(np.in1d(parnames, 'mass'))[0]
         if len(midx) > 0:
             chain[:, :, midx[0]] = np.log10(chain[:, :, midx[0]])
@@ -246,7 +246,7 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
                                   flatchain.shape[2])
 
     # logify mass
-    if 'mass' in parnames:
+    if 'mass' in parnames and 'logmass' not in parnames:
         midx = np.where(np.in1d(parnames, 'mass'))[0]
         if len(midx) > 0:
             flatchain[:, midx[0]] = np.log10(flatchain[:, midx[0]])
