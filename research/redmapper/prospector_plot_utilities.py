@@ -6,7 +6,7 @@ import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set(style='white', font_scale=1.8, palette='deep')
+sns.set(style='white', font_scale=1.7, palette='deep')
 setcolors = sns.color_palette()
     
 #sns.set_style({'axes.linewidth' : 3.0, 'lines.linewidth': 3, 'lines.markersize': 30})
@@ -23,26 +23,26 @@ maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 
-    old = np.array(['tau',
+    old = list(['tau',
            'tage',
            'mass',
            'logmass',
            'logzsol',
            'dust2'])
-    new = np.array([r'$\tau$ (Gyr)',
+    new = list([r'$\tau$ (Gyr)',
            'Age (Gyr)',
            r'$M / M_{\odot}$',
            r'$\log_{10}\,(M / M_{\odot})$',
            r'$\log_{10}\, (Z / Z_{\odot})$',
            r'$\tau_{diffuse}$'])
 
-    niceparnames = parnames.copy().astype(new.dtype)
+    niceparnames = list(parnames).copy()
     for oo, nn in zip( old, new ):
-        this = np.in1d(parnames, oo)
-        if np.sum(this) > 0:
-            niceparnames[this] = nn
-
-    return niceparnames
+        this = np.where(np.in1d(parnames, oo))[0]
+        if len(this) > 0:
+            niceparnames[this[0]] = nn
+            
+    return np.array(niceparnames)
 
 def _galaxyphot(obs):
     """Get the galaxy photometry and inverse variances (converted to mJy) and filter
@@ -70,45 +70,57 @@ def _sed(model, theta, obs, sps):
     modelwave *= ang2micron 
     
     modelspec, modelphot, mextra = model.mean_model(theta, obs, sps=sps)
-    modelspec = modelspec * maggies2mJy / mextra
-    modelphot = modelphot * maggies2mJy / mextra
+    modelspec = modelspec * maggies2mJy
+    modelphot = modelphot * maggies2mJy
     
     return modelwave, modelspec, modelphot
 
-def bestfit_sed(sample_results, sps=None, model=None):
+def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
+                model=None, seed=None, nrand=100):
     """Plot the (photometric) best-fitting SED.
 
+    Either pass chain and lnprobability (to visualize the emcee fitting results)
+    *or* theta (to visualize just a single SED fit).
+
     """
-    obs = sample_results['obs']
-    nwalkers, niter, nparams = sample_results['chain'][:, :, :].shape
+    rand = np.random.RandomState(seed)
 
-    # Grab the maximum likelihood parameter values.
-    flatchain = sample_results['chain'].reshape(nwalkers * niter, nparams)
-    lnp = sample_results['lnprobability'].reshape(nwalkers * niter)
-    theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
-    print('Maximum likelihood values {}'.format(theta_ml))
-
-    # Grab a random sampling of the chains with weight equal to the posterior
-    # probability.
-
-
-    # Get the galaxy photometry and build the maximum likelihood model fit.
+    # Get the galaxy photometry and filter info.
     weff, fwhm, galphot, galphoterr = _galaxyphot(obs)
-    
-    modelwave, modelspec, modelphot = _sed(model=model, theta=theta_ml, obs=obs, sps=sps)
-    
-    # Set the wavelength and flux limits.
+
+    # Build the maximum likelihood model fit and also grab a random sampling of
+    # the chains with weight equal to the posterior probability.    
+    if chain is not None:
+        nwalkers, niter, nparams = chain.shape
+        ntot = nwalkers * niter
+
+        flatchain = chain.reshape(ntot, nparams)
+        lnp = lnprobability.reshape(ntot)
+
+        theta = flatchain[lnp.argmax(), :] # maximum likelihood values
+
+        prob = np.exp(lnp - lnp.max())
+        prob /= prob.sum()
+        rand_indx = rand.choice(ntot, size=nrand, replace=False, p=prob)
+        theta_rand = flatchain[rand_indx, :]
+        
+    modelwave, modelspec, modelphot = _sed(model=model, theta=theta, obs=obs, sps=sps)
+
+    # Establish the wavelength and flux limits.
     #minwave, maxwave = 0.1, 6.0
-    minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + 2*fwhm)
+    minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + fwhm)
 
     inrange = (modelwave > minwave) * (modelwave < maxwave)
-    #maxflux = np.max(galphot + 5*galphoterr)
-    #maxflux = np.hstack( (galphot + 3*galphoterr, modelphot) ).max() * 1.05
     maxflux = np.hstack( (galphot + 3*galphoterr, modelspec[inrange]) ).max() * 1.05
     minflux = -0.05 * maxflux
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(modelwave, modelspec, label='Model spectrum')
+    if chain is not None:
+        for ii in range(nrand):
+            _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
+            ax.plot(modelwave, r_modelspec, alpha=0.2, color='gray')
+    ax.plot(modelwave, modelspec, alpha=1.0, label='Model spectrum')
+    
     ax.errorbar(weff, modelphot, marker='s', ls='', lw=3, markersize=20, markerfacecolor='none',
                 markeredgewidth=3, alpha=0.8, label='Model photometry')
     ax.errorbar(weff, galphot, yerr=galphoterr, marker='o', ls='', lw=3, markersize=10,
@@ -118,7 +130,7 @@ def bestfit_sed(sample_results, sps=None, model=None):
     ax.set_ylabel('Flux Density (mJy)')
     ax.set_xlim(minwave, maxwave)
     ax.set_ylim(minflux, maxflux)
-    ax.legend(loc='upper right', fontsize=18, frameon=False)
+    ax.legend(loc='upper right', fontsize=16, frameon=True)
     fig.subplots_adjust(left=0.1, right=0.95, bottom=0.12, top=0.95)
 
     return fig
@@ -158,13 +170,16 @@ def param_evol(sample_results, showpars=None, start=0, figsize=None,
         lnprob = sample_results['lnprobability'][:, start:]
     nwalk = chain.shape[0]
     
-    parnames = np.array(sample_results['theta_labels'], dtype='>U15')
+    parnames = sample_results['theta_labels']
 
     # logify mass
-    if 'mass' in parnames:
-        midx = [l == 'mass' for l in parnames]
-        chain[:, :, midx] = np.log10(chain[:, :, midx])
-        parnames[midx] = 'logmass'
+    #if 'mass' in parnames:
+    if 'mass' in parnames and 'logmass' not in parnames:
+        midx = np.where(np.in1d(parnames, 'mass'))[0]
+        if len(midx) > 0:
+            chain[:, :, midx[0]] = np.log10(chain[:, :, midx[0]])
+            parnames[midx[0]] = 'logmass'
+    parnames = np.array(parnames)
 
     # Restrict to desired parameters
     if showpars is not None:
@@ -234,17 +249,19 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
     import corner as triangle
 
     # pull out the parameter names and flatten the thinned chains
-    parnames = np.array(sample_results['theta_labels'], dtype='>U15')
+    parnames = sample_results['theta_labels']
     
     flatchain = sample_results['chain'][:, start::thin, :]
     flatchain = flatchain.reshape(flatchain.shape[0] * flatchain.shape[1],
                                   flatchain.shape[2])
 
     # logify mass
-    if 'mass' in parnames:
-        midx = [l=='mass' for l in parnames]
-        flatchain[:,midx] = np.log10(flatchain[:,midx])
-        parnames[midx] = 'logmass'
+    if 'mass' in parnames and 'logmass' not in parnames:
+        midx = np.where(np.in1d(parnames, 'mass'))[0]
+        if len(midx) > 0:
+            flatchain[:, midx[0]] = np.log10(flatchain[:, midx[0]])
+            parnames[midx[0]] = 'logmass'
+    parnames = np.array(parnames)
 
     # restrict to parameters you want to show
     if showpars is not None:
@@ -261,6 +278,6 @@ def subtriangle(sample_results, outname=None, showpars=None, start=0, thin=1,
 
     fig = triangle.corner(flatchain, labels=niceparnames, truths=truths,  verbose=False,
                           quantiles=[0.25, 0.5, 0.75], range=trim_outliers,
-                          color=setcolors[3], label_kwargs={'fontsize': 10}, **kwargs)
+                          color='k', **kwargs)
     
     return fig
