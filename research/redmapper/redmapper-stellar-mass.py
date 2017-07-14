@@ -82,7 +82,7 @@ def getobs(cat):
     
     return obs
 
-def _logmass2mass(logmass=9.0, **extras):
+def logmass2mass(logmass=11.0, **extras):
     return 10**logmass
 
 def _doleast_squares(lsargs):
@@ -227,27 +227,27 @@ def load_model(zred=0.1, seed=None):
         'units': 'type'
         })
 
-    # Do not include dust emission
-    model_params.append({
-        'name': 'add_dust_emission',
-        'N': 1,
-        'isfree': False,
-        'init':   False, # do not include dust emission
-        'units': ''
-        })
+#    # Do not include dust emission
+#    model_params.append({
+#        'name': 'add_dust_emission',
+#        'N': 1,
+#        'isfree': False,
+#        'init':   False, # do not include dust emission
+#        'units': ''
+#        })
 
     ##################################################
     # Free priors / parameters
 
     # Priors on stellar mass and stellar metallicity
     logmass_prior = priors.TopHat(mini=10.0, maxi=13.0)#, seed=seed)
-    logmass_init = np.diff(logmass_prior.range)+logmass_prior.range[0] # logmass_prior.sample()
+    logmass_init = np.diff(logmass_prior.range)/2.0 + logmass_prior.range[0] # logmass_prior.sample()
     model_params.append({
         'name': 'logmass',
         'N': 1,
         'isfree': True,
         'init': logmass_init, # mass, 
-        'init_disp': 0.3,     # dex
+        'init_disp': 0.1,     # dex
         'units': r'$M_{\odot}$',
         'prior': logmass_prior,
         })
@@ -258,11 +258,11 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': False,
         'init': 10**logmass_init,
-        'depends_on': _logmass2mass,
+        'depends_on': logmass2mass,
         })
 
     logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.019), maxi=np.log10(0.04/0.019))#, seed=seed)
-    logzsol_init = np.diff(logzsol_prior.range)+logzsol_prior.range[0] # logzsol_prior.sample(), # logzsol,
+    logzsol_init = np.diff(logzsol_prior.range)/2.0 + logzsol_prior.range[0] # logzsol_prior.sample(), # logzsol,
     model_params.append({
         'name': 'logzsol',
         'N': 1,
@@ -275,13 +275,13 @@ def load_model(zred=0.1, seed=None):
 
     # Prior(s) on dust content
     dust2_prior = priors.TopHat(mini=0.0, maxi=3.0)#, seed=seed)
-    dust2_init = np.diff(dust2_prior.range)+dust2_prior.range[0] # dust2_prior.sample(), # dust2,
+    dust2_init = np.diff(dust2_prior.range)/2.0 + dust2_prior.range[0] # dust2_prior.sample(), # dust2,
     model_params.append({
         'name': 'dust2',
         'N': 1,
         'isfree': True,
         'init': dust2_init,
-        'init_disp': 0.2, # dust2_prior.range[1] * 0.1,
+        'init_disp': 0.1, # dust2_prior.range[1] * 0.1,
         'units': '', # optical depth
         'prior': dust2_prior,
         })
@@ -289,7 +289,7 @@ def load_model(zred=0.1, seed=None):
     # Priors on tau and age
     tau_prior = priors.TopHat(mini=0.1, maxi=10.0)#, seed=seed)
     #tau_prior = priors.LogUniform(mini=0.1, maxi=10.0, seed=seed)
-    tau_init = np.diff(tau_prior.range)+tau_prior.range[0] # tau_prior.sample(), # tau,
+    tau_init = np.diff(tau_prior.range)/2.0 + tau_prior.range[0] # tau_prior.sample(), # tau,
     model_params.append({
         'name': 'tau',
         'N': 1,
@@ -300,14 +300,14 @@ def load_model(zred=0.1, seed=None):
         'prior': tau_prior,
         })
 
-    tage_prior = priors.TopHat(mini=0.5, maxi=15, seed=seed)
-    tage_init = np.diff(tage_prior.range)+tage_prior.range[0] # tage_prior.sample(), # tage,
+    tage_prior = priors.TopHat(mini=0.5, maxi=15)#, seed=seed)
+    tage_init = np.diff(tage_prior.range) / 2.0 + tage_prior.range[0] # tage_prior.sample(), # tage,
     model_params.append( {
         'name': 'tage',
         'N': 1,
         'isfree': True,
         'init': tage_init,
-        'init_disp':  1.0, # tage_prior.range[1] * 0.1,
+        'init_disp':  0.5, # tage_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tage_prior,
         })
@@ -364,7 +364,7 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
     lnp_spec = lnlike_spec(model_spec, obs=obs, spec_noise=spec_noise, **vectors)
     lnp_phot = lnlike_phot(model_phot, obs=obs, phot_noise=phot_noise, **vectors)
     d2 = time() - t2
-    if True:
+    if False:
         from prospect.likelihood import write_log
         write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
 
@@ -379,13 +379,12 @@ def chisqfn(theta, model, obs, sps, verbose):
     return -lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
                      verbose=verbose)
 
-def chivecfn(theta, model, obs, sps, verbose):
+def chivecfn(theta, model, obs, sps):
     """Return the residuals instead of a posterior probability or negative chisq,
     for use with least-squares optimization methods.
 
     """
-    resid = lnprobfn(theta=theta, model=model, obs=obs, sps=sps,
-                     verbose=verbose, residuals=True)
+    resid = lnprobfn(theta=theta, model=model, obs=obs, sps=sps, residuals=True)
     return resid
 
 # MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
@@ -559,7 +558,7 @@ def main():
                 tstart = time()
                 nmin = run_params['nmin']
                 
-                chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
+                chi2args = (model, obs, sps)
                 pinitial = fitting.minimizer_ball(initial_theta, nmin, model, seed=run_params['seed'])
 
                 lsargs = list()
