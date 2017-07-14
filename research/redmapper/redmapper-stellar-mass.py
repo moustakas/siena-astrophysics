@@ -200,13 +200,15 @@ def load_model(zred=0.1, seed=None):
         'isfree': False,
         'init': zred,
         'units': '',
+        'prior': None,       
         })
 
     model_params.append({ # current mass in stars, not integral of SFH
         'name': 'mass_units',
         'N': 1,
         'isfree': False,
-        'init': 'mstar' # 'mformed'
+        'init': 'mstar', # 'mformed'
+        'prior': None,       
         })
 
     # IMF (Chabrier)
@@ -215,7 +217,8 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': False,
         'init':   1, # 1 - Chabrier
-        'units': ''
+        'units': '',
+        'prior': None,       
         })
 
     # SFH parameterization (delayed-tau)
@@ -224,17 +227,19 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': False,
         'init':   4, # 4 = delayed tau model
-        'units': 'type'
+        'units': 'type',
+        'prior': None,       
         })
 
-#    # Do not include dust emission
-#    model_params.append({
-#        'name': 'add_dust_emission',
-#        'N': 1,
-#        'isfree': False,
-#        'init':   False, # do not include dust emission
-#        'units': ''
-#        })
+    # Do not include dust emission
+    model_params.append({
+        'name': 'add_dust_emission',
+        'N': 1,
+        'isfree': False,
+        'init':   False, # do not include dust emission
+        'units': 'index',
+        'prior': None,       
+        })
 
     ##################################################
     # Free priors / parameters
@@ -258,6 +263,8 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': False,
         'init': 10**logmass_init,
+        'units': '',
+        'prior': None,
         'depends_on': logmass2mass,
         })
 
@@ -281,7 +288,7 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': True,
         'init': dust2_init,
-        'init_disp': 0.1, # dust2_prior.range[1] * 0.1,
+        'init_disp': 0.05, # dust2_prior.range[1] * 0.1,
         'units': '', # optical depth
         'prior': dust2_prior,
         })
@@ -295,7 +302,7 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': True,
         'init': tau_init,
-        'init_disp': 1.0, # tau_prior.range[1] * 0.1,
+        'init_disp': 2.0, # tau_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tau_prior,
         })
@@ -307,7 +314,7 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': True,
         'init': tage_init,
-        'init_disp':  0.5, # tage_prior.range[1] * 0.1,
+        'init_disp': 2.0, # tage_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tage_prior,
         })
@@ -437,7 +444,7 @@ def main():
         'nmin': np.max( (10, args.nthreads) ),
         # emcee fitting parameters
         'nwalkers': 128,
-        'nburn': [16, 16, 32], # [32, 32, 64], 
+        'nburn': [32, 32, 64], 
         'niter': 256, # 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
