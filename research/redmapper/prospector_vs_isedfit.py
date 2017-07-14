@@ -42,10 +42,10 @@ def main():
         'prefix':  args.prefix,
         }
 
-    #if args.gather_results():
+    # if args.gather_results():
         
-    sample = glob(os.path.join('redmapper_sdssphot_*_mcmc.h5'))
-    pdb.set_trace()
+    # sample = glob(os.path.join('redmapper_sdssphot_*_mcmc.h5'))
+
     # If gather_results::
     #    Find the set of galaxies fitted using glob
     #    Create an empty Table() with all the columns you want.
@@ -59,7 +59,7 @@ def main():
         
     if args.plottype.lower() == 'mass':
         # read in the iSEDfit masses
-        these = np.arange(4) # prospector sample objects
+        these = np.arange(36) # prospector sample objects
         cat = read_redmapper()
         out = cat[these] # match the cat catalog with the prospector sample objects
         # read in the hdf5 files and isedfit catalog values
@@ -68,6 +68,7 @@ def main():
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format('test', objprefix) )
+            pdb.set_trace()
             results, guesses, model = read_results.results_from(h5file,model_file=None) #just care about the results
         
             # calculate the max likehood value
