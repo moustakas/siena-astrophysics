@@ -75,32 +75,37 @@ def _sed(model, theta, obs, sps):
     
     return modelwave, modelspec, modelphot
 
-def bestfit_sed(results, sps=None, model=None, seed=None, nrand=100):
+def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
+                model=None, seed=None, nrand=100):
     """Plot the (photometric) best-fitting SED.
+
+    Either pass chain and lnprobability (to visualize the emcee fitting results)
+    *or* theta (to visualize just a single SED fit).
 
     """
     rand = np.random.RandomState(seed)
-    
-    obs = results['obs']
-    nwalkers, niter, nparams = results['chain'][:, :, :].shape
-
-    ntot = nwalkers * niter
-    flatchain = results['chain'].reshape(ntot, nparams)
-    lnp = results['lnprobability'].reshape(ntot)
 
     # Get the galaxy photometry and filter info.
     weff, fwhm, galphot, galphoterr = _galaxyphot(obs)
 
     # Build the maximum likelihood model fit and also grab a random sampling of
     # the chains with weight equal to the posterior probability.    
-    theta_ml = flatchain[lnp.argmax(), :] # maximum likelihood values
-    modelwave, modelspec, modelphot = _sed(model=model, theta=theta_ml, obs=obs, sps=sps)
+    if chain and lnprobability:
+        nwalkers, niter, nparams = chain.shape
+        ntot = nwalkers * niter
 
-    prob = np.exp(-lnp)
-    prob /= prob.sum()
-    rand_indx = rand.choice(ntot, size=nrand, replace=False, p=prob)
-    theta_rand = flatchain[rand_indx, :]
-    
+        flatchain = chain.reshape(ntot, nparams)
+        lnp = lnprobability.reshape(ntot)
+
+        theta = flatchain[lnp.argmax(), :] # maximum likelihood values
+
+        prob = np.exp(lnp - lnp.max())
+        prob /= prob.sum()
+        rand_indx = rand.choice(ntot, size=nrand, replace=False, p=prob)
+        theta_rand = flatchain[rand_indx, :]
+        
+    modelwave, modelspec, modelphot = _sed(model=model, theta=theta, obs=obs, sps=sps)
+
     # Establish the wavelength and flux limits.
     #minwave, maxwave = 0.1, 6.0
     minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + fwhm)
@@ -110,9 +115,10 @@ def bestfit_sed(results, sps=None, model=None, seed=None, nrand=100):
     minflux = -0.05 * maxflux
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    for ii in range(nrand):
-        _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
-        ax.plot(modelwave, r_modelspec, alpha=0.2, color='gray')
+    if chain and lnprobability:
+        for ii in range(nrand):
+            _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
+            ax.plot(modelwave, r_modelspec, alpha=0.2, color='gray')
     ax.plot(modelwave, modelspec, alpha=1.0, label='Model spectrum')
     
     ax.errorbar(weff, modelphot, marker='s', ls='', lw=3, markersize=20, markerfacecolor='none',

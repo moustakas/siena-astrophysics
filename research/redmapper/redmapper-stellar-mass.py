@@ -8,15 +8,13 @@ python ~/repos/git/siena-astrophysics/research/redmapper/redmapper-stellar-mass.
 """
 from __future__ import division, print_function
 
-import os
-import sys
-import pdb
+import os, sys, pdb
 import argparse
+import multiprocessing
 from time import time, asctime
 
 import numpy as np
 import fitsio
-import matplotlib.pylab as plt
 
 from prospect.sources import CSPSpecBasis
 
@@ -32,7 +30,7 @@ def read_redmapper():
     cat = fitsio.read(redfile, ext=1)
     return cat
 
-def read_parent(prefix):
+def read_parent(prefix, first=None, last=None):
     """Read the parent (pilot) catalog."""
     fitsfile = os.path.join(datadir(), '{}_sample.fits'.format(prefix))
     print('Reading {}'.format(fitsfile))
@@ -74,7 +72,7 @@ def getobs(cat):
     # Use initial values based on the iSEDfit results.
     obs['zred'] = cat['Z'] # redshift
     obs['mass'] = 10**cat['MSTAR'] # stellar mass
-    obs['logzsol'] = np.log10(cat['ZMETAL'] / 0.19) # stellar metallicity
+    obs['logzsol'] = np.log10(cat['ZMETAL'] / 0.019) # stellar metallicity
     obs['tage'] = cat['AGE']  # age
     obs['tau'] = cat['TAU']   # tau (for a delayed SFH)
     obs['dust2'] = 0.1
@@ -84,10 +82,20 @@ def getobs(cat):
     
     return obs
 
-def logmass2mass(logmass=9.0, **extras):
+def _logmass2mass(logmass=9.0, **extras):
     return 10**logmass
 
-def load_model(zred=0.1):
+def _doleast_squares(lsargs):
+    """Fille function for the multiprocessing."""
+    return doleast_squares(*lsargs)
+
+def doleast_squares(chivecfn, pinit, chi2args):
+    from scipy.optimize import least_squares
+    res = least_squares(chivecfn, pinit, method='lm',
+                        x_scale='jac', args=chi2args)#, verbose=1)
+    return res
+
+def load_model(zred=0.1, seed=None):
     """Initialize the priors on each free and fixed parameter.
 
     TBD: Do we need to define priors on dust, fburst, etc., etc.???
@@ -179,7 +187,7 @@ def load_model(zred=0.1):
 
     """
     from prospect.models import priors, sedmodel
-    
+
     model_params = []
 
     ##################################################
@@ -232,14 +240,14 @@ def load_model(zred=0.1):
     # Free priors / parameters
 
     # Priors on stellar mass and stellar metallicity
-    logmass_prior = priors.TopHat(mini=8.0, maxi=13.0)
-    logmass_init = logmass_prior.sample()
+    logmass_prior = priors.TopHat(mini=10.0, maxi=13.0)#, seed=seed)
+    logmass_init = np.diff(logmass_prior.range)+logmass_prior.range[0] # logmass_prior.sample()
     model_params.append({
         'name': 'logmass',
         'N': 1,
         'isfree': True,
         'init': logmass_init, # mass, 
-        'init_disp': logmass_init * 0.1,
+        'init_disp': 0.3,     # dex
         'units': r'$M_{\odot}$',
         'prior': logmass_prior,
         })
@@ -250,52 +258,57 @@ def load_model(zred=0.1):
         'N': 1,
         'isfree': False,
         'init': 10**logmass_init,
-        'depends_on': logmass2mass,
+        'depends_on': _logmass2mass,
         })
 
-    logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.019), maxi=np.log10(0.04/0.019))
+    logzsol_prior = priors.TopHat(mini=np.log10(0.004/0.019), maxi=np.log10(0.04/0.019))#, seed=seed)
+    logzsol_init = np.diff(logzsol_prior.range)+logzsol_prior.range[0] # logzsol_prior.sample(), # logzsol,
     model_params.append({
         'name': 'logzsol',
         'N': 1,
         'isfree': True,
-        'init': logzsol_prior.sample(), # logzsol,
-        'init_disp': logzsol_prior.range[1] * 0.1,
+        'init': logzsol_init,
+        'init_disp': 0.1, # logzsol_prior.range[1] * 0.1,
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
         'prior': logzsol_prior, # roughly (0.2-2)*Z_sun
         })
 
     # Prior(s) on dust content
-    dust2_prior = priors.TopHat(mini=0.0, maxi=3.0)
+    dust2_prior = priors.TopHat(mini=0.0, maxi=3.0)#, seed=seed)
+    dust2_init = np.diff(dust2_prior.range)+dust2_prior.range[0] # dust2_prior.sample(), # dust2,
     model_params.append({
         'name': 'dust2',
         'N': 1,
         'isfree': True,
-        'init': dust2_prior.sample(), # dust2,
-        'init_disp': dust2_prior.range[1] * 0.1,
+        'init': dust2_init,
+        'init_disp': 0.2, # dust2_prior.range[1] * 0.1,
         'units': '', # optical depth
         'prior': dust2_prior,
         })
     
     # Priors on tau and age
-    tau_prior = priors.LogUniform(mini=0.1, maxi=10.0)
+    tau_prior = priors.TopHat(mini=0.1, maxi=10.0)#, seed=seed)
+    #tau_prior = priors.LogUniform(mini=0.1, maxi=10.0, seed=seed)
+    tau_init = np.diff(tau_prior.range)+tau_prior.range[0] # tau_prior.sample(), # tau,
     model_params.append({
         'name': 'tau',
         'N': 1,
         'isfree': True,
-        'init': tau_prior.sample(), # tau,
-        'init_disp': tau_prior.range[1] * 0.1,
+        'init': tau_init,
+        'init_disp': 1.0, # tau_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tau_prior,
         })
 
-    tage_prior = priors.TopHat(mini=0.5, maxi=15)
+    tage_prior = priors.TopHat(mini=0.5, maxi=15, seed=seed)
+    tage_init = np.diff(tage_prior.range)+tage_prior.range[0] # tage_prior.sample(), # tage,
     model_params.append( {
         'name': 'tage',
         'N': 1,
         'isfree': True,
-        'init': tage_prior.sample(), # tage,
-        'init_disp':  tage_prior.range[1] * 0.1,
-        'units':    'Gyr',
+        'init': tage_init,
+        'init_disp':  1.0, # tage_prior.range[1] * 0.1,
+        'units': 'Gyr',
         'prior': tage_prior,
         })
 
@@ -355,6 +368,10 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         from prospect.likelihood import write_log
         write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
 
+    #if (lnp_prior + lnp_phot + lnp_spec) > 0:
+    #    print('Total probability is positive!!', lnp_prior, lnp_phot)
+    #    pdb.set_trace()
+
     return lnp_prior + lnp_phot + lnp_spec
 
 def chisqfn(theta, model, obs, sps, verbose):
@@ -399,6 +416,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
+    parser.add_argument('--first', type=int, default=0, help='Index of first object to fit.')
+    parser.add_argument('--last', type=int, default=None, help='Index of last object to fit.')
     parser.add_argument('--seed', type=int, default=1, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
     parser.add_argument('--dofit', action='store_true', help='Run prospector!')
@@ -416,10 +435,10 @@ def main():
         'do_levenburg': True,
         'do_powell': False,
         'do_nelder_mead': False,
-        'nmin': 10,
+        'nmin': np.max( (10, args.nthreads) ),
         # emcee fitting parameters
         'nwalkers': 128,
-        'nburn': [32, 32, 64], 
+        'nburn': [16, 16, 32], # [32, 32, 64], 
         'niter': 256, # 512,
         'interval': 0.1, # save 10% of the chains at a time
         # Nestle fitting parameters
@@ -468,7 +487,7 @@ def main():
         from prospect.io import write_results
 
         # Read the parent sample and loop on each object.
-        cat = read_parent(prefix=run_params['prefix'])
+        cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
         cat = cat[0:1]
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
@@ -488,7 +507,7 @@ def main():
             # Grab the photometry for this object and then initialize the priors
             # and the SED model.
             obs = getobs(obj)
-            model = load_model(zred=obs['zred'])
+            model = load_model(zred=obs['zred'], seed=args.seed)
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
@@ -537,30 +556,41 @@ def main():
                     print('Initial probability: {}'.format(initial_prob))
                     
             elif bool(run_params.get('do_levenburg', True)):
-                from scipy.optimize import least_squares
                 tstart = time()
                 nmin = run_params['nmin']
                 
                 chi2args = (model, obs, sps, run_params['verbose']) # extra arguments for chisqfn
                 pinitial = fitting.minimizer_ball(initial_theta, nmin, model, seed=run_params['seed'])
-                guesses = []
+
+                lsargs = list()
                 for pinit in pinitial:
-                    res = least_squares(chivecfn, pinit, method='lm', x_scale='jac', args=chi2args)#, verbose=1)
-                    guesses.append(res)
-        
+                    lsargs.append((chivecfn, pinit, chi2args))
+
+                if run_params['nthreads'] > 1:
+                    p = multiprocessing.Pool(run_params['nthreads'])
+                    guesses = p.map(_doleast_squares, lsargs)
+                    p.close()
+                else:
+                    guesses = list()
+                    for lsargs1 in lsargs:
+                        guesses.append(_doleast_squares(lsargs1))
+                
                 chisq = [np.sum(r.fun**2) for r in guesses]
                 best = np.argmin(chisq)
-
-                # Hack to recenter values outside the parameter bounds!
-                initial_center = fitting.reinitialize(guesses[best].x, model,
-                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
-                initial_prob = None
+                initial_prob = -np.log(chisq[best] / 2)
+                initial_center = guesses[best].x
+                                      
                 pdur = time() - tstart
                 if run_params['verbose']:
                     print('Levenburg-Marquardt initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
-        
+
+                #from prospector_plot_utilities import bestfit_sed
+                #fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
+                #fig.savefig('test.png')
+                #pdb.set_trace()
+                    
             else:
                 if run_params['verbose']:
                     print('Skipping initial minimization.')
@@ -577,18 +607,22 @@ def main():
             if run_params['verbose']:
                 print('Started emcee sampling on {}'.format(asctime()))
             tstart = time()
-            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model, verbose=run_params['verbose'],
-                                            nthreads=run_params['nthreads'], nwalkers=run_params['nwalkers'],
-                                            nburn=run_params['nburn'], niter=run_params['niter'],
-                                            initial_prob=initial_prob, hdf5=hfile, pool=pool,
-                                            postargs=(model, obs, sps))
+            out = fitting.run_emcee_sampler(lnprobfn, initial_center, model,
+                                            verbose=run_params['verbose'],
+                                            nthreads=run_params['nthreads'],
+                                            nwalkers=run_params['nwalkers'],
+                                            nburn=run_params['nburn'],
+                                            niter=run_params['niter'], 
+                                            prob0=initial_prob, hdf5=hfile,
+                                            postargs=(model, obs, sps),
+                                            pool=pool)
             esampler, burn_p0, burn_prob0 = out
+            del out
+            
             edur = time() - tstart
             if run_params['verbose']:
                 print('Finished emcee sampling in {:.2f} minutes.'.format(edur / 60.0))
 
-            pdb.set_trace()
-                
             # Update the HDF5 file with the results.
             write_results.write_pickles(run_params, model, obs, esampler, guesses,
                                         outroot=outroot, toptimize=pdur, tsample=edur,
@@ -608,7 +642,7 @@ def main():
         from prospector_plot_utilities import param_evol, subtriangle, bestfit_sed
 
         # Read the parent sample and loop on each object.
-        cat = read_parent(prefix=run_params['prefix'])
+        cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
         cat = cat[0:1]
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
@@ -628,7 +662,8 @@ def main():
             qafile = os.path.join(datadir(), '{}_{}_sed.png'.format(args.prefix, objprefix))
             print('Writing {}'.format(qafile))
 
-            fig = bestfit_sed(results, sps=sps, model=model, seed=results['run_params']['seed'])
+            fig = bestfit_sed(results['obs'], chain=results['chain'], lnprobability=results['lnprobability'],
+                              sps=sps, model=model, seed=results['run_params']['seed'])
             fig.savefig(qafile)
 
             # --------------------------------------------------
