@@ -245,19 +245,18 @@ def load_model(zred=0.1, seed=None):
     # Free priors / parameters
 
     # Priors on stellar mass and stellar metallicity
-    logmass_prior = priors.TopHat(mini=10.0, maxi=13.0)#, seed=seed)
+    logmass_prior = priors.TopHat(mini=9.0, maxi=13.0)#, seed=seed)
     logmass_init = np.diff(logmass_prior.range)/2.0 + logmass_prior.range[0] # logmass_prior.sample()
     model_params.append({
         'name': 'logmass',
         'N': 1,
         'isfree': True,
         'init': logmass_init, # mass, 
-        'init_disp': 0.1,     # dex
+        'init_disp': 0.5,     # dex
         'units': r'$M_{\odot}$',
         'prior': logmass_prior,
         })
-
-    #mass_prior = priors.TopHat(mini=1e8, maxi=1e13)
+    
     model_params.append({
         'name': 'mass',
         'N': 1,
@@ -275,7 +274,7 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': True,
         'init': logzsol_init,
-        'init_disp': 0.1, # logzsol_prior.range[1] * 0.1,
+        'init_disp': 0.3, # logzsol_prior.range[1] * 0.1,
         'units': r'$\log_{10}\, (Z/Z_\odot)$',
         'prior': logzsol_prior, # roughly (0.2-2)*Z_sun
         })
@@ -288,21 +287,21 @@ def load_model(zred=0.1, seed=None):
         'N': 1,
         'isfree': True,
         'init': dust2_init,
-        'init_disp': 0.05, # dust2_prior.range[1] * 0.1,
+        'init_disp': 0.5, # dust2_prior.range[1] * 0.1,
         'units': '', # optical depth
         'prior': dust2_prior,
         })
     
     # Priors on tau and age
-    tau_prior = priors.TopHat(mini=0.1, maxi=10.0)#, seed=seed)
-    #tau_prior = priors.LogUniform(mini=0.1, maxi=10.0, seed=seed)
+    #tau_prior = priors.TopHat(mini=0.1, maxi=10.0)#, seed=seed)
+    tau_prior = priors.LogUniform(mini=0.1, maxi=10.0)#, seed=seed)
     tau_init = np.diff(tau_prior.range)/2.0 + tau_prior.range[0] # tau_prior.sample(), # tau,
     model_params.append({
         'name': 'tau',
         'N': 1,
         'isfree': True,
         'init': tau_init,
-        'init_disp': 2.0, # tau_prior.range[1] * 0.1,
+        'init_disp': 1.0, # tau_prior.range[1] * 0.1,
         'units': 'Gyr',
         'prior': tau_prior,
         })
@@ -494,7 +493,6 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
-        cat = cat[0:1]
         for ii, obj in enumerate(cat):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
@@ -584,18 +582,21 @@ def main():
                 chisq = [np.sum(r.fun**2) for r in guesses]
                 best = np.argmin(chisq)
                 initial_prob = -np.log(chisq[best] / 2)
-                initial_center = guesses[best].x
-                                      
+
+                #initial_center = guesses[best].x
+                initial_center = fitting.reinitialize(guesses[best].x, model,
+                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
+                
+                
                 pdur = time() - tstart
                 if run_params['verbose']:
                     print('Levenburg-Marquardt initialization took {:.1f} seconds.'.format(pdur))
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
 
-                #from prospector_plot_utilities import bestfit_sed
-                #fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
-                #fig.savefig('test.png')
-                #pdb.set_trace()
+                from prospector_plot_utilities import bestfit_sed
+                fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
+                fig.savefig('test.png')
                     
             else:
                 if run_params['verbose']:
@@ -649,7 +650,6 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
-        cat = cat[0:1]
         for obj in cat:
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
 

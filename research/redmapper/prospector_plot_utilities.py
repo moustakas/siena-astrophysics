@@ -90,7 +90,7 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
 
     # Build the maximum likelihood model fit and also grab a random sampling of
     # the chains with weight equal to the posterior probability.    
-    if chain and lnprobability:
+    if chain is not None:
         nwalkers, niter, nparams = chain.shape
         ntot = nwalkers * niter
 
@@ -115,7 +115,7 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     minflux = -0.05 * maxflux
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    if chain and lnprobability:
+    if chain is not None:
         for ii in range(nrand):
             _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
             ax.plot(modelwave, r_modelspec, alpha=0.2, color='gray')
