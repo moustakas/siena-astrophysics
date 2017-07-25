@@ -594,9 +594,10 @@ def main():
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
 
-                from prospector_plot_utilities import bestfit_sed
-                fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
-                fig.savefig('test.png')
+                if False:
+                    from prospector_plot_utilities import bestfit_sed
+                    fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
+                    fig.savefig('test.png')
                     
             else:
                 if run_params['verbose']:
