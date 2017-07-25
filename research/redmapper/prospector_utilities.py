@@ -20,6 +20,9 @@ ang2micron = 1e-4 # Angstrom --> micron
 maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 #maggies2muJy = 10**(0.4*23.9) # maggies --> microJy
 
+def logmass2mass(logmass=11.0, **extras):
+    return 10**logmass
+
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 

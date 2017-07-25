@@ -98,9 +98,6 @@ def getobs(cat):
     
     return obs
 
-def logmass2mass(logmass=11.0, **extras):
-    return 10**logmass
-
 def _doleast_squares(lsargs):
     """Fille function for the multiprocessing."""
     return doleast_squares(*lsargs)
@@ -203,6 +200,7 @@ def load_model(zred=0.1, seed=None):
 
     """
     from prospect.models import priors, sedmodel
+    from prospector_utilities import logmass2mass
 
     model_params = []
 
@@ -272,7 +270,7 @@ def load_model(zred=0.1, seed=None):
         'units': r'$M_{\odot}$',
         'prior': logmass_prior,
         })
-    
+
     model_params.append({
         'name': 'mass',
         'N': 1,
@@ -610,7 +608,7 @@ def main():
                     print('Initial probability: {}'.format(initial_prob))
 
                 if False:
-                    from prospector_plot_utilities import bestfit_sed
+                    from prospector_utilities import bestfit_sed
                     fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
                     fig.savefig('test.png')
                     
@@ -662,7 +660,7 @@ def main():
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
-        from prospector_plot_utilities import param_evol, subtriangle, bestfit_sed
+        from prospector_utilities import param_evol, subtriangle, bestfit_sed
 
         # Read the parent sample and loop on each object.
         cat, indx = read_parent(prefix=run_params['prefix'], first=args.first, last=args.last)
