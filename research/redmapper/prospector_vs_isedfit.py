@@ -93,6 +93,7 @@ def main():
         qafile = os.path.join(datadir(), '{}_mass.png'.format(args.prefix))
         fig.savefig(qafile)
 
+        +
         
 if __name__ == "__main__":
     main()

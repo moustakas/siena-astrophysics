@@ -55,12 +55,12 @@ for obj in out:
 
     # make an array with the max liklihood values of each object in the sample. 
     mass_results.append(theta[0])
-    tau_results.append(theta[1])
-    tage_results.append(theta[2])
-    zsol_results.append(theta[3])
-    dust_results.append(theta[4])
+    tau_results.append(theta[3])
+    tage_results.append(theta[4])
+    zsol_results.append(theta[1])
+    dust_results.append(theta[2])
 
-rownumber = 36 # len(sample)
+rownumber = 36 #len(sample)
 prospect_table = Table()
 
 prospect_table.add_column(Column(name='objid', length=rownumber))
@@ -78,6 +78,9 @@ prospect_table['tau'] = tau_results
 prospect_table['tage'] = tage_results
 prospect_table['zsol'] = zsol_results
 prospect_table['dust'] = dust_results
+
+
+prospect_table.write('prospect_results', format='fits')
 
 pdb.set_trace()
 print(prospect_table)

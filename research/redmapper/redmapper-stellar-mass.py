@@ -664,9 +664,12 @@ def main():
 
         # Read the parent sample and loop on each object.
         cat, indx = read_parent(prefix=run_params['prefix'], first=args.first, last=args.last)
-        for obj in cat[indx]:
+        for ii, obj in enumerate(cat[indx]):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
-
+            
+            print('Working on index {} (fit {}/{} among {} galaxies) with prefix {}.'.format(
+                indx[ii], ii+1, len(indx), len(cat), objprefix))
+    
             # Grab the emcee / prospector outputs.
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             if not os.path.isfile(h5file):
