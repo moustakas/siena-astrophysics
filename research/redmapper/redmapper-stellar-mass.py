@@ -18,21 +18,11 @@ import fitsio
 
 from prospect.sources import CSPSpecBasis
 
-def datadir():
-    """Return the top-level data directory."""
-    return os.path.join(os.getenv('HOME'), 'stellar-mass')    
-
-def read_redmapper():
-    """Read the parent redmapper catalog."""
-    redfile = os.path.join(os.sep, 'global', 'work', 'projects', 
-                    'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
-    print('Reading {}'.format(redfile))
-    cat = fitsio.read(redfile, ext=1)
-    return cat
-
-def read_parent(prefix, first=None, last=None):
+def read_parent(prefix, first=None, last=None, datadir=None):
     """Read the parent (pilot) catalog."""
-    fitsfile = os.path.join(datadir(), '{}_sample.fits'.format(prefix))
+    import fitsio
+    
+    fitsfile = os.path.join(datadir, '{}_sample.fits'.format(prefix))
     print('Reading {}'.format(fitsfile))
     cat = fitsio.read(fitsfile, ext=1, upper=True)
 
@@ -52,6 +42,14 @@ def read_parent(prefix, first=None, last=None):
         indx = np.arange(i0, i1)
     
     return cat, indx
+
+def read_redmapper():
+    """Read the parent redmapper catalog."""
+    redfile = os.path.join(os.sep, 'global', 'work', 'projects', 
+                    'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
+    print('Reading {}'.format(redfile))
+    cat = fitsio.read(redfile, ext=1)
+    return cat
 
 def getobs(cat):
     """Generate the prospector-style "obs" dictionary which contains the input
@@ -428,6 +426,8 @@ def chivecfn(theta, model, obs, sps):
 
 def main():
 
+    from prospector_utilities import datadir
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
@@ -503,7 +503,8 @@ def main():
         from prospect.io import write_results
 
         # Read the parent sample and loop on each object.
-        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first, last=args.last)
+        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first,
+                                last=args.last, datadir=datadir())
 
         for ii, obj in enumerate(cat[indx]):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
@@ -663,7 +664,8 @@ def main():
         from prospector_utilities import param_evol, subtriangle, bestfit_sed
 
         # Read the parent sample and loop on each object.
-        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first, last=args.last)
+        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first,
+                                last=args.last, datadir=datadir())
         for ii, obj in enumerate(cat[indx]):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             
