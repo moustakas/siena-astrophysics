@@ -68,7 +68,7 @@ def main():
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             #h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format('test', objprefix) )
-            pdb.set_trace()
+            
             results, guesses, model = read_results.results_from(h5file,model_file=None) #just care about the results
         
             # calculate the max likehood value
@@ -93,6 +93,7 @@ def main():
         qafile = os.path.join(datadir(), '{}_mass.png'.format(args.prefix))
         fig.savefig(qafile)
 
+        +
         
 if __name__ == "__main__":
     main()
