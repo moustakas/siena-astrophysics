@@ -18,9 +18,30 @@ import fitsio
 
 from prospect.sources import CSPSpecBasis
 
-def datadir():
-    """Return the top-level data directory."""
-    return os.path.join(os.getenv('HOME'), 'stellar-mass')    
+def read_parent(prefix, first=None, last=None, datadir=None):
+    """Read the parent (pilot) catalog."""
+    import fitsio
+    
+    fitsfile = os.path.join(datadir, '{}_sample.fits'.format(prefix))
+    print('Reading {}'.format(fitsfile))
+    cat = fitsio.read(fitsfile, ext=1, upper=True)
+
+    if first is not None:
+        i0 = first
+    else:
+        i0 = 0
+        
+    if last is not None:
+        i1 = last + 1
+    else:
+        i1 = len(cat)
+
+    if i0 == i1:
+        indx = np.atleast_1d(i0)
+    else:
+        indx = np.arange(i0, i1)
+    
+    return cat, indx
 
 def read_redmapper():
     """Read the parent redmapper catalog."""
@@ -28,13 +49,6 @@ def read_redmapper():
                     'redmapper', 'redmapper_isedfit_v5.10_centrals.fits.gz')
     print('Reading {}'.format(redfile))
     cat = fitsio.read(redfile, ext=1)
-    return cat
-
-def read_parent(prefix, first=None, last=None):
-    """Read the parent (pilot) catalog."""
-    fitsfile = os.path.join(datadir(), '{}_sample.fits'.format(prefix))
-    print('Reading {}'.format(fitsfile))
-    cat = fitsio.read(fitsfile, ext=1, upper=True)
     return cat
 
 def getobs(cat):
@@ -81,9 +95,6 @@ def getobs(cat):
     obs['isedfit_id'] = cat['ISEDFIT_ID']
     
     return obs
-
-def logmass2mass(logmass=11.0, **extras):
-    return 10**logmass
 
 def _doleast_squares(lsargs):
     """Fille function for the multiprocessing."""
@@ -187,6 +198,7 @@ def load_model(zred=0.1, seed=None):
 
     """
     from prospect.models import priors, sedmodel
+    from prospector_utilities import logmass2mass
 
     model_params = []
 
@@ -211,16 +223,6 @@ def load_model(zred=0.1, seed=None):
         'prior': None,       
         })
 
-    # IMF (Chabrier)
-    model_params.append({
-        'name': 'imf_type',
-        'N': 1,
-        'isfree': False,
-        'init':   1, # 1 - Chabrier
-        'units': '',
-        'prior': None,       
-        })
-
     # SFH parameterization (delayed-tau)
     model_params.append({
         'name': 'sfh',
@@ -228,6 +230,16 @@ def load_model(zred=0.1, seed=None):
         'isfree': False,
         'init':   4, # 4 = delayed tau model
         'units': 'type',
+        'prior': None,       
+        })
+
+    # IMF (Chabrier)
+    model_params.append({
+        'name': 'imf_type',
+        'N': 1,
+        'isfree': False,
+        'init':   1, # 1 - Chabrier
+        'units': '',
         'prior': None,       
         })
 
@@ -256,7 +268,7 @@ def load_model(zred=0.1, seed=None):
         'units': r'$M_{\odot}$',
         'prior': logmass_prior,
         })
-    
+
     model_params.append({
         'name': 'mass',
         'N': 1,
@@ -374,10 +386,6 @@ def lnprobfn(theta, model, obs, sps, verbose=False, spec_noise=None,
         from prospect.likelihood import write_log
         write_log(theta, lnp_prior, lnp_spec, lnp_phot, d1, d2)
 
-    #if (lnp_prior + lnp_phot + lnp_spec) > 0:
-    #    print('Total probability is positive!!', lnp_prior, lnp_phot)
-    #    pdb.set_trace()
-
     return lnp_prior + lnp_phot + lnp_spec
 
 def chisqfn(theta, model, obs, sps, verbose):
@@ -393,35 +401,37 @@ def chivecfn(theta, model, obs, sps):
     resid = lnprobfn(theta=theta, model=model, obs=obs, sps=sps, residuals=True)
     return resid
 
-# MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
-# will only see up to sys.exit()
-try:
-    from emcee.utils import MPIPool
-    pool = MPIPool(debug=False, loadbalance=True)
-    if not pool.is_master():
-        # Wait for instructions from the master process.
-        pool.wait()
-        sys.exit(0)
-except(ImportError, ValueError):
-    pool = None
-    print('Not using MPI.')
-
-def halt(message):
-    """Exit, closing pool safely.
-    """
-    print(message)
-    try:
-        pool.close()
-    except:
-        pass
-    sys.exit(0)
+## MPI pool.  This must be done *after* lnprob and chi2 are defined since slaves
+## will only see up to sys.exit()
+#try:
+#    from emcee.utils import MPIPool
+#    pool = MPIPool(debug=False, loadbalance=True)
+#    if not pool.is_master():
+#        # Wait for instructions from the master process.
+#        pool.wait()
+#        sys.exit(0)
+#except(ImportError, ValueError):
+#    pool = None
+#    print('Not using MPI.')
+#
+#def halt(message):
+#    """Exit, closing pool safely.
+#    """
+#    print(message)
+#    try:
+#        pool.close()
+#    except:
+#        pass
+#    sys.exit(0)
 
 def main():
+
+    from prospector_utilities import datadir
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default='redmapper_sdssphot', help='String to prepend to I/O files.')
     parser.add_argument('--nthreads', type=int, default=16, help='Number of cores to use concurrently.')
-    parser.add_argument('--first', type=int, default=0, help='Index of first object to fit.')
+    parser.add_argument('--first', type=int, default=None, help='Index of first object to fit.')
     parser.add_argument('--last', type=int, default=None, help='Index of last object to fit.')
     parser.add_argument('--seed', type=int, default=1, help='Random number seed.')
     parser.add_argument('--build-sample', action='store_true', help='Build the sample.')
@@ -440,7 +450,8 @@ def main():
         'do_levenburg': True,
         'do_powell': False,
         'do_nelder_mead': False,
-        'nmin': np.max( (10, args.nthreads) ),
+        'nmin': 10, 
+        #'nmin': np.max( (10, args.nthreads) ),
         # emcee fitting parameters
         'nwalkers': 128,
         'nburn': [32, 32, 64], 
@@ -457,7 +468,7 @@ def main():
         'vactoair_flag': False, # use wavelengths in air
         'zcontinuous': 1,      # interpolate in metallicity
         }
-
+    print(run_params)
     rand = np.random.RandomState(args.seed)
 
     if not args.build_sample:
@@ -467,7 +478,7 @@ def main():
                            compute_vega_mags=run_params['compute_vega_mags'],
                            vactoair_flag=run_params['vactoair_flag'])
         print('...took {:.1f} seconds.'.format(time() - t0))
-            
+
     if args.build_sample:
         # Read the parent redmapper catalog, choose a subset of objects and
         # write out.
@@ -492,10 +503,13 @@ def main():
         from prospect.io import write_results
 
         # Read the parent sample and loop on each object.
-        cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
-        for ii, obj in enumerate(cat):
+        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first,
+                                last=args.last, datadir=datadir())
+
+        for ii, obj in enumerate(cat[indx]):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
-            print('Working on object {}/{} with prefix {}.'.format(ii+1, len(cat), objprefix))
+            print('Working on index {} (fit {}/{} among {} galaxies) with prefix {}.'.format(
+                indx[ii], ii+1, len(indx), len(cat), objprefix))
 
             # Check for the HDF5 output file / fitting results -- 
             outroot = os.path.join( datadir(), '{}_{}'.format(run_params['prefix'], objprefix) )
@@ -512,6 +526,9 @@ def main():
             # and the SED model.
             obs = getobs(obj)
             model = load_model(zred=obs['zred'], seed=args.seed)
+
+            #pdb.set_trace()
+            #sps.csp.params.ssp_params
 
             # Get close to the right answer doing a simple minimization.
             if run_params['verbose']:
@@ -565,12 +582,13 @@ def main():
                 
                 chi2args = (model, obs, sps)
                 pinitial = fitting.minimizer_ball(initial_theta, nmin, model, seed=run_params['seed'])
-
+                
                 lsargs = list()
                 for pinit in pinitial:
                     lsargs.append((chivecfn, pinit, chi2args))
 
-                if run_params['nthreads'] > 1:
+                if False:
+                #if run_params['nthreads'] > 1:
                     p = multiprocessing.Pool(run_params['nthreads'])
                     guesses = p.map(_doleast_squares, lsargs)
                     p.close()
@@ -582,11 +600,7 @@ def main():
                 chisq = [np.sum(r.fun**2) for r in guesses]
                 best = np.argmin(chisq)
                 initial_prob = -np.log(chisq[best] / 2)
-
-                #initial_center = guesses[best].x
-                initial_center = fitting.reinitialize(guesses[best].x, model,
-                                                      edge_trunc=run_params.get('edge_trunc', 0.1))
-                
+                initial_center = guesses[best].x
                 
                 pdur = time() - tstart
                 if run_params['verbose']:
@@ -594,9 +608,10 @@ def main():
                     print('Best guesses: {}'.format(initial_center))
                     print('Initial probability: {}'.format(initial_prob))
 
-                from prospector_plot_utilities import bestfit_sed
-                fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
-                fig.savefig('test.png')
+                if False:
+                    from prospector_utilities import bestfit_sed
+                    fig = bestfit_sed(obs, theta=initial_center, sps=sps, model=model)
+                    fig.savefig('test.png')
                     
             else:
                 if run_params['verbose']:
@@ -622,7 +637,7 @@ def main():
                                             niter=run_params['niter'], 
                                             prob0=initial_prob, hdf5=hfile,
                                             postargs=(model, obs, sps),
-                                            pool=pool)
+                                            pool=None)
             esampler, burn_p0, burn_prob0 = out
             del out
             
@@ -646,13 +661,17 @@ def main():
     if args.qaplots:        
         import h5py
         from prospect.io import read_results
-        from prospector_plot_utilities import param_evol, subtriangle, bestfit_sed
+        from prospector_utilities import param_evol, subtriangle, bestfit_sed
 
         # Read the parent sample and loop on each object.
-        cat = read_parent(prefix=run_params['prefix'])#, first=args.first, last=args.last)
-        for obj in cat:
+        cat, indx = read_parent(prefix=run_params['prefix'], first=args.first,
+                                last=args.last, datadir=datadir())
+        for ii, obj in enumerate(cat[indx]):
             objprefix = '{0:05}'.format(obj['ISEDFIT_ID'])
-
+            
+            print('Working on index {} (fit {}/{} among {} galaxies) with prefix {}.'.format(
+                indx[ii], ii+1, len(indx), len(cat), objprefix))
+    
             # Grab the emcee / prospector outputs.
             h5file = os.path.join( datadir(), '{}_{}_mcmc.h5'.format(run_params['prefix'], objprefix) )
             if not os.path.isfile(h5file):

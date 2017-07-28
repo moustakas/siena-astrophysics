@@ -2,7 +2,7 @@
 run, including reconstruction of the model for making posterior samples.
 
 """
-import pdb
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -19,6 +19,13 @@ setcolors = sns.color_palette()
 ang2micron = 1e-4 # Angstrom --> micron
 maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 #maggies2muJy = 10**(0.4*23.9) # maggies --> microJy
+
+def logmass2mass(logmass=11.0, **extras):
+    return 10**logmass
+
+def datadir():
+    """Return the top-level data directory."""
+    return os.path.join(os.getenv('HOME'), 'stellar-mass')    
 
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
