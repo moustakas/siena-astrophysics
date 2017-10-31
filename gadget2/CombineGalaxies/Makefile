@@ -26,8 +26,8 @@ OPTIMIZE =   -O3 -Wall    # optimization and warning flags (default)
 
 
 ifeq ($(SYSTYPE),"Grawp")
-GSL_INCL =  -I/usr/local/gsl/gcc/include
-GSL_LIBS =  -L/usr/local/gsl/gcc/lib
+GSL_INCL =  -I/usr/local/GNUStack/gsl-2.4/include
+GSL_LIBS =  -L/usr/local/GNUStack/gsl-2.4/lib
 endif
 
 ifeq ($(SYSTYPE),"MAKO")

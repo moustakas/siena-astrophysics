@@ -5,12 +5,11 @@ if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
 fi
 
-. /usr/local/Modules/3.2.9/init/bash
-module load modules
+# . /usr/local/Modules/3.2.9/init/bash
+# module load modules
 
 # User specific aliases and functions
-
-module load tools/python2.7
+# module load tools/python2.7
 
 ##################################################
 # Personal system defaults
@@ -23,11 +22,9 @@ export EDITOR=emacs
 # Some convenience variables
 export SIENA_ASTROPHYSICS_DIR=${HOME}/siena-astrophysics
 
-# need this in order to compile CombineGalaxies
-export LD_LIBRARY_PATH=/usr/local/gsl/gcc/lib
-
 ##################################################
 # Expand my path
+export PATH=${PATH}:/usr/local/anaconda3/bin
 export PATH=${PATH}:/data/moustakas/Gadget-2.0.7/Gadget2
 export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
 export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/MakeNewDisk 
@@ -36,7 +33,9 @@ export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/rockstar-galaxies
 
 ##################################################
 # Set up Python
-export PYTHONPATH=${PYTHONPATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
+# export PYTHONPATH=${PYTHONPATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
+
+export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib
 
 ##################################################
 # Personal aliases
