@@ -18,7 +18,7 @@ void dump_gas_density(void)
   int si;
   char gsdfile[50]="";
 
-  strncpy(gsdfile, OutputFile, strlen(OutputFile)-4);
+  strncpy(gsdfile, OutputFile, strlen(OutputFile)-3);
   strcat(gsdfile, ".gsd");
   fd = fopen(gsdfile, "w");
 /*fd = fopen("gas_density.txt", "w");*/

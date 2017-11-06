@@ -107,7 +107,7 @@ void dump_eqn_of_state(void)
   FILE *fd;
   char eqsfile[50]="";
 
-  strncpy(eqsfile, OutputFile, strlen(OutputFile)-4);
+  strncpy(eqsfile, OutputFile, strlen(OutputFile)-3);
   strcat(eqsfile, ".eqs");
   if((fd = fopen(eqsfile, "w")))
     {
@@ -199,7 +199,7 @@ void integrate_surfacedensity(void)
 
   printf("integrating surface density...\n");
 
-  strncpy(sdfile, OutputFile, strlen(OutputFile)-4);
+  strncpy(sdfile, OutputFile, strlen(OutputFile)-3);
   strcat(sdfile, ".sd");
   fd = fopen(sdfile, "w");
 /*fd = fopen("surface_density.txt", "w");*/

@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
 /*sprintf(buf, "%s/curve.txt", OutputDir);*/
   strcpy(buf, "");
-  strncat(buf, OutputFile, strlen(OutputFile)-4);
+  strncat(buf, OutputFile, strlen(OutputFile)-3);
   strcat(buf, ".vc");
 
   if((fd = fopen(buf, "w")))
