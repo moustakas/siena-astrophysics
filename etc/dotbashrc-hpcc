@@ -36,7 +36,7 @@ export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/rockstar-galaxies
 # Set up Python
 # export PYTHONPATH=${PYTHONPATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
 
-export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib:/data/moustakas/openmpi-1.5.3/lib
+export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib:/data/moustakas/openmpi-1.5.3/lib:/data/moustakas/fftw-2.1.5/lib
 
 ##################################################
 # Personal aliases
