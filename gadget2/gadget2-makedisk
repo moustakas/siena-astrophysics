@@ -227,7 +227,7 @@ def main():
     outfile.write('\n')
     outfile.write('MakeDiskGalaxy {}\n'.format(makediskparamfile))
     outfile.write('\n')
-    outfile.write('echo "MakeNewDisk job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.write('echo "MakeNewDisk job $JOB_ID is complete."')
     outfile.close()
 
     # Next write out the Gadget2 script.
@@ -244,15 +244,15 @@ def main():
     outfile.write('\n')
     #outfile.write('source /etc/profile.d/modules.sh\n')
     #outfile.write('\n')
-    outfile.write('module load tools/fftw-2.1.5-gcc\n')
+    outfile.write('module load GNUStack/fftw-2.1.5\n')
     outfile.write('module load tools/hdf5-1.8.9-gcc\n')
-    outfile.write('module load openmpi/1.6.3-enet-gcc\n')
+    outfile.write('module load IntelStack/openmpi-2.1.0\n')
     outfile.write('\n')
     outfile.write('export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib\n')
     outfile.write('\n')
     outfile.write('mpirun -np {} Gadget2 {}'.format(args.ncore,gadget2paramfile))
     outfile.write('\n')
-    outfile.write('echo "Gadget-2 job $JOB_ID is complete." | sendmail jmoustakas@siena.edu')
+    outfile.write('echo "Gadget-2 job $JOB_ID is complete."')
     outfile.close()
 
     print('')
