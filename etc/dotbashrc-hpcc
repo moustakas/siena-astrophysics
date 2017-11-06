@@ -25,7 +25,7 @@ export SIENA_ASTROPHYSICS_DIR=${HOME}/siena-astrophysics
 ##################################################
 # Expand my path
 export PATH=${PATH}:/usr/local/anaconda3/bin
-export PATH=${PATH}:/data/moustakas/openmpi-1.5.3/bin
+export PATH=${PATH}:/usr/local/GNUStack/openmpi-1.5.3/bin
 export PATH=${PATH}:/data/moustakas/Gadget-2.0.7/Gadget2
 export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
 export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/MakeNewDisk 
@@ -36,7 +36,7 @@ export PATH=${PATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2/rockstar-galaxies
 # Set up Python
 # export PYTHONPATH=${PYTHONPATH}:${SIENA_ASTROPHYSICS_DIR}/gadget2
 
-export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib:/data/moustakas/openmpi-1.5.3/lib:/data/moustakas/fftw-2.1.5/lib
+export LD_LIBRARY_PATH=/usr/local/GNUStack/gsl-2.4/lib:/usr/local/GNUStack/hdf5-1.10.1/lib:/usr/local/GNUStack/fftw-2.1.5/lib:/usr/local/GNUStack/openmpi-1.5.3/lib
 
 ##################################################
 # Personal aliases
