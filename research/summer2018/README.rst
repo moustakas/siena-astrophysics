@@ -61,6 +61,13 @@ lessons and tutorials from `Software Carpentry`_ on other online resources.
 .. _`Programming with Python`: http://swcarpentry.github.io/python-novice-inflammation
 .. _`Version Control with Git`: http://swcarpentry.github.io/git-novice
 
+Web Applications
+----------------
+
+* `Django`_
+
+.. _`Django`: https://www.djangoproject.com/
+
 Additional resources
 --------------------
 
