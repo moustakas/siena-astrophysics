@@ -1,66 +1,30 @@
 ##################################################
 # Personal system defaults
+#set -x
 umask 002
+export EDITOR=emacs
 export TERM=xterm-256color
 export PS1="\u@\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]% "
-export EDITOR=emacs
-
 shopt -s checkwinsize # check the window size
 
 ##################################################
 # Some convenience variables
-export ASTROMETRY_DIR=/usr/local/astrometry
-export LEGACYPIPE_DIR=/usr/local/legacysurvey/legacypipe
-export LEGACY_SURVEY_DIR=/usr/local/legacysurvey/legacypipe-dir
-export SIENA_ASTROPHYSICS_DIR=${HOME}/siena-astrophysics
-export DUST_DIR=/global/work/data/sfd_dustmaps/
-export LSS_BOSS=/global/work/projects/lss-boss
-export DECALS_SIM_DIR=/global/work/decam/versions/sim
-export SPS_HOME=/usr/local/gitrepos/fsps
+export IM_WORK_DIR=/global/work
+export DUST_DIR=$IM_WORK_DIR/sfd_dustmaps/
+export SIENA_ASTROPHYSICS_DIR=$HOME/siena-astrophysics
 
 ##################################################
-# Expand my path
+# Expand the path
 export PATH=/usr/local/anaconda3/bin:$PATH
-# export PATH=$PATH:/usr/local/astrometry/bin
-
-##################################################
-# Set up DESI
-export DESI_ROOT=/global/work/desi
-export DESI_PRODUCT_ROOT=/usr/local/desihub
-
-for package in desiutil specter desitarget desispec desisim desimodel; do
-  export PATH=$DESI_PRODUCT_ROOT/$package/bin:$PATH
-  export PYTHONPATH=$DESI_PRODUCT_ROOT/$package/py:$PYTHONPATH
-done
-export PYTHONPATH=$DESI_PRODUCT_ROOT/specsim:$PYTHONPATH
-export DESIMODEL=$DESI_PRODUCT_ROOT/desimodel
-
-export REDMONSTER_TEMPLATES_DIR=$DESI_PRODUCT_ROOT/redmonster/templates
-export PATH=$DESI_PRODUCT_ROOT/redmonster/bin:$PATH
-export PYTHONPATH=$DESI_PRODUCT_ROOT/redmonster/python:$PYTHONPATH
-
-export DESI_BASIS_TEMPLATES=$DESI_ROOT/spectro/templates/basis_templates/v2.2
-
-export DESI_SPECTRO_SIM=$DESI_ROOT/spectro/sim
-export DESI_SPECTRO_DATA=$DESI_ROOT/spectro/data
-export DESI_SPECTRO_REDUX=$DESI_ROOT/spectro/redux
-export SPECPROD=dailytest
-export PIXPROD=dailytest
-
-##################################################
-# Set up Python
-# export PYTHONPATH=${PYTHONPATH}:${LEGACYPIPE_DIR}/py:${ASTROMETRY_DIR}/lib/python
-
-export PYTHONPATH=${SIENA_ASTROPHYSICS_DIR}/research/redmapper:$PYTHONPATH
 
 ##################################################
 # Personal aliases
 
-alias l='ls -lp --color=auto'
+alias l='ls -l --color=auto'
 # alias l='ls -l --color=auto | grep -v "~"'
-alias lt='ls -ltrp --color=auto '
-alias lm='ls -lp --color=auto | more'
-alias dirs='ls -lp --color=auto | grep ^d'
+alias lt='ls -ltr --color=auto '
+alias lm='ls -l --color=auto | more'
+alias dirs='ls -l --color=auto | grep ^d'
 alias cls='clear'
 alias df='df -kH'
 alias du='du -ksh'
@@ -73,7 +37,5 @@ alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
 alias pwd='pwd -P'
 # alias jupyter='/usr/bin/jupyter notebook --no-browser'
 
-alias decals_sim='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim.py'
-alias decals_sim_plots='python ${LEGACYPIPE_DIR}/py/legacyanalysis/decals_sim_plots.py'
-alias cute-2ptcor='python ${SIENA_ASTROPHYSICS_DIR}/research/lss/cute-2ptcor.py'
-alias cosmo-mc='python ${SIENA_ASTRPOHYSICS_DIR}/research/lss/cosmo-mc.py'
+alias desi='source $SIENA_ASTROPHYSICS_DIR/etc/desi-env-nyx'
+alias legacyhalos='source $SIENA_ASTROPHYSICS_DIR/etc/legacyhalos-env-nyx'

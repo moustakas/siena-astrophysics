@@ -1,0 +1,16 @@
+#!/bin/bash
+# Set up legacyhalos code
+
+unset PYTHONPATH # Clear PYTHONPATH
+
+export LEGACYHALOS_DIR=$IM_PROJECTS_DIR/legacyhalos
+export LEGACYHALOS_CODE_DIR=$IM_GITREPOS/legacyhalos
+
+# export REDMAPPER_DIR=${IM_DATA_DIR}/redmapper
+# export SPS_HOME=/usr/local/gitrepos/fsps
+
+export PYTHONPATH=$LEGACYHALOS_CODE_DIR:$PYTHONPATH
+export PATH=$LEGACYHALOS_CODE_DIR/bin:$PATH
+
+echo "Loading legacyhalos environment"
+source activate legacyhalos
