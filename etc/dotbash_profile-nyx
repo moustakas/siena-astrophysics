@@ -5,6 +5,7 @@ umask 002
 export EDITOR=emacs
 export TERM=xterm-256color
 export PS1="\u@\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]% "
+export CLICOLOR=1
 shopt -s checkwinsize # check the window size
 
 ##################################################
@@ -15,7 +16,12 @@ export SIENA_ASTROPHYSICS_DIR=$HOME/siena-astrophysics
 
 ##################################################
 # Expand the path
-export PATH=/usr/local/anaconda3/bin:$PATH
+
+##########################
+# Set up conda
+# export PATH=/usr/local/anaconda3/bin:$PATH
+source /usr/local/anaconda3/etc/profile.d/conda.sh
+conda activate
 
 ##################################################
 # Personal aliases
