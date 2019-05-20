@@ -97,6 +97,24 @@ Some additional resources you may find useful include:
 .. _`PEP 8 - Style Guide for Python Code`: https://www.python.org/dev/peps/pep-0008/
 
 
+Papers and software packages
+----------------------------
+
+This summer's research projects focus on understanding the formation of the most
+massive galaxies in the universe and their co-evolution with the growth of dark
+matter halos.  A non-exhaustive list of relevant papers and software packages
+with which you will need to become familiar include:
+
+* `Overview of the DESI Legacy Imaging Surveys`_
+* `The Connection between Galaxies and their Dark Matter Halos`_
+* `First results from the IllustrisTNG simulations: the stellar mass content of groups and clusters of galaxies`_
+* `Halotools`_
+
+.. `Overview of the DESI Legacy Imaging Surveys`: https://arxiv.org/abs/1804.08657
+.. `The Connection between Galaxies and their Dark Matter Halos`: https://arxiv.org/abs/1804.03097
+.. _`First results from the IllustrisTNG simulations: the stellar mass content of groups and clusters of galaxies`: https://arxiv.org/abs/1707.03406
+.. _`Halotools`: https://halotools.readthedocs.io/en/latest/index.html
+
 Need to add:
 ------------
 * Logging into nyx.
