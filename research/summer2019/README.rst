@@ -110,8 +110,8 @@ with which you will need to become familiar include:
 * `First results from the IllustrisTNG simulations: the stellar mass content of groups and clusters of galaxies`_
 * `Halotools`_
 
-.. `Overview of the DESI Legacy Imaging Surveys`: https://arxiv.org/abs/1804.08657
-.. `The Connection between Galaxies and their Dark Matter Halos`: https://arxiv.org/abs/1804.03097
+.. _`Overview of the DESI Legacy Imaging Surveys`: https://arxiv.org/abs/1804.08657
+.. _`The Connection between Galaxies and their Dark Matter Halos`: https://arxiv.org/abs/1804.03097
 .. _`First results from the IllustrisTNG simulations: the stellar mass content of groups and clusters of galaxies`: https://arxiv.org/abs/1707.03406
 .. _`Halotools`: https://halotools.readthedocs.io/en/latest/index.html
 
