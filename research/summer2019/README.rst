@@ -12,6 +12,13 @@ oftentimes just as important as the end result.  Indeed, we learn by struggling,
 and sometimes the greatest insights and discoveries are made when things appear
 to be most bleak!
 
+You should also not hesitate to help out one another.  Research is almost always
+a *collaborative* process; for example, I strongly encourage you to `pair
+code`_.  Like tackling a hard quantum physics problem with a group of students,
+research is best done in small groups and teams who communicate often.
+
+.. _`pair code`: https://stackify.com/pair-programming-advantages/
+
 What you need
 -------------
 
@@ -56,6 +63,7 @@ To start building your technical toolkit you will be working through several
 lessons and tutorials from `Software Carpentry`_ on other online resources.
 
 * `The Unix Shell`_
+* `Absolute Beginner's Guide to EMACS`_
 * `Programming with Python`_
 * `Version Control with Git`_
 
@@ -63,6 +71,7 @@ lessons and tutorials from `Software Carpentry`_ on other online resources.
 .. _`The Unix Shell`: http://swcarpentry.github.io/shell-novice
 .. _`Programming with Python`: http://swcarpentry.github.io/python-novice-inflammation
 .. _`Version Control with Git`: http://swcarpentry.github.io/git-novice
+.. _`Absolute Beginner's Guide to EMACS`: http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs/
 
 Additional resources
 --------------------
@@ -74,12 +83,17 @@ Some additional resources you may find useful include:
 * `Scipy Lecture Notes`_
 * `Practical Python for Astronomers`_
 * `Python Data Science Handbook`_
+* `PEP 8 - Style Guide for Python Code`_
 
 .. _`Google's Python Class`: https://developers.google.com/edu/python
 .. _`The Foundations of Data Science`: https://ds8.gitbooks.io/textbook/content
 .. _`Practical Python for Astronomers`: https://python4astronomers.github.io
 .. _`Scipy Lecture Notes`: http://www.scipy-lectures.org/index.html
 .. _`Python Data Science Handbook`: https://github.com/jakevdp/PythonDataScienceHandbook
+.. _`PEP 8 - Style Guide for Python Code`: https://www.python.org/dev/peps/pep-0008/
+
+
+
 
 Need to add:
 ------------
@@ -89,6 +103,3 @@ Need to add:
 * Anaconda/conda.
 * gitmersion.
 * Pair coding.
-* EMACS.
-* Pep8.
-* Using stackexchange.
