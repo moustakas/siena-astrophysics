@@ -1,0 +1,59 @@
+##################################################
+# Personal system defaults
+#set -x
+umask 002
+export EDITOR=emacs
+export TERM=xterm-256color
+export PS1="\u@\[$(tput bold)\]\h\[$(tput sgr0)\]:\w\[$(tput sgr0)\]% "
+export CLICOLOR=1
+shopt -s checkwinsize # check the window size
+
+##################################################
+# Some convenience variables
+export IM_WORK_DIR=/global/work
+export DUST_DIR=$IM_WORK_DIR/sfd_dustmaps/
+export SIENA_ASTROPHYSICS_DIR=$HOME/repos/siena-astrophysics
+
+##################################################
+# Expand the path
+
+##########################
+# Set up conda
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/desi/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/desi/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/desi/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/desi/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+##################################################
+# Personal aliases
+
+alias l='ls -l --color=auto'
+# alias l='ls -l --color=auto | grep -v "~"'
+alias lt='ls -ltr --color=auto '
+alias lm='ls -l --color=auto | more'
+alias dirs='ls -l --color=auto | grep ^d'
+alias cls='clear'
+alias df='df -kH'
+alias du='du -ksh'
+alias mv='mv -i'
+alias rm='rm -i'
+alias cp='cp -ip'        # make copy preserve timestamp of files
+alias cx='chmod +x'
+alias findf='find . -name "\!*"  -print'
+alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
+alias pwd='pwd -P'
+# alias jupyter='/usr/bin/jupyter notebook --no-browser'
+
+alias py37='conda activate py37'
+alias desi='source $SIENA_ASTROPHYSICS_DIR/etc/desi-env-lab'
+alias legacyhalos='source $SIENA_ASTROPHYSICS_DIR/etc/legacyhalos-env-lab'
