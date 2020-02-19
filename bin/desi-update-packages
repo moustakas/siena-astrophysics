@@ -1,0 +1,20 @@
+#!/bin/bash
+
+## Clone or update all the package dependencies.
+if [ -n "$DESI_PRODUCT_ROOT" ]; then
+    echo "Cloning and updating into $DESI_PRODUCT_ROOT"
+    pushd $DESI_PRODUCT_ROOT
+    for package in desiutil desimodel desispec desisim desitarget specter redrock redrock-templates; do
+      if [ -d $package ]; then
+        echo 'Updating '$package
+        cd $package
+        git pull
+        cd ..
+      else
+          git clone git@github.com:desihub/$package
+      fi
+    done
+    popd
+else
+    echo "Please set the \$DESI_PRODUCT_ROOT environment variable!"
+fi

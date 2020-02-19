@@ -16,6 +16,7 @@ export SIENA_ASTROPHYSICS_DIR=$HOME/repos/siena-astrophysics
 
 ##################################################
 # Expand the path
+export PATH="$SIENA_ASTROPHYSICS_DIR/bin:$PATH"
 
 ##########################
 # Set up conda
@@ -52,8 +53,9 @@ alias cx='chmod +x'
 alias findf='find . -name "\!*"  -print'
 alias rgrep='find . -type f -exec grep -HI \!$ {} \;'
 alias pwd='pwd -P'
+alias sshnersc='$HOME/bin/sshproxy.sh -u ioannis -o $HOME/.ssh/nersc_student'
 # alias jupyter='/usr/bin/jupyter notebook --no-browser'
 
 alias py37='conda activate py37'
-alias desi='source $SIENA_ASTROPHYSICS_DIR/etc/desi-env-lab'
+alias desi='source $SIENA_ASTROPHYSICS_DIR/bin/desi-env-lab'
 alias legacyhalos='source $SIENA_ASTROPHYSICS_DIR/etc/legacyhalos-env-lab'

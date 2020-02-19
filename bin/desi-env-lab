@@ -1,0 +1,44 @@
+echo 'Loading DESI software'
+
+unset PYTHONPATH
+
+export DESI_ROOT=$HOME/desi
+export DESI_PRODUCT_ROOT=$HOME/repos/desihub
+export DESIMODEL=$DESI_PRODUCT_ROOT/desimodel
+export DESI_SPECTRO_SIM=$DESI_ROOT/spectro/sim
+export DESI_SPECTRO_DATA=$DESI_ROOT/spectro/data
+export DESI_SPECTRO_REDUX=$DESI_ROOT/spectro/redux
+export SPECPROD=test
+export PIXPROD=test
+
+# Update PATH and PYTHONPATH
+for package in desiutil desimodel desispec desisim desitarget specter redrock; do
+  export PATH=$DESI_PRODUCT_ROOT/$package/bin:$PATH
+  export PYTHONPATH=$DESI_PRODUCT_ROOT/$package/py:$PYTHONPATH
+done
+export PYTHONPATH=$DESI_PRODUCT_ROOT/specsim:$PYTHONPATH
+export PYTHONPATH=$DESI_PRODUCT_ROOT/simqso:$PYTHONPATH
+
+export PYTHONPATH=$HOME/repos/prospect/py:$PYTHONPATH
+
+# Check out the desimodel data files (in svn)
+# cd $DESIMODEL
+# svn export https://desi.lbl.gov/svn/code/desimodel/trunk/data
+
+# Check out calibration and template files
+#username=my_nersc_account_username
+#export DESI_ROOT=$HOME/desi/
+#mkdir -p $DESI_ROOT/spectro/templates/basis_templates
+#cd $DESI_ROOT/spectro/templates/basis_templates
+#svn export svn+ssh://${username}@dtn01.nersc.gov/global/project/projectdirs/desi/spectro/calib/svn/basis_templates/tags/v2.5
+
+export DESI_CCD_CALIBRATION_DATA=$DESI_ROOT/spectro/calib/ccd_calibration_data
+
+# Templates
+export RR_TEMPLATE_DIR=$DESI_PRODUCT_ROOT/redrock-templates
+export DESI_BASIS_TEMPLATES=$DESI_ROOT/spectro/templates/basis_templates/v2.6
+
+# Additional variables
+export DUST_DIR=$IM_DUST_DIR
+
+conda activate desi
