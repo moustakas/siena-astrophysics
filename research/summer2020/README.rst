@@ -1,6 +1,8 @@
 Moustakas Summer 2020 Research Group
 ====================================
 
+![Siena Physics](https://github.com/moustakas/siena-astrophysics/blob/master/siena-physics.png)
+
 Motivation
 ----------
 
@@ -13,8 +15,8 @@ and sometimes the greatest insights and discoveries are made when things appear
 to be most bleak!
 
 You should also not hesitate to help out one another.  Research is almost always
-a *collaborative* process; for example, I strongly encourage you to `pair
-code`_.  We will also use `Slack`_ and `Zoom`_ to stay in frequent contact.
+a *collaborative* process; for example, I strongly encourage you to [pair
+code](https://stackify.com/pair-programming-advantages).  We will also use `Slack`_ and `Zoom`_ to stay in frequent contact.
 Like tackling a hard quantum physics problem with a group of classmates,
 research is best done in small groups and teams who communicate often.
 
@@ -71,6 +73,7 @@ Some additional resources you may find useful include:
 * `Practical Python for Astronomers`_
 * `Python Data Science Handbook`_
 * `PEP 8 - Style Guide for Python Code`_
+* [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
 
 
 Papers and software packages
@@ -92,7 +95,6 @@ Need to add:
 * Jupyter notebook daily log.
 * Anaconda/conda.
 
-.. _`pair code`: https://stackify.com/pair-programming-advantages/
 .. _`Slack`: https://slack.com/
 .. _`Zoom`: https://zoom.us/
 
