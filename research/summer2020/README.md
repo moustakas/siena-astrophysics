@@ -1,7 +1,7 @@
 Moustakas Summer 2020 Research Group
 ====================================
 
-![Siena Physics](https://github.com/moustakas/siena-astrophysics/blob/master/siena-physics.png)
+![Siena Physics](https://github.com/moustakas/siena-astrophysics/blob/master/siena-physics.png =150x)
 
 Motivation
 ----------
