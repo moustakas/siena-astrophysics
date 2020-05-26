@@ -84,15 +84,17 @@ Some additional resources you may find useful include:
 Papers and software packages
 ----------------------------
 
-This summer's research projects focus on understanding the formation of the most
-massive galaxies in the universe and their co-evolution with the growth of dark
-matter halos.  A non-exhaustive list of relevant papers and software packages
-with which you will need to become familiar include:
+Write me!
 
-* [Overview of the DESI Legacy Imaging Surveys](https://arxiv.org/abs/1804.08657)
-* [The Connection between Galaxies and their Dark Matter Halos](https://arxiv.org/abs/1804.03097)
-* [First results from the IllustrisTNG simulations: the stellar mass content of groups and clusters of galaxies](https://arxiv.org/abs/1707.03406)
-* [Halotools](https://halotools.readthedocs.io/en/latest/index.html)
+This summer's research project focuses on understanding galaxy formation using
+imaging and spectroscopy from the [Mapping Nearby Galaxies at APO
+(MaNGA)](https://www.sdss.org/surveys/manga) survey. A non-exhaustive list of
+relevant papers and software packages with which you will need to become
+familiar include:
+
+* [MaNGA Web portal](https://www.sdss.org/surveys/manga)
+* [Marvin tool for accessing MaNGA data](https://www.sdss.org/dr15/manga/marvin)
+* [Overview of the SDSS-IV MaNGA Survey: Mapping nearby Galaxies at Apache Point Observatory](https://ui.adsabs.harvard.edu/abs/2015ApJ...798....7B/abstract)
 
 Need to add:
 ------------
