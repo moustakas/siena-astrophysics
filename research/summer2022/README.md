@@ -27,27 +27,28 @@ insight from those data. Throughout this journey, a good understanding of
 statistics is crucial, as well as the ability to clearly communicate your
 findings to your peers, both in writing and orally.
 
-What accounts do I need?
-------------------------
+What do I need to get started?
+------------------------------
 
-We will be many of the same collaborative tools used by scientists today. So 
+We will be using many of the same collaboration tools used by astronomers, as
+well as some more specialized and proprietary access to data and computing
+resources specific to my research group. Therefore, before the start of summer
+research, please be sure you have the following:
+
+1. A [Slack](https://slack.com) account so you can be added to the
+[Slack@siena-astrophysics](https://siena-astrophysics.slack.com) workspace.
+
+2. A [Github](https://github.com) account. Once you have your handle, please
+   share it with me on Slack so I can give you access to the
+   [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
+   repository (and other relevant repositories).
+
+3. ..
 
 
 
-1. We will be using a variety of tools, accounts software repositories hosted at
-   [Github](https://github.com) so if you don't already have one please create a
-   [Github](https://github.com) account and let me know your handle so I can
-   give you access to the
-   [siena-astrophysics](https://github.com/moustakas/siena-astrophysics) and
-   [legacyhalos](https://github.com/moustakas/legacyhalos) repositories.  In
-   addition, you will need to create a [Slack](https://slack.com) account (and
-   send me the email address you used for your account so I can send you an
-   invitation).
-
-2. A good lab book--or you might consider keeping an electronic journal or set
-   of notes (ideally, on Github!).
-
-3. Enthusiasm!
+Finally, I recommend a good lab book (or you might consider keeping an
+electronic journal or set of notes, ideally, on Github!) and enthusiasm!
 
 NSF Training
 ------------
