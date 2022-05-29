@@ -9,7 +9,7 @@ summer research.  Although research is very rewarding, it can also frequently be
 extremely frustrating!  My best advice is for you to try to keep your eye on the
 *big picture* of what you're trying to accomplish and know that the struggle is
 oftentimes just as important as the end result.  Indeed, we often learn best by
-struggling, and sometimes the greatest insights and discoveries are made when
+struggling, and sometimes we make our greatest insights and discoveries when
 things appear to be most bleak!
 
 You should also not hesitate to help out one another.  Research is almost always
@@ -21,11 +21,11 @@ classmates, research is best done in small groups and teams who communicate
 often.
 
 Finally, at its heart, modern astrophysics is an applied data science:
-Astronomers frequently mine large datasets---using one or more modern
-programming languages like Python---in order to gain scientifically interesting
-insight from those data. Throughout this journey, a good understanding of
-statistics is crucial, as well as the ability to clearly communicate your
-findings to your peers, both in writing and orally.
+Astronomers frequently mine large datasets--using one or more modern programming
+languages like [Python](https://python.org)--in order to gain scientifically
+interesting insight from those data. Throughout this journey, a good
+understanding of statistics is crucial, as well as the ability to clearly
+communicate your findings to your peers, both in writing and orally.
 
 What do I need to get started?
 ------------------------------
@@ -33,18 +33,30 @@ What do I need to get started?
 We will be using many of the same collaboration tools used by astronomers, as
 well as some more specialized and proprietary access to data and computing
 resources specific to my research group. Therefore, before the start of summer
-research, please be sure you have the following:
+research, please be sure you have (or have completed) the following:
 
 1. A [Slack](https://slack.com) account so you can be added to the
-[Slack@siena-astrophysics](https://siena-astrophysics.slack.com) workspace.
+   [siena-astrophysics Slack workspace](https://siena-astrophysics.slack.com).
 
 2. A [Github](https://github.com) account. Once you have your handle, please
    share it with me on Slack so I can give you access to the
    [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
    repository (and other relevant repositories).
 
-3. ..
+3. Fill out the [DESI membership
+   form](https://desi.lbl.gov/trac/wiki/NewMembers#TheNewMemberForm) (get the
+   login credentials from Moustakas). Once your application has been approved,
+   you will receive instructions for how to access the [DESI Trac
+   system](https://desi.lbl.gov/trac/wiki), which has a *ton* of useful and
+   important information (see especially the [Getting
+   Started](https://desi.lbl.gov/trac/wiki/GettingStarted) page).
 
+4. [Get a NERSC
+   account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
+   the National Energy Research Scientific Computing Center, is one of the
+   world's most powerful supercomputing centers, and you will be using it
+   frequently for your research, especially the [NERSC Jupyter
+   Hub](https://jupyter.nersc.gov).
 
 
 Finally, I recommend a good lab book (or you might consider keeping an
