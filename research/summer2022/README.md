@@ -1,29 +1,40 @@
-Moustakas Summer 2020 Research Group
+Moustakas Summer 2022 Research Group
 ====================================
 
-Motivation
-----------
+Overview
+--------
 
 This document assembles a few notes and resources to help you get started with
-summer research.  Although research is very rewarding, frequently it can also be
+summer research.  Although research is very rewarding, it can also frequently be
 extremely frustrating!  My best advice is for you to try to keep your eye on the
-*big picture* of what you're trying to accomplish, and know that the struggle is
-oftentimes just as important as the end result.  Indeed, we learn by struggling,
-and sometimes the greatest insights and discoveries are made when things appear
-to be most bleak!
+*big picture* of what you're trying to accomplish and know that the struggle is
+oftentimes just as important as the end result.  Indeed, we often learn best by
+struggling, and sometimes the greatest insights and discoveries are made when
+things appear to be most bleak!
 
 You should also not hesitate to help out one another.  Research is almost always
 a *collaborative* process; for example, I strongly encourage you to [pair
 code](https://stackify.com/pair-programming-advantages).  We will also use
-[Slack](https://slack.com) and [Zoom](https://zoom.us) to stay in frequent
-contact.  Like tackling a hard quantum physics problem with a group of
+[Slack](https://slack.com) and, occasionally, [Zoom](https://zoom.us) to stay in
+frequent contact.  Like tackling a hard quantum physics problem with a group of
 classmates, research is best done in small groups and teams who communicate
 often.
 
-What you need
--------------
+Finally, at its heart, modern astrophysics is an applied data science:
+Astronomers frequently mine large datasets---using one or more modern
+programming languages like Python---in order to gain scientifically interesting
+insight from those data. Throughout this journey, a good understanding of
+statistics is crucial, as well as the ability to clearly communicate your
+findings to your peers, both in writing and orally.
 
-1. We will be using a variety of software repositories hosted at
+What accounts do I need?
+------------------------
+
+We will be many of the same collaborative tools used by scientists today. So 
+
+
+
+1. We will be using a variety of tools, accounts software repositories hosted at
    [Github](https://github.com) so if you don't already have one please create a
    [Github](https://github.com) account and let me know your handle so I can
    give you access to the
