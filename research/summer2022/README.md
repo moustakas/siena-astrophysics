@@ -55,23 +55,25 @@ research, please be sure you have (or have completed) the following:
    account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
    the National Energy Research Scientific Computing Center, is one of the
    world's most powerful supercomputing centers, and you will be using it
-   frequently for your research, especially the [NERSC Jupyter
+   frequently for your research, especially NERSC's [Jupyter
    Hub](https://jupyter.nersc.gov).
 
 
 Finally, I recommend a good lab book (or you might consider keeping an
-electronic journal or set of notes, ideally, on Github!) and enthusiasm!
+electronic journal or set of notes, ideally on Github) and enthusiasm!
 
-NSF Training
-------------
+Responsible Conduct of Research
+-------------------------------
 
 The grant which is supporting you this summer (whether from the National Science
 Foundation or the Department of Energy) mandates that you complete an online
 [Responsible Conduct of Research](https://about.citiprogram.org/en/homepage)
-training program, in which you will learn about collaborative research,
-responsible authorship, data management, etc.  *If you haven't already done it,
-this training must be completed during the first week of your summer research
-experience.*
+training program (see [these
+instructions](https://www.siena.edu/files/resources/responsible-conduct-of-research-2016.pdf)),
+in which you will learn about collaborative research, responsible authorship,
+data management, etc.  *If you haven't previously completed the training in the
+previous three years, it must be completed during the first week of your summer
+research experience.*
 
 Computers and more!
 -------------------
