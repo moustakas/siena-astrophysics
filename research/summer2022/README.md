@@ -1,5 +1,5 @@
-Moustakas Summer 2022 Research Group
-====================================
+Moustakas Summer 2022 Research
+==============================
 
 Overview
 --------
@@ -161,7 +161,8 @@ work through the following tutorials:
 DESI-specific tools, tutorials, and repositories
 ------------------------------------------------
 
-* [Getting Started with DESI Data Systems[(https://desi.lbl.gov/trac/wiki/Pipeline/GettingStarted)
+* [Getting Started with DESI Data Systems](https://desi.lbl.gov/trac/wiki/Pipeline/GettingStarted)
 * [DESI Tutorials](https://github.com/desihub/tutorials)
 * [DESI Transient Identification Pipeline (desitrip)](https://github.com/desihub/timedomain/tree/master/desitrip)
-* [*FastSpecFit* Documentation](https://fastspecfit.readthedocs.io/en/latest/) (see also the [*FastSpecFit* Github repository](https://github.com/desihub/fastspecfit)
+* [*FastSpecFit* Documentation](https://fastspecfit.readthedocs.io/en/latest/) and [Github repository](https://github.com/desihub/fastspecfit)
+
