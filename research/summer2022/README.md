@@ -136,7 +136,7 @@ Carpentry](https://software-carpentry.org/lessons) and elsewhere:
 * Miscellaneous:
   * [Learn LaTeX in 30 minutes](https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes) 
   * [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
-  
+  * [Installing Anaconda](https://docs.anaconda.com/anaconda/install) and [Getting Started with Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
 
 Digging Deeper: Data Science and Machine Learning
 -------------------------------------------------
@@ -161,5 +161,7 @@ work through the following tutorials:
 DESI-specific tools, tutorials, and repositories
 ------------------------------------------------
 
-* [DESI tutorials](https://github.com/desihub/tutorials)
+* [Getting Started with DESI Data Systems[(https://desi.lbl.gov/trac/wiki/Pipeline/GettingStarted)
+* [DESI Tutorials](https://github.com/desihub/tutorials)
 * [DESI Transient Identification Pipeline (desitrip)](https://github.com/desihub/timedomain/tree/master/desitrip)
+* [*FastSpecFit* Documentation](https://fastspecfit.readthedocs.io/en/latest/) (see also the [*FastSpecFit* Github repository](https://github.com/desihub/fastspecfit)
