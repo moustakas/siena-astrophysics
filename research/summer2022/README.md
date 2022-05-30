@@ -88,59 +88,52 @@ scientific computing environment in astronomy.
 
 In addition to these computers, during your summer research experience you may
 utilize NERSC, particularly the [NERSC Jupyter Hub
-server](https://jupyter.nersc.gov), the [Google
+server](https://jupyter.nersc.gov), [Google
 Colaboratory](https://colab.research.google.com), my remote server
 *nyx.siena.edu*, the Siena College high-performance computing cluster (HPCC),
 and other computational tools.
 
+Dark Energy Spectroscopic Instrument (DESI)
+-------------------------------------------
+
+[DESI](https://desi.lbl.gov) is a state-of-the-art, 5-year spectroscopic
+redshift survey and [Stage IV dark energy
+experiment](https://arxiv.org/pdf/1604.07626.pdf) which will place unprecedented
+constraints on the expansion history of the universe and our fundamental
+understanding of dark energy. 
+
+
 Building your toolkit
 ---------------------
 
-To start building your technical toolkit you will be working through several
-lessons and tutorials from [Software Carpentry](https://software-carpentry.org/lessons) on other online resources.
+To start building your technical toolkit, you should work through the following
+(or comparable) tutorials from [Software
+Carpentry](https://software-carpentry.org/lessons) and elsewhere:
 
-* [The Unix Shell](http://swcarpentry.github.io/shell-novice)
-* [Absolute Beginner's Guide to EMACS](http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs)
-* [Programming with Python](http://swcarpentry.github.io/python-novice-inflammation)
-* [Version Control with Git](http://swcarpentry.github.io/git-novice) (see also [Git Immersion](http://gitimmersion.com/)) 
+* Fundamentals: Linux/Unix, EMACS, and Git:
+  * [The Unix Shell](http://swcarpentry.github.io/shell-novice)
+  * [Absolute Beginner's Guide to EMACS](http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs) (and you might as well learn a little bit of [vim](https://linuxconfig.org/vim-tutorial), too)
+  * [Version Control with Git](http://swcarpentry.github.io/git-novice) (see also [Git Immersion](http://gitimmersion.com/)) 
+* Python:
+  * [Python for Astronomers](https://prappleizer.github.io/)
+  * [Programming with Python](http://swcarpentry.github.io/python-novice-inflammation)
+  * [Google's Python Class](https://developers.google.com/edu/python)
+  * [PEP 8 - Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+  * [Scipy Lecture Notes](http://www.scipy-lectures.org/index.html)
+* Miscellaneous
+  * [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
+  
 
-Finally, if you are interested in poking around at some of the
-libraries and concepts we're going to be exploring this summer, you're
-more than welcome to check these out--
-  http://www.astroml.org/index.html
-  https://www.tensorflow.org/tutorials
-  https://github.com/desihub/timedomain/tree/master/desitrip
+Digging Deeper: Data Science and Machine Learning
+-------------------------------------------------
 
-
-Additional resources
---------------------
-Some additional resources you may find useful include:
-
-* [Google's Python Class](https://developers.google.com/edu/python)
-* [The Foundations of Data Science](https://ds8.gitbooks.io/textbook/content)
-* [Scipy Lecture Notes](http://www.scipy-lectures.org/index.html)
-* [Practical Python for Astronomers](https://python4astronomers.github.io)
 * [Python Data Science Handbook](https://github.com/jakevdp/PythonDataScienceHandbook)
-* [PEP 8 - Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
-* [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
+* http://www.astroml.org/index.html
+* https://www.tensorflow.org/tutorials
 
-Papers and software packages
-----------------------------
 
-Write me!
+DESI-specific tools, tutorials, and repositories
+------------------------------------------------
 
-This summer's research project focuses on understanding galaxy formation using
-imaging and spectroscopy from the [Mapping Nearby Galaxies at APO
-(MaNGA)](https://www.sdss.org/surveys/manga) survey. A non-exhaustive list of
-relevant papers and software packages with which you will need to become
-familiar include:
+* https://github.com/desihub/timedomain/tree/master/desitrip
 
-* [MaNGA Web portal](https://www.sdss.org/surveys/manga)
-* [Marvin tool for accessing MaNGA data](https://www.sdss.org/dr15/manga/marvin)
-* [Overview of the SDSS-IV MaNGA Survey: Mapping nearby Galaxies at Apache Point Observatory](https://ui.adsabs.harvard.edu/abs/2015ApJ...798....7B/abstract)
-
-Need to add:
-------------
-* Logging into nyx.
-* Jupyter notebook daily log.
-* Anaconda/conda.
