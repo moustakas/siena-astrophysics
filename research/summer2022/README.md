@@ -55,8 +55,8 @@ research, please be sure you have (or have completed) the following:
    account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
    the National Energy Research Scientific Computing Center, is one of the
    world's most powerful supercomputing centers, and you will be using it
-   frequently for your research, especially NERSC's [Jupyter
-   Hub](https://jupyter.nersc.gov).
+   frequently for your research, especially the [NERSC Jupyter
+   Hub server](https://jupyter.nersc.gov).
 
 
 Finally, I recommend a good lab book (or you might consider keeping an
@@ -71,18 +71,27 @@ Foundation or the Department of Energy) mandates that you complete an online
 training program (see [these
 instructions](https://www.siena.edu/files/resources/responsible-conduct-of-research-2016.pdf)),
 in which you will learn about collaborative research, responsible authorship,
-data management, etc.  *If you haven't previously completed the training in the
-previous three years, it must be completed during the first week of your summer
-research experience.*
+data management, etc.  *If you haven't completed the training in the previous
+three years, it must be completed during the first week of your summer research
+experience.*
 
 Computers and more!
 -------------------
 
-The astrophysics research lab (Roger Bacon 113, ask me for the key code) has
-several computers that you are free to use.  We will discuss how to access these
-machines, my remote server *nyx*, the Siena College high-performance
-computing cluster (HPCC), and other computational tools during your first week
-of research.
+The astrophysics research lab, Roger Bacon Hall 113, has three computers which
+you are free to use (ask Moustakas for the punch code to the room and the login
+to the computers). Each machine is a Dell Precision 3450 with 8 Intel i7
+processors, 16 GB of RAM, 500 GB of SSD disk space, and a dual-boot Windows 10
+and [Linux/Ubuntu](https://ubuntu.com/) operating system installed. In general,
+you will be using the Linux/Ubuntu operating system, which is the standard
+scientific computing environment in astronomy.
+
+In addition to these computers, during your summer research experience you may
+utilize NERSC, particularly the [NERSC Jupyter Hub
+server](https://jupyter.nersc.gov), the [Google
+Colaboratory](https://colab.research.google.com), my remote server
+*nyx.siena.edu*, the Siena College high-performance computing cluster (HPCC),
+and other computational tools.
 
 Building your toolkit
 ---------------------
@@ -94,6 +103,14 @@ lessons and tutorials from [Software Carpentry](https://software-carpentry.org/l
 * [Absolute Beginner's Guide to EMACS](http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs)
 * [Programming with Python](http://swcarpentry.github.io/python-novice-inflammation)
 * [Version Control with Git](http://swcarpentry.github.io/git-novice) (see also [Git Immersion](http://gitimmersion.com/)) 
+
+Finally, if you are interested in poking around at some of the
+libraries and concepts we're going to be exploring this summer, you're
+more than welcome to check these out--
+  http://www.astroml.org/index.html
+  https://www.tensorflow.org/tutorials
+  https://github.com/desihub/timedomain/tree/master/desitrip
+
 
 Additional resources
 --------------------
