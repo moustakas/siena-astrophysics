@@ -35,28 +35,37 @@ well as some more specialized and proprietary access to data and computing
 resources specific to my research group. Therefore, before the start of summer
 research, please be sure you have (or have completed) the following:
 
-1. A [Slack](https://slack.com) account so you can be added to the
-   [siena-astrophysics Slack workspace](https://siena-astrophysics.slack.com).
+* A [Slack](https://slack.com) account so you can be added to the
+  [siena-astrophysics Slack workspace](https://siena-astrophysics.slack.com).
 
-2. A [Github](https://github.com) account. Once you have your handle, please
-   share it with me on Slack so I can give you access to the
-   [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
-   repository (and other relevant repositories).
+* A [Github](https://github.com) account. Once you have your handle, please
+  share it with me on Slack so I can give you access to the
+  [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
+  repository (and other relevant repositories).
 
-3. Fill out the [DESI membership
-   form](https://desi.lbl.gov/trac/wiki/NewMembers#TheNewMemberForm) (get the
-   login credentials from Moustakas). Once your application has been approved,
-   you will receive instructions for how to access the [DESI Trac
-   system](https://desi.lbl.gov/trac/wiki), which has a *ton* of useful and
-   important information (see especially the [Getting
-   Started](https://desi.lbl.gov/trac/wiki/GettingStarted) page).
+* A [Github](https://github.com) account. Once you have your handle, please
+  share it with me on Slack so I can give you access to the
+  [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
+  repository (and other relevant repositories).
 
-4. [Get a NERSC
-   account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
-   the National Energy Research Scientific Computing Center, is one of the
-   world's most powerful supercomputing centers, and you will be using it
-   frequently for your research, especially the [NERSC Jupyter
-   Hub server](https://jupyter.nersc.gov).
+* An [Overleaf](https://overleaf.com) account. We will use the typesetting
+  platform [LaTeX](https://www.latex-project.org/) to write a research paper
+  this summer.
+
+* Fill out the [DESI membership
+  form](https://desi.lbl.gov/trac/wiki/NewMembers#TheNewMemberForm) (get the
+  login credentials from Moustakas). Once your application has been approved,
+  you will receive instructions for how to access the [DESI Trac
+  system](https://desi.lbl.gov/trac/wiki), which has a *ton* of useful and
+  important information (see especially the [Getting
+  Started](https://desi.lbl.gov/trac/wiki/GettingStarted) page).
+
+* A [NERSC
+  account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
+  the National Energy Research Scientific Computing Center, is one of the
+  world's most powerful supercomputing centers, and you will be using it
+  frequently for your research, especially the [NERSC Jupyter Hub
+  server](https://jupyter.nersc.gov).
 
 
 Finally, I recommend a good lab book (or you might consider keeping an
@@ -100,8 +109,17 @@ Dark Energy Spectroscopic Instrument (DESI)
 redshift survey and [Stage IV dark energy
 experiment](https://arxiv.org/pdf/1604.07626.pdf) which will place unprecedented
 constraints on the expansion history of the universe and our fundamental
-understanding of dark energy. 
+understanding of dark energy. The survey--and the grant which is paying you!--is
+supported by the [Department of Energy (DOE) Office of
+Science](https://www.energy.gov/science/office-science) as one of the core
+experiments of [Cosmic Frontier
+Vision](https://science.osti.gov/hep/Research/Cosmic-Frontier). 
 
+As time permits, I recommend you read the following overview papers on the
+instrumentation and science case for DESI:
+* [Overview of the Instrumentation for the Dark Energy Spectroscopic Instrument
+](https://arxiv.org/abs/2205.10939)
+* [The DESI Experiment Part I: Science,Targeting, and Survey Design](https://arxiv.org/abs/1611.00036) 
 
 Building your toolkit
 ---------------------
@@ -113,7 +131,7 @@ Carpentry](https://software-carpentry.org/lessons) and elsewhere:
 * Fundamentals: Linux/Unix, EMACS, and Git:
   * [The Unix Shell](http://swcarpentry.github.io/shell-novice)
   * [Absolute Beginner's Guide to EMACS](http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs) (and you might as well learn a little bit of [vim](https://linuxconfig.org/vim-tutorial), too)
-  * [Version Control with Git](http://swcarpentry.github.io/git-novice) (see also [Git Immersion](http://gitimmersion.com/)) 
+  * [Version Control with Git](http://swcarpentry.github.io/git-novice) (see also [Git Immersion](http://gitimmersion.com/) and [git - the simple guide](https://rogerdudler.github.io/git-guide)) 
 * Python:
   * [Python for Astronomers](https://prappleizer.github.io/)
   * [Programming with Python](http://swcarpentry.github.io/python-novice-inflammation)
@@ -121,19 +139,25 @@ Carpentry](https://software-carpentry.org/lessons) and elsewhere:
   * [PEP 8 - Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
   * [Scipy Lecture Notes](http://www.scipy-lectures.org/index.html)
 * Miscellaneous
+  * [Learn LaTeX in 30 minutes](https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes) 
   * [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
   
 
 Digging Deeper: Data Science and Machine Learning
 -------------------------------------------------
 
+We will 
+
 * [Python Data Science Handbook](https://github.com/jakevdp/PythonDataScienceHandbook)
-* http://www.astroml.org/index.html
-* https://www.tensorflow.org/tutorials
+* [Statistics, Data Mining, and Machine Learning in Astronomy](http://www.astroml.org/index.html)
+* [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
+* [scikit-learn: machine learning in Python](https://scipy-lectures.org/packages/scikit-learn/index.html#introducing-the-scikit-learn-estimator-object) 
 
 
 DESI-specific tools, tutorials, and repositories
 ------------------------------------------------
 
-* https://github.com/desihub/timedomain/tree/master/desitrip
+* [DESI tutorials](https://github.com/desihub/tutorials)
+* [DESI Transient Identification Pipeline (desitrip)](https://github.com/desihub/timedomain/tree/master/desitrip)
+
 
