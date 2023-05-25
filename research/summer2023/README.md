@@ -1,22 +1,22 @@
-Moustakas Summer 2022 Research
-==============================
+Moustakas & Finn Summer 2023 Research
+=====================================
 
 Overview
 --------
 
 This document assembles a few notes and resources to help you get started with
-summer research.  Although research is very rewarding, it can also frequently be
-extremely frustrating!  My best advice is for you to try to keep your eye on the
+summer research. Although research is very rewarding, it can also frequently be
+extremely frustrating!  Our best advice is for you to try to keep your eye on the
 *big picture* of what you're trying to accomplish and know that the struggle is
-oftentimes just as important as the end result.  Indeed, we often learn best by
+oftentimes just as important as the end result. Indeed, we often learn best by
 struggling, and sometimes we make our greatest insights and discoveries when
 things appear to be most bleak!
 
-You should also not hesitate to help out one another.  Research is almost always
-a *collaborative* process; for example, I strongly encourage you to [pair
+You should also not hesitate to help out one another. Research is almost always
+a *collaborative* process; for example, we strongly encourage you to [pair
 code](https://stackify.com/pair-programming-advantages).  We will also use
 [Slack](https://slack.com) and, occasionally, [Zoom](https://zoom.us) to stay in
-frequent contact.  Like tackling a hard quantum physics problem with a group of
+frequent contact. Like tackling a hard quantum physics problem with a group of
 classmates, research is best done in small groups and teams who communicate
 often.
 
@@ -32,25 +32,25 @@ What do I need to get started?
 
 We will be using many of the same collaboration tools used by astronomers, as
 well as some more specialized and proprietary access to data and computing
-resources specific to my research group. Therefore, before the start of summer
-research, please be sure you have (or have completed) the following:
+resources specific to astro research at Siena. Therefore, before the start of
+summer research, please be sure you have (or have completed) the following:
 
 * A [Slack](https://slack.com) account so you can be added to the
   [siena-astrophysics Slack workspace](https://siena-astrophysics.slack.com).
 
 * A [Github](https://github.com) account. Once you have your handle, please
-  share it with me on Slack so I can give you access to the
+  share it with Moustakas on Slack so you can be given access to the
   [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
   repository (and other relevant repositories).
 
 * An [Overleaf](https://overleaf.com) account. We will use the typesetting
-  platform [LaTeX](https://www.latex-project.org/) to write a research paper
-  this summer.
+  platform [LaTeX](https://www.latex-project.org/) to write a summary research
+  paper this summer.
 
 * A completed [DESI membership
-  form](https://desi.lbl.gov/trac/wiki/NewMembers#TheNewMemberForm) (get the
-  login credentials from Moustakas). Once your application has been approved,
-  you will receive instructions for how to access the [DESI Trac
+  form](https://desi.lbl.gov/desipub/app/MembershipForm/form) (get the login
+  credentials from Moustakas). Once your application has been approved, you will
+  receive instructions for how to access the [DESI Trac
   system](https://desi.lbl.gov/trac/wiki), which has a *ton* of useful and
   important information (see especially the [Getting
   Started](https://desi.lbl.gov/trac/wiki/GettingStarted) page).
@@ -59,9 +59,8 @@ research, please be sure you have (or have completed) the following:
   account](https://desi.lbl.gov/trac/wiki/Computing/AccessNersc). [NERSC](https://www.nersc.gov/),
   the National Energy Research Scientific Computing Center, is one of the
   world's most powerful supercomputing centers, and you will be using it
-  frequently for your research, especially the [NERSC Jupyter Hub
+  frequently for your research, especially the [NERSC Jupyter
   server](https://jupyter.nersc.gov).
-
 
 Finally, I recommend a good lab book (or you might consider keeping an
 electronic journal or set of notes, ideally on Github) and enthusiasm!
@@ -69,32 +68,35 @@ electronic journal or set of notes, ideally on Github) and enthusiasm!
 Responsible Conduct of Research
 -------------------------------
 
-The grant which is supporting you this summer (whether from the National Science
-Foundation or the Department of Energy) mandates that you complete an online
-[Responsible Conduct of Research](https://about.citiprogram.org/en/homepage)
-training program (see [these
+Whether you are being supported this summer by CURCA or on a grant (from either
+the National Science Foundation or the Department of Energy), you must complete
+an online [Responsible Conduct of
+Research](https://about.citiprogram.org/en/homepage) training program (see
+[these
 instructions](https://www.siena.edu/files/resources/responsible-conduct-of-research-2016.pdf)),
 in which you will learn about collaborative research, responsible authorship,
-data management, etc.  *If you haven't completed the training in the previous
-three years, it must be completed during the first week of your summer research
-experience.*
+data management, etc.  
+
+*Note: If you haven't completed the training in the previous three years, it
+must be completed during the first week of your summer research experience.*
 
 Computers and more!
 -------------------
 
 The astrophysics research lab, Roger Bacon Hall 113, has three computers which
-you are free to use (ask Moustakas for the punch code to the room and the login
-to the computers). Each machine is a Dell Precision 3450 with 8 Intel i7
-processors, 16 GB of RAM, 500 GB of SSD disk space, and a dual-boot Windows 10
-and [Linux/Ubuntu](https://ubuntu.com/) operating system installed. In general,
-you will be using the Linux/Ubuntu operating system, which is the standard
-scientific computing environment in astronomy.
+you are free to use (ask either Moustakas or Finn for the punch code to the room
+and the login to the computers). Each machine is a Dell Precision 3450 with 8
+Intel i7 processors, 16 GB of RAM, 500 GB of SSD disk space, and a dual-boot
+Windows 10 and [Linux/Ubuntu](https://ubuntu.com/) operating system
+installed. In general, you will be using the Linux/Ubuntu operating system,
+which is the standard scientific computing environment in astronomy.
 
 In addition to these computers, during your summer research experience you may
-utilize NERSC, particularly the [NERSC Jupyter Hub
+utilize NERSC, particularly the [NERSC Jupyter
 server](https://jupyter.nersc.gov), [Google
-Colaboratory](https://colab.research.google.com), my remote server
-*nyx.siena.edu*, the Siena College high-performance computing cluster (HPCC),
+Colaboratory](https://colab.research.google.com), the server *nyx.siena.edu*,
+the [Siena College high-performance computing cluster
+(HPCC)](https://www.siena.edu/centers-institutes/high-performance-computing-center/),
 and other computational tools.
 
 Dark Energy Spectroscopic Instrument (DESI)
@@ -156,13 +158,3 @@ work through the following tutorials:
 * [Statistics, Data Mining, and Machine Learning in Astronomy](http://www.astroml.org/index.html)
 * [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
 * [scikit-learn: machine learning in Python](https://scipy-lectures.org/packages/scikit-learn/index.html#introducing-the-scikit-learn-estimator-object) 
-
-
-DESI-specific tools, tutorials, and repositories
-------------------------------------------------
-
-* [Getting Started with DESI Data Systems](https://desi.lbl.gov/trac/wiki/Pipeline/GettingStarted)
-* [DESI Tutorials](https://github.com/desihub/tutorials)
-* [DESI Transient Identification Pipeline (desitrip)](https://github.com/desihub/timedomain/tree/master/desitrip)
-* [*FastSpecFit* Documentation](https://fastspecfit.readthedocs.io/en/latest/) and [Github repository](https://github.com/desihub/fastspecfit)
-
