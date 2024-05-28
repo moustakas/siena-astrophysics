@@ -114,9 +114,10 @@ Vision](https://science.osti.gov/hep/Research/Cosmic-Frontier).
 
 As time permits, I recommend you read the following overview papers on the
 instrumentation and science case for DESI:
-* [Overview of the Instrumentation for the Dark Energy Spectroscopic Instrument
-](https://arxiv.org/abs/2205.10939)
-* [The DESI Experiment Part I: Science,Targeting, and Survey Design](https://arxiv.org/abs/1611.00036) 
+* [DESI Early Data Release (EDR)](https://data.desi.lbl.gov/doc/releases/edr/)
+* [Validation of the Scientific Program for the Dark Energy Spectroscopic Instrument](https://arxiv.org/abs/2306.06307)
+* [The Early Data Release of the Dark Energy Spectroscopic Instrument
+](https://arxiv.org/abs/2306.06308)
 
 Building your toolkit
 ---------------------
@@ -132,6 +133,8 @@ Carpentry](https://software-carpentry.org/lessons) and elsewhere:
 * Python:
   * [Python for Astronomers](https://prappleizer.github.io/)
   * [Programming with Python](http://swcarpentry.github.io/python-novice-inflammation)
+  * [Python Programming And Numerical Methods: A Guide For Engineers And Scientists](https://pythonnumericalmethods.studentorg.berkeley.edu/notebooks/Index.html) 
+  * [Numerical Methods: An Inquiry-Based Approach with Python](https://numericalmethodssullivan.github.io/ch-python.html#python-programming-basics)
   * [Google's Python Class](https://developers.google.com/edu/python)
   * [PEP 8 - Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
   * [Scipy Lecture Notes](http://www.scipy-lectures.org/index.html)
