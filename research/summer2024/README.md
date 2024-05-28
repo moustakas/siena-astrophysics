@@ -73,7 +73,7 @@ the National Science Foundation or the Department of Energy), you must complete
 an online [Responsible Conduct of
 Research](https://about.citiprogram.org/en/homepage) training program (see
 [these
-instructions](https://www.siena.edu/files/resources/responsible-conduct-of-research-2016.pdf)),
+instructions](https://www.siena.edu/offices/grants-and-sponsored-research/policies-forms-and-templates/)),
 in which you will learn about collaborative research, responsible authorship,
 data management, etc.  
 
