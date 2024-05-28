@@ -160,4 +160,5 @@ work through the following tutorials:
 * [Python Data Science Handbook](https://github.com/jakevdp/PythonDataScienceHandbook)
 * [Statistics, Data Mining, and Machine Learning in Astronomy](http://www.astroml.org/index.html)
 * [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
-* [scikit-learn: machine learning in Python](https://scipy-lectures.org/packages/scikit-learn/index.html#introducing-the-scikit-learn-estimator-object) 
+* [scikit-learn: machine learning in Python](https://scikit-learn.org/stable/index.html)
+
