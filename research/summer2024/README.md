@@ -83,7 +83,7 @@ must be completed during the first week of your summer research experience.*
 Computers and more!
 -------------------
 
-The astrophysics research lab, Roger Bacon Hall 113, has three computers which
+The astrophysics research lab, Roger Bacon Hall 113, has ten computers which
 you are free to use (ask either Moustakas or Finn for the punch code to the room
 and the login to the computers). Each machine is a Dell Precision 3450 with 8
 Intel i7 processors, 16 GB of RAM, 500 GB of SSD disk space, and a dual-boot
