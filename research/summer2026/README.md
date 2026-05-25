@@ -12,13 +12,14 @@ oftentimes just as important as the end result. Indeed, we often learn best by
 struggling, and sometimes we make our greatest insights and discoveries when
 things appear to be most bleak!
 
-You should also not hesitate to help out one another. Research is almost always
-a *collaborative* process; for example, we strongly encourage you to [pair
-code](https://stackify.com/pair-programming-advantages). We will also use
-[Slack](https://slack.com) and, occasionally, [Zoom](https://zoom.us) to stay in
-frequent contact. Like tackling a hard quantum physics problem with a group of
-classmates, research is best done in small groups and teams who communicate
-often.
+You should also not hesitate to help out one another. Research is
+almost always a *collaborative* process; for example, I strongly
+encourage you to [pair
+code](https://stackify.com/pair-programming-advantages). We will also
+use [Slack](https://slack.com) and, occasionally,
+[Zoom](https://zoom.us) to stay in frequent contact. Like tackling a
+hard quantum physics problem with a group of classmates, research is
+best done in small groups and teams who communicate often.
 
 Finally, at its heart, modern astrophysics is an applied data science:
 Astronomers frequently mine large datasets---using one or more modern programming
@@ -36,29 +37,30 @@ resources specific to astro research at Siena University. Therefore, before the
 start of summer research, please be sure you have (or have completed) the
 following:
 
-* A [Slack](https://slack.com) account so you can be added to the
-  [siena-astrophysics Slack workspace](https://siena-astrophysics.slack.com).
-
-* A [Github](https://github.com) account. Once you have your handle, please
-  share it with Moustakas on Slack so you can be given access to the
+* A [Github](https://github.com) account. Once you have your handle,
+  please share it with Moustakas on Slack so you can be given access
+  to the
   [siena-astrophysics](https://github.com/moustakas/siena-astrophysics)
   repository (and other relevant repositories).
 
-* An [Overleaf](https://overleaf.com) account. We will use the typesetting
-  platform [LaTeX](https://www.latex-project.org/) to write a summary research
-  paper this summer.
-
-* A completed [DESI membership
-  form](https://desi.lbl.gov/desipub/app/MembershipForm/form) (get the login
-  credentials from Moustakas). Once your membership is approved, Moustakas will
-  share resources and getting-started guides for navigating the DESI collaboration
-  tools and data.
+* A completed [DESI Membership
+  Form](https://desi.lbl.gov/desipub/app/MembershipForm/form) (get the
+  login credentials from Moustakas). Once your membership is approved,
+  Moustakas will share resources and getting-started guides for
+  navigating the DESI collaboration tools and data.
 
 * A [NERSC](https://www.nersc.gov/) account (contact Moustakas for
-  instructions). NERSC, the National Energy Research Scientific Computing Center,
-  is one of the world's most powerful supercomputing centers, and you will be
-  using it frequently for your research, especially the [NERSC Jupyter
-  server](https://jupyter.nersc.gov).
+  instructions). NERSC, the National Energy Research Scientific
+  Computing Center, is one of the world's most powerful supercomputing
+  centers, and you will be using it frequently for your research,
+  especially the [NERSC Jupyter server](https://jupyter.nersc.gov).
+
+* A [Slack](https://slack.com) account so you can be added to the
+  [DESI Slack workspace](https://desisurvey.slack.com).
+
+* An [Overleaf](https://overleaf.com) account. We will use the
+  typesetting platform [LaTeX](https://www.latex-project.org/) to
+  write a summary research paper this summer.
 
 Finally, I recommend a good lab book (or you might consider keeping an
 electronic journal or set of notes, ideally on Github) and enthusiasm!
@@ -66,35 +68,37 @@ electronic journal or set of notes, ideally on Github) and enthusiasm!
 Responsible Conduct of Research
 --------------------------------
 
-Whether you are being supported this summer by CURCA or on a grant (from either
-the National Science Foundation or the Department of Energy), you must complete
-an online [Responsible Conduct of
-Research](https://about.citiprogram.org/en/homepage) training program (see
-[these
-instructions](https://www.siena.edu/offices/grants-and-sponsored-research/policies-forms-and-templates/)),
-in which you will learn about collaborative research, responsible authorship,
-data management, etc.
+Whether you are being supported this summer by CURCA or on a grant
+(from either the National Science Foundation or the Department of
+Energy), you must complete an online [Responsible Conduct of
+Research](https://about.citiprogram.org/en/homepage) training program,
+in which you will learn about collaborative research, responsible
+authorship, data management, etc.
 
-*Note: If you haven't completed the training in the previous three years, it
-must be completed during the first week of your summer research experience.*
+*Note: If you haven't completed the training in the previous three
+years, it must be completed during the first week of your summer
+research experience and no later than June 1.*
 
 Computers and more!
 --------------------
 
-The astrophysics research lab, Roger Bacon Hall 113, has five computers which
-you are free to use (ask Moustakas for the punch code to the room and the login
-to the computers). Each machine is a Dell Precision 3450 with 8 Intel i7
-processors, 16 GB of RAM, and 500 GB of SSD disk space, running
-[Ubuntu 24.04](https://ubuntu.com/). In general, you will be using the Ubuntu
-operating system, which is the standard scientific computing environment in
-astronomy.
+The astrophysics research lab, Roger Bacon Hall 113, has five
+computers which you are free to use (ask Moustakas for the punch code
+to the room and the login to the computers). Each machine is a Dell
+Precision 3450 with 8 Intel i7 processors, 16 GB of RAM, and 500 GB of
+SSD disk space, running [Ubuntu 24.04](https://ubuntu.com/). In
+general, you will be using the Ubuntu/Linux operating system. Linux,
+comparable to Windows and OSX, is the standard scientific computing
+environment in astronomy.
 
-In addition to these computers, during your summer research experience you may
-utilize NERSC (particularly the [NERSC Jupyter server](https://jupyter.nersc.gov)),
-[Google Colaboratory](https://colab.research.google.com), the server
-*nyx.siena.edu*, the [Siena University high-performance computing cluster
+In addition to these computers, during your summer research experience
+you may utilize NERSC (particularly the [NERSC Jupyter
+server](https://jupyter.nersc.gov)), [Google
+Colaboratory](https://colab.research.google.com), the server
+*nyx.siena.edu*, the [Siena University high-performance computing
+cluster
 (HPCC)](https://www.siena.edu/centers-institutes/high-performance-computing-center/),
-and other computational tools.
+and other computational resources.
 
 Dark Energy Spectroscopic Instrument (DESI)
 --------------------------------------------
@@ -109,16 +113,19 @@ Science](https://www.energy.gov/science/office-science) as one of the core
 experiments of the [Cosmic Frontier
 Vision](https://science.osti.gov/hep/Research/Cosmic-Frontier).
 
-As time permits, I recommend you read the following overview papers and data
-release documentation for DESI:
+Going forward,
+[DESI-II](https://indico.in2p3.fr/event/31064/contributions/130380/attachments/81926/120926/DESI2_Future_Surveys.pdf)
+(see also [this
+talk](https://indico.physics.lbl.gov/event/2382/contributions/7561/attachments/3765/4996/Dawson_DESI-II_P5TownHall.pdf))
+aims to push the cosmological constraints obtainable from
+ground-based, highly multiplexed optical spectroscopy even further.
 
-* [DESI Data Release 1 (DR1)](https://data.desi.lbl.gov/doc/releases/dr1/)
-* [DESI Early Data Release (EDR)](https://data.desi.lbl.gov/doc/releases/edr/)
-* [Validation of the Scientific Program for the Dark Energy Spectroscopic Instrument](https://arxiv.org/abs/2306.06307)
-* [The Early Data Release of the Dark Energy Spectroscopic Instrument](https://arxiv.org/abs/2306.06308)
+As time permits, I recommend you read the following overview papers
+and data release documentation for DESI:
 
-A great place to get started with DESI data and software is the official
-[DESI tutorials repository](https://github.com/desihub/tutorials/tree/main/01_getting_started).
+* [DESI Data Release 1 (DR1) Paper](https://arxiv.org/abs/2503.14745)
+* [DESI/DR1 Documentation](https://data.desi.lbl.gov/doc/releases/dr1/)
+* [DESI tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started).
 
 DESI Legacy Imaging Surveys
 -----------------------------
