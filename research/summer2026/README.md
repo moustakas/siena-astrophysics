@@ -1,6 +1,21 @@
 Moustakas Summer 2026 Research
 ==============================
 
+Contents
+--------
+
+1. [Overview](#overview)
+2. [Research Projects](#research-projects)
+3. [Program Timeline](#program-timeline)
+4. [Learning Outcomes](#learning-outcomes)
+5. [What do I need to get started?](#what-do-i-need-to-get-started)
+6. [Responsible Conduct of Research](#responsible-conduct-of-research)
+7. [Computers and more!](#computers-and-more)
+8. [Dark Energy Spectroscopic Instrument (DESI)](#dark-energy-spectroscopic-instrument-desi)
+9. [Building your toolkit](#building-your-toolkit)
+   * [Using AI for just-in-time learning](#using-ai-for-just-in-time-learning)
+10. [Digging Deeper: Data Science and Machine Learning](#digging-deeper-data-science-and-machine-learning)
+
 Overview
 --------
 
