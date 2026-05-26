@@ -118,28 +118,25 @@ of Arizona.
 Rough Timeline
 --------------
 
-+----------+-------------------------------------------------------------+
-| Week 1   | Read SGA-2020 paper and explore the web app and code repo.  |
-| (May 26) | Set up NERSC environment and data access. Moustakas leads   |
-|          | metadata pipeline kickoff.                                  |
-+----------+-------------------------------------------------------------+
-| Week 2   | Begin NED name cross-matching and redshift assembly         |
-| (June 1) | pipeline. Prepare for DESI observing run (read Support       |
-|          | Observer instructions).                                     |
-+----------+-------------------------------------------------------------+
-| Week 3   | DESI observing shift (June 9--11). Continue metadata        |
-| (June 8) | pipeline; begin visual inspection of DESI spectra. Start    |
-|          | ISOSTER installation and test runs.                         |
-+----------+-------------------------------------------------------------+
-| Week 4   | Metadata pipeline wrap-up. ISOSTER benchmarking runs and    |
-| (June 15)| comparisons. Begin MMA catalog assembly.                    |
-+----------+-------------------------------------------------------------+
-| Week 5   | Finalize ISOSTER benchmarking notebook. MMA catalog         |
-| (June 22)| validation and completeness checks. Generate key figures.   |
-+----------+-------------------------------------------------------------+
-| Week 6   | Polish deliverables. Write symposium abstract. Prepare      |
-| (June 29)| poster. Final catalog and notebook deposits in the repo.    |
-+----------+-------------------------------------------------------------+
+**Week 1 (May 26)**: Read the SGA-2020 paper and explore the web app and code
+repo. Set up NERSC environment and data access. Moustakas leads metadata
+pipeline kickoff.
+
+**Week 2 (June 1)**: Begin NED name cross-matching and redshift assembly
+pipeline. Prepare for DESI observing run (read Support Observer instructions).
+
+**Week 3 (June 8)**: DESI observing shift (June 9--11). Continue metadata
+pipeline; begin visual inspection of DESI spectra. Start ISOSTER installation
+and test runs.
+
+**Week 4 (June 15)**: Metadata pipeline wrap-up. ISOSTER benchmarking runs
+and comparisons. Begin MMA catalog assembly.
+
+**Week 5 (June 22)**: Finalize ISOSTER benchmarking notebook. MMA catalog
+validation and completeness checks. Generate key figures.
+
+**Week 6 (June 29)**: Polish deliverables. Write symposium abstract. Prepare
+poster. Final catalog and notebook deposits in the repo.
 
 Deliverables
 ------------

@@ -37,6 +37,7 @@ expected deliverables.
 
 * [Project 1: SGA-2025 Catalog Assembly and Validation](projects/sga-catalog.md)
 * [Project 2: SGA-2025 Morphology Classification with Machine Learning](projects/sga-ml.md)
+* [Project 3: DESI Steel Program Spectroscopic Validation](projects/steel-vi.md)
 
 Program Timeline
 ----------------

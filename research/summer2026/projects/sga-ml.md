@@ -117,28 +117,26 @@ scientific interest.
 Rough Timeline
 --------------
 
-+----------+-------------------------------------------------------------+
-| Week 1   | Read required papers. Explore the SGA-2020 web app and      |
-| (May 26) | Legacy Survey cutout server. Begin visual inspection and     |
-|          | image labeling. Set up NERSC environment.                   |
-+----------+-------------------------------------------------------------+
-| Week 2   | Complete training set construction. Begin ssl-legacysurvey  |
-| (June 1) | feature extraction. Prepare for DESI observing run (read    |
-|          | Support Observer instructions).                             |
-+----------+-------------------------------------------------------------+
-| Week 3   | DESI observing shift (June 9--11). Continue feature         |
-| (June 8) | extraction; run dimensionality reduction and similarity      |
-|          | searches. Begin Zoobot environment setup and test runs.     |
-+----------+-------------------------------------------------------------+
-| Week 4   | Zoobot fine-tuning runs. Evaluate model performance.        |
-| (June 15)| Compare ssl-legacysurvey and Zoobot outputs.                |
-+----------+-------------------------------------------------------------+
-| Week 5   | Run classifiers on full SGA-2025 subset. Generate           |
-| (June 22)| interactive visualizations and summary figures.             |
-+----------+-------------------------------------------------------------+
-| Week 6   | Polish deliverables. Write symposium abstract. Prepare      |
-| (June 29)| poster. Commit notebooks and results to the repo.           |
-+----------+-------------------------------------------------------------+
+**Week 1 (May 26)**: Read required papers. Explore the SGA-2020 web app and
+Legacy Survey cutout server. Begin visual inspection and image labeling. Set
+up NERSC environment.
+
+**Week 2 (June 1)**: Complete training set construction. Begin
+ssl-legacysurvey feature extraction. Prepare for DESI observing run (read
+Support Observer instructions).
+
+**Week 3 (June 8)**: DESI observing shift (June 9--11). Continue feature
+extraction; run dimensionality reduction and similarity searches. Begin Zoobot
+environment setup and test runs.
+
+**Week 4 (June 15)**: Zoobot fine-tuning runs. Evaluate model performance.
+Compare ssl-legacysurvey and Zoobot outputs.
+
+**Week 5 (June 22)**: Run classifiers on full SGA-2025 subset. Generate
+interactive visualizations and summary figures.
+
+**Week 6 (June 29)**: Polish deliverables. Write symposium abstract. Prepare
+poster. Commit notebooks and results to the repo.
 
 Deliverables
 ------------
