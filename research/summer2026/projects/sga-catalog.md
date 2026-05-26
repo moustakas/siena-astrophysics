@@ -40,6 +40,10 @@ Key Resources
 
 * [SGA-2020 web app](https://sga.legacysurvey.org/) --- browse the existing
   catalog, images, and photometric measurements interactively.
+* [Legacy Survey dev sky viewer](https://www.legacysurvey.org/viewer-dev) ---
+  an interactive sky viewer with dedicated SGA-2025 overlay layers:
+  `sga2025-parent`, `sga2025-south`, and `sga2025-north`. Use these to
+  visually explore the sample footprint and individual objects in context.
 * [SGA code repository](https://github.com/moustakas/SGA) --- source code
   for catalog production and analysis.
 * [DESI Legacy Imaging Surveys](https://legacysurvey.org) --- the underlying

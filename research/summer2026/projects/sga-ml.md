@@ -44,6 +44,10 @@ Key Resources
 
 * [SGA-2020 web app](https://sga.legacysurvey.org/) --- explore galaxy
   images and morphologies interactively; useful for building visual intuition.
+* [Legacy Survey dev sky viewer](https://www.legacysurvey.org/viewer-dev) ---
+  an interactive sky viewer with dedicated SGA-2025 overlay layers:
+  `sga2025-parent`, `sga2025-south`, and `sga2025-north`. Use these to
+  visually explore the sample footprint and individual objects in context.
 * [ssl-legacysurvey repository](https://github.com/georgestein/ssl-legacysurvey)
   --- pretrained model checkpoints, similarity search tools, and 20 TB of
   processed Legacy Survey galaxy cutouts (available at NERSC).
@@ -76,7 +80,11 @@ etc.), and (3) construct a labeled training set for Zoobot fine-tuning.
 * Document the labeling scheme and inter-rater agreement as part of the
   scientific record.
 
-### Task 2 --- Self-Supervised Representation Learning (Weeks 2--4)
+Tasks 2 and 3 are parallel tracks intended to be pursued simultaneously by
+different students, both drawing on the labeled dataset from Task 1. Results
+from both tracks will be compared and synthesized during weeks 5--6.
+
+### Task 2 (Track A) --- Self-Supervised Representation Learning (Weeks 2--5)
 
 Apply the pretrained ssl-legacysurvey model to SGA-2025 galaxy images to
 extract latent representations, and use those representations to explore the
@@ -95,44 +103,45 @@ morphological diversity of the sample.
 * Produce interactive visualizations of the embedding space, annotated with
   galaxy thumbnails, for inclusion in the final poster.
 
-### Task 3 --- Zoobot Fine-Tuning (Weeks 3--5)
+### Task 3 (Track B) --- Morphology Classification with Zoobot (Weeks 2--5)
 
-Fine-tune a pretrained Zoobot model on the labeled training set from Task 1
-to classify SGA-2025 galaxies by one or more morphological properties of
-scientific interest.
+Use a pretrained Zoobot model to classify SGA-2025 galaxies by one or more
+morphological properties of scientific interest, fine-tuning as needed using
+the labeled training set from Task 1.
 
+* Set up the Zoobot environment and work through the provided tutorials to
+  understand the available pretrained models and classification framework.
 * Select one or two specific classification questions well-suited to the
   SGA-2025 sample (e.g., disk vs. spheroid, presence of a bar, merger
   signatures).
-* Fine-tune the Zoobot model using the labeled training set, following the
-  Zoobot tutorials for small-data fine-tuning.
-* Evaluate model performance on a held-out validation set. Assess where the
-  model is confident vs. uncertain.
-* Run the trained classifier on the full subset of SGA-2025 galaxies with
-  available cutouts and examine the distribution of predicted morphologies.
-* Compare Zoobot classifications against visual inspection labels and against
-  classifications from the ssl-legacysurvey approach (Task 2).
+* Apply pretrained Zoobot models to the SGA-2025 sample; fine-tune on the
+  Task 1 training set if needed to improve performance on the target classes.
+* Evaluate model performance on a held-out validation set and assess where
+  the model is confident vs. uncertain.
+* Run the classifier on the full subset of SGA-2025 galaxies with available
+  cutouts and examine the distribution of predicted morphologies.
 
 Rough Timeline
 --------------
 
 **Week 1 (May 26)**: Read required papers. Explore the SGA-2020 web app and
-Legacy Survey cutout server. Begin visual inspection and image labeling. Set
-up NERSC environment.
+dev sky viewer. Begin visual inspection and image labeling. Set up NERSC
+environment.
 
-**Week 2 (June 1)**: Complete training set construction. Begin
-ssl-legacysurvey feature extraction. Prepare for DESI observing run (read
-Support Observer instructions).
+**Week 2 (June 1)**: Complete training set construction. *Track A*: begin
+ssl-legacysurvey feature extraction. *Track B*: set up Zoobot environment and
+run initial tests. Prepare for DESI observing run.
 
-**Week 3 (June 8)**: DESI observing shift (June 9--11). Continue feature
-extraction; run dimensionality reduction and similarity searches. Begin Zoobot
-environment setup and test runs.
+**Week 3 (June 8)**: DESI observing shift (June 9--11). *Track A*: run
+dimensionality reduction and similarity searches. *Track B*: apply pretrained
+Zoobot models to SGA-2025 subset; begin fine-tuning if needed.
 
-**Week 4 (June 15)**: Zoobot fine-tuning runs. Evaluate model performance.
-Compare ssl-legacysurvey and Zoobot outputs.
+**Week 4 (June 15)**: *Track A*: refine embeddings and produce interactive
+visualizations. *Track B*: evaluate model performance and run classifier on
+full subset.
 
-**Week 5 (June 22)**: Run classifiers on full SGA-2025 subset. Generate
-interactive visualizations and summary figures.
+**Week 5 (June 22)**: Both tracks generate summary figures. Begin comparison
+and synthesis of Track A and Track B results.
 
 **Week 6 (June 29)**: Polish deliverables. Write symposium abstract. Prepare
 poster. Commit notebooks and results to the repo.
