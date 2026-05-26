@@ -45,20 +45,24 @@ Program Timeline
 Summer research runs from **May 26 through July 3, 2026** (six weeks). The
 rough week-by-week structure is:
 
-* **Week 1 (May 26--29)**: Onboarding, background reading, and environment
-  setup. Moustakas will work directly with the group to kick off the
-  SGA-2025 metadata pipeline.
-* **Week 2 (June 1--5)**: Core project work begins. All students should
-  complete preparation for the DESI observing run (see below).
-* **Week 3 (June 8--12)**: Core project work continues. **DESI remote
-  observing shift: June 9--11, approximately 8:00 pm -- 3:15 am.** All
-  students are expected to participate. Before the run, carefully read
-  the [DESI Support Observer
+* **Week 1 (May 26--29)**: Onboarding, background reading, and
+  environment setup. Complete the [Responsible Conduct of
+  Research](#responsible-conduct-of-research) training and the first
+  batch of [DESI
+  tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started). Review
+  the list of [Research Projects](#research-projects) and be prepared
+  to discuss them.
+  * **Week 2 (June 1--5)**: Core project work begins. All students
+  should complete preparation for the DESI observing run (see below).
+  * **Week 3 (June 8--12)**: Core project work continues. **DESI
+  remote observing shift: June 9--11, approximately 8:00 pm -- 3:15
+  am.** All students are expected to participate. Before the run,
+  carefully read the [DESI Support Observer
   Instructions](https://desi.lbl.gov/trac/wiki/DESIOperations/SupportObserverPages).
-* **Week 4 (June 15--19)**: Mid-summer checkpoint and continued project work.
-* **Week 5 (June 22--26)**: Results consolidation and figure generation.
-* **Week 6 (June 29--July 3)**: Wrap-up, poster preparation, and submission
-  of the research symposium abstract.
+  * **Week 4 (June 15--19)**: Mid-summer checkpoint and continued
+  project work.  * **Week 5 (June 22--26)**: Results consolidation and
+  figure generation.  * **Week 6 (June 29--July 3)**: Wrap-up, poster
+  preparation, and submission of the research symposium abstract.
 
 Learning Outcomes
 -----------------
