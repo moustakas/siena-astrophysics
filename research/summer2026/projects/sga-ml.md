@@ -24,19 +24,16 @@ catalog-based methods alone.
 Background Reading
 ------------------
 
-*Required:*
-
 * Moustakas et al. (2023) --- [The Siena Galaxy Atlas
   2020](https://ui.adsabs.harvard.edu/abs/2023ApJS..269....3M/abstract)
   (*ApJS*, 269, 3). Provides essential context for the SGA dataset and its
   imaging data products.
-
-*Recommended:*
-
-* Walmsley et al. --- Zoobot papers (see the [Zoobot
-  documentation](https://zoobot.readthedocs.io/en/latest/index.html) for
-  references). These describe the Galaxy Zoo morphology classification
-  framework and the pretrained models available for fine-tuning.
+* Walmsley et al. (2023) --- [Zoobot: Adaptable Deep Learning Models
+  for Galaxy
+  Morphology](https://ui.adsabs.harvard.edu/abs/2023JOSS....8.5312W/abstract)
+  (*JOSS*, 8, 5312). This paper describes the Galaxy Zoo morphology
+  classification framework and the pretrained models available for
+  fine-tuning.
 * Stein et al. --- [Self-Supervised Representation Learning for Astronomical
   Images](https://github.com/georgestein/ssl-legacysurvey). Read the
   repository README and any linked papers for background on the
@@ -49,7 +46,7 @@ Key Resources
   images and morphologies interactively; useful for building visual intuition.
 * [ssl-legacysurvey repository](https://github.com/georgestein/ssl-legacysurvey)
   --- pretrained model checkpoints, similarity search tools, and 20 TB of
-  processed Legacy Survey galaxy cutouts (available via Globus).
+  processed Legacy Survey galaxy cutouts (available at NERSC).
 * [Zoobot documentation](https://zoobot.readthedocs.io/en/latest/index.html)
   --- tutorials and API reference for fine-tuning pretrained morphology
   classifiers.
@@ -72,8 +69,8 @@ vocabulary for describing galaxy morphology, (2) identify interesting
 subpopulations (mergers, edge-on disks, low surface brightness galaxies,
 etc.), and (3) construct a labeled training set for Zoobot fine-tuning.
 
-* Explore the SGA-2020 web app and the Legacy Survey image cutout server to
-  get a feel for the variety of objects in the sample.
+* Explore the SGA-2020 web app and the Legacy Survey sky viewer to get
+  a feel for the variety of objects in the sample.
 * Use a simple annotation tool (e.g., a Jupyter notebook with ipywidgets, or
   a Google Form) to label several hundred galaxy images by morphological type.
 * Document the labeling scheme and inter-rater agreement as part of the
