@@ -4,28 +4,22 @@ Project 3: DESI Steel Program Spectroscopic Validation
 Overview
 --------
 
-[Steel](https://arxiv.org/abs/2603.10113) is a DESI-II pilot program designed
-to build a spectroscopically calibrated weak lensing (WL) source sample for
-upcoming imaging surveys such as LSST, Euclid, and Roman. The core science
-problem is that current photometric redshift (photo-*z*) uncertainties are too
-large by roughly an order of magnitude to meet the systematics requirements of
-next-generation WL cosmology. Steel addresses this by targeting a faint galaxy
-sample (22 < *i* < 24, selected from HSC imaging) where DESI can achieve high
-spectroscopic success rates, thereby directly calibrating the redshift
-distribution *n(z)* and intrinsic alignment contamination of the WL source
-sample.
-
-The pilot program has been awarded 12 hours of dark time across 6 HSC fields.
-Two fields have been reduced (~60,000 spectra), and 3 additional fall fields
-(including XMM-LSS) will be observed starting this summer. Our group is
-contributing to this collaboration on two fronts: visual inspection (VI) of
-Steel spectra, and using [FastSpecFit](https://github.com/desihub/fastspecfit)
-to help prioritize and reduce the VI workload.
+[Steel](https://arxiv.org/abs/2603.10113) is a pilot program for DESI-II, the
+planned next-generation extension of DESI, designed to calibrate the redshift
+distributions of faint galaxies used as sources in upcoming weak lensing
+surveys (LSST, Euclid, and Roman). Weak lensing uses the subtle distortion of
+background galaxy shapes by foreground matter to map the large-scale
+distribution of mass, but it requires precise knowledge of the redshifts of
+those background galaxies. Steel addresses this by obtaining DESI spectra for
+a carefully selected sample of faint galaxies (22 < *i* < 24), providing the
+ground truth needed to calibrate photometric redshift estimates from imaging
+alone. Our group is contributing to this collaboration on two fronts: visual
+inspection (VI) of Steel spectra to confirm or reject automated redshift fits,
+and using [FastSpecFit](https://github.com/desihub/fastspecfit) to help reduce
+the VI workload by flagging objects with high-confidence measurements.
 
 Background Reading
 ------------------
-
-*Required:*
 
 * DeRose et al. (2026) --- [Steeling Weak Lensing Source Galaxy Samples
   against Systematics using Wide Field
@@ -40,13 +34,9 @@ Background Reading
   metrics as part of the redshift quality classification framework. The
   COSMOS and XMM-LSS fields are also Steel fields.
 
-*Recommended:*
-
 * [FastSpecFit documentation and
   repository](https://github.com/desihub/fastspecfit) --- the spectral
   synthesis and emission-line fitting tool used in Task 2.
-* [DESI Trac/Wiki](https://desi.lbl.gov/trac/wiki) --- collaboration
-  documentation including data access and VI tool instructions.
 * Steel VI training slides --- to be shared by the collaboration before
   VI begins.
 
@@ -61,25 +51,6 @@ Key Resources
   notebook environments and access to supporting photometric catalogs.
 * NERSC --- reduced Steel spectra and VI output files are stored on NERSC
   (contact Moustakas for path and access instructions).
-
-Science Background
-------------------
-
-Weak lensing measures the coherent shearing of background galaxy shapes by
-foreground matter, providing a powerful probe of the matter power spectrum and
-dark energy. Stage IV surveys (LSST, Euclid, Roman) will be dominated by
-systematic rather than statistical uncertainties. The most challenging
-systematic is photo-*z* uncertainty: HSC Year 3, for example, achieved no
-improvement in WL constraining power over Year 1 despite tripling the data
-volume, because the analysis was dominated by *n(z)* uncertainty.
-
-Steel takes a different approach from the traditional "Gold" sample strategy.
-Rather than pushing to extremely faint magnitudes with low spectroscopic
-success rates, Steel selects a sparser (1--7 arcmin⁻²), brighter (*i* < 24)
-subsample that lies in a region of color space where DESI can achieve ≥95%
-spectroscopic success. Forecasts show that a 5 arcmin⁻² Steel sample with
-σ(⟨z⟩) = 0.005 matches or exceeds the cosmological constraining power of a
-conventional Gold sample with current photo-*z* systematics.
 
 Tasks
 -----
@@ -113,10 +84,6 @@ Practical steps:
 * Flag unusual or interesting spectra (e.g., emission-line galaxies at
   unexpected redshifts, apparent blends, strong absorption systems) for
   group discussion.
-
-**Connection to the observing run**: The June 9--11 DESI remote observing
-shift will observe new Steel fall fields. Students will have the scientific
-context to understand what is being observed in real time.
 
 ### Task 2 --- FastSpecFit-Based VI Prioritization (Weeks 2--5)
 
