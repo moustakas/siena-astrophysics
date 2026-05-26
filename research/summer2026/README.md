@@ -90,7 +90,7 @@ Learning Outcomes
 
 Through this summer research experience you will gain exposure to the
 cutting-edge science being done with
-[DESI](dark-energy-spectroscopic-instrument-desi) and related
+[DESI](#dark-energy-spectroscopic-instrument-desi) and related
 surveys. In addition, and in no particular order of importance, you
 can expect to develop the following skills:
 
@@ -173,10 +173,11 @@ of Research](https://about.citiprogram.org/en/homepage) training
 program, in which you will learn about collaborative research,
 responsible authorship, data management, etc.
 
-Once you've created an account **using your Siena email address**
-(following the link above) you should see the required training. The
-training will take several hours to complete, but you are welcome to
-complete it over the course of several days.
+Once you've created an account *using your Siena email address*
+(following the link above), you should see the required training
+program. Keep in mind that this training will take several hours to
+complete, but you are welcome to complete it over the course of
+several days.
 
 *Note: If you haven't completed the training in the previous three
 years, it must be completed during the first week of your summer
@@ -217,9 +218,11 @@ Science](https://www.energy.gov/science/office-science) as one of the core
 experiments of the [Cosmic Frontier
 Vision](https://science.osti.gov/hep/Research/Cosmic-Frontier).
 
-Going forward,
-[DESI-II](https://indico.in2p3.fr/event/31064/contributions/130380/attachments/81926/120926/DESI2_Future_Surveys.pdf)
-(see also [this
+Going forward, [DESI-II](https://arxiv.org/abs/2209.03585) (see [this
+talk](https://n3as.berkeley.edu/wp-content/uploads/2025/07/sumsc25_N3AS2025_Schlegel_Two.pdf),
+[this
+talk](https://indico.in2p3.fr/event/31064/contributions/130380/attachments/81926/120926/DESI2_Future_Surveys.pdf),
+and [this
 talk](https://indico.physics.lbl.gov/event/2382/contributions/7561/attachments/3765/4996/Dawson_DESI-II_P5TownHall.pdf))
 aims to push the cosmological constraints obtainable from
 ground-based, highly multiplexed optical spectroscopy even further.
