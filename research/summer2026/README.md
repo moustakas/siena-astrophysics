@@ -28,6 +28,75 @@ interesting insight from those data. Throughout this journey, a good
 understanding of statistics is crucial, as well as the ability to clearly
 communicate your findings to your peers, both in writing and orally.
 
+Research Projects
+-----------------
+
+All students will contribute to both projects to varying degrees. Each project
+document contains background reading, task descriptions, a rough timeline, and
+expected deliverables.
+
+* [Project 1: SGA-2025 Catalog Assembly and Validation](projects/sga-catalog.md)
+* [Project 2: SGA-2025 Morphology Classification with Machine Learning](projects/sga-ml.md)
+
+Program Timeline
+----------------
+
+Summer research runs from **May 26 through July 3, 2026** (six weeks). The
+rough week-by-week structure is:
+
+* **Week 1 (May 26--29)**: Onboarding, background reading, and environment
+  setup. Moustakas will work directly with the group to kick off the
+  SGA-2025 metadata pipeline.
+* **Week 2 (June 1--5)**: Core project work begins. All students should
+  complete preparation for the DESI observing run (see below).
+* **Week 3 (June 8--12)**: Core project work continues. **DESI remote
+  observing shift: June 9--11, approximately 8:00 pm -- 3:15 am.** All
+  students are expected to participate. Before the run, carefully read
+  the [DESI Support Observer
+  Instructions](https://desi.lbl.gov/trac/wiki/DESIOperations/SupportObserverPages).
+* **Week 4 (June 15--19)**: Mid-summer checkpoint and continued project work.
+* **Week 5 (June 22--26)**: Results consolidation and figure generation.
+* **Week 6 (June 29--July 3)**: Wrap-up, poster preparation, and submission
+  of the research symposium abstract.
+
+Learning Outcomes
+-----------------
+
+Through this summer research experience you will gain exposure to the
+cutting-edge science being done with DESI and related surveys. In addition,
+and in no particular order of importance, you can expect to develop the
+following skills:
+
+* *Cosmology and dark energy*: You will learn about the large-scale structure
+  of the Universe, the nature of dark energy, and how DESI is designed to
+  constrain its properties with unprecedented statistical precision.
+
+* *Data science and statistical methods*: Modern astrophysics is fundamentally
+  a data science. You will work with large astronomical datasets and develop
+  hands-on experience with statistical methods, including Bayesian inference
+  and model fitting, that are broadly applicable in science and industry.
+
+* *Python programming*: You will strengthen your Python skills and gain
+  experience with the core scientific Python ecosystem, including numpy,
+  matplotlib, scipy, and astropy.
+
+* *AI and LLM tools*: Tools like Claude and ChatGPT are rapidly changing how
+  scientists work. You will learn to use these tools responsibly and
+  effectively to accelerate literature review, code writing and debugging,
+  and scientific writing.
+
+* *Critical thinking*: You will read and extract key ideas from technical
+  documentation and professional journal articles---a skill that is both
+  challenging and deeply rewarding.
+
+* *Collaborative research*: You will work as a team, learn to use the
+  collaboration tools of a large international survey, and experience
+  firsthand how modern science gets done.
+
+* *Scientific communication*: You will maintain a research journal throughout
+  the summer, and prepare a poster or talk to present your work at the
+  Siena University research symposium in the fall.
+
 What do I need to get started?
 -------------------------------
 
@@ -123,9 +192,13 @@ ground-based, highly multiplexed optical spectroscopy even further.
 As time permits, I recommend you read the following overview papers
 and data release documentation for DESI:
 
-* [DESI Data Release 1 (DR1) Paper](https://arxiv.org/abs/2503.14745)
-* [DESI/DR1 Documentation](https://data.desi.lbl.gov/doc/releases/dr1/)
-* [DESI tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started).
+* [Data Release 1 of the Dark Energy Spectroscopic Instrument](https://ui.adsabs.harvard.edu/abs/2026AJ....171..285D/abstract)
+* [DESI/DR1](https://data.desi.lbl.gov/doc/releases/dr1/)
+
+The [DESI Trac/Wiki](https://desi.lbl.gov/trac/wiki) is the collaboration's
+primary internal documentation hub, covering survey operations, data access,
+software, and more. A great place to start is the [DESI tutorials
+repository](https://github.com/desihub/tutorials/tree/main/01_getting_started).
 
 DESI Legacy Imaging Surveys
 -----------------------------
