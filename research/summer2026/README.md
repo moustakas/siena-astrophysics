@@ -31,9 +31,22 @@ communicate your findings to your peers, both in writing and orally.
 Research Projects
 -----------------
 
-All students will contribute to both projects to varying degrees. Each project
-document contains background reading, task descriptions, a rough timeline, and
-expected deliverables.
+I have prepared three distinct, ambitious projects for us to tackle
+this summer. These projects are all at the leading edge of my research
+program and could absolutely lead to coauthorship on one or more
+peer-reviewed publications and, possibly, with enough work, a
+first-author paper.
+
+At minimum, my sincere hope is that we can push the work far enough
+along to be able to present it not just at Siena's Academic
+Celebration in September, but also potentially at an upcoming national
+conference.
+
+Projects have not been explicitly assigned to individual students and
+I expect all students to contribute to all three projects to varying
+degrees. Each project document contains background reading, task
+descriptions, a rough timeline, and expected deliverables. Please read
+these pages carefully and refer back to them frequently!
 
 * [Project 1: SGA-2025 Catalog Assembly and Validation](projects/sga-catalog.md)
 * [Project 2: SGA-2025 Morphology Classification with Machine Learning](projects/sga-ml.md)
@@ -52,16 +65,23 @@ rough week-by-week structure is:
   tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started). Review
   the list of [Research Projects](#research-projects) and be prepared
   to discuss them.
-  * **Week 2 (June 1--5)**: Core project work begins. All students
+
+* **Week 2 (June 1--5)**: Core project work begins. All students
   should complete preparation for the DESI observing run (see below).
-  * **Week 3 (June 8--12)**: Core project work continues. **DESI
+
+* **Week 3 (June 8--12)**: Core project work continues. **DESI
   remote observing shift: June 9--11, approximately 8:00 pm -- 3:15
   am.** All students are expected to participate. Before the run,
   carefully read the [DESI Support Observer
   Instructions](https://desi.lbl.gov/trac/wiki/DESIOperations/SupportObserverPages).
-  * **Week 4 (June 15--19)**: Mid-summer checkpoint and continued
-  project work.  * **Week 5 (June 22--26)**: Results consolidation and
-  figure generation.  * **Week 6 (June 29--July 3)**: Wrap-up, poster
+
+* **Week 4 (June 15--19)**: Mid-summer checkpoint and continued
+  project work.
+
+* **Week 5 (June 22--26)**: Results consolidation and
+  figure generation.
+
+* **Week 6 (June 29--July 3)**: Wrap-up, poster
   preparation, and submission of the research symposium abstract.
 
 Learning Outcomes
