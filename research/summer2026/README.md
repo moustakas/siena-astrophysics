@@ -230,26 +230,120 @@ ground-based, highly multiplexed optical spectroscopy even further.
 Building your toolkit
 ----------------------
 
-To start building your technical toolkit, you should work through the following
-(or comparable) tutorials from [Software
-Carpentry](https://software-carpentry.org/lessons) and elsewhere:
+The resources below are a starting point, not a reading list to complete from
+top to bottom. Prioritize what is most relevant to where you are right now, and
+use the [AI prompt starters](#using-ai-for-just-in-time-learning) below to fill
+in gaps at your own level.
 
-* Linux/Unix and Git:
-  * [The Unix Shell](https://swcarpentry.github.io/shell-novice)
-  * [Version Control with Git](https://swcarpentry.github.io/git-novice) (see also [git - the simple guide](https://rogerdudler.github.io/git-guide))
-* Python:
-  * [Python for Astronomers](https://prappleizer.github.io/)
-  * [Programming with Python](https://swcarpentry.github.io/python-novice-inflammation)
-  * [Google's Python Class](https://developers.google.com/edu/python)
-  * [PEP 8 - Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
-  * [Scipy Lecture Notes](https://scipy-lectures.org)
-* Astronomical data and tools:
-  * [DESI Getting Started Tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started)
-  * [NOIRLab Astro Data Lab](https://datalab.noirlab.edu/) --- a science platform with access to large astronomical survey datasets and Jupyter notebook environments
-* Miscellaneous:
-  * [Learn LaTeX in 30 minutes](https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes)
-  * [Learning Markdown](https://daringfireball.net/projects/markdown/syntax)
-  * [Installing Anaconda](https://docs.anaconda.com/anaconda/install) and [Getting Started with Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
+*Linux/Unix and the command line*
+
+The lab computers run Ubuntu Linux, and you will live in the terminal. If the
+command line is new to you, work through the Software Carpentry lesson before
+the end of week 1.
+
+* [The Unix Shell](https://swcarpentry.github.io/shell-novice) (Software
+  Carpentry) --- navigating the filesystem, working with files, writing simple
+  shell scripts
+
+*Version control with git*
+
+We will use git throughout the summer to share and track code. I will run an
+interactive git tutorial during week 1, so you do not need to master this
+beforehand --- but skimming one of the resources below first will help you get
+more out of the session.
+
+* [Version Control with Git](https://swcarpentry.github.io/git-novice)
+  (Software Carpentry)
+* [git --- the simple guide](https://rogerdudler.github.io/git-guide) ---
+  a quick, no-frills reference
+
+*Python and scientific computing*
+
+You have all completed an introductory Python course, but comfort with the
+scientific Python ecosystem (NumPy, Matplotlib, Pandas, Astropy) varies. Be
+honest with yourself about where your gaps are and use the resources below ---
+or the AI prompt starters --- to address them.
+
+* [Programming with Python](https://swcarpentry.github.io/python-novice-inflammation)
+  (Software Carpentry) --- a solid refresher using real data, if you want to
+  revisit the fundamentals
+* [Astropy Learn](https://learn.astropy.org) --- hands-on tutorials using
+  astronomical data; covers FITS files, tables, coordinates, units, and more
+* [PEP 8 --- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+  --- the standard conventions for readable Python; worth a skim
+
+*Scientific writing*
+
+We will write a short summary paper and prepare a poster this summer, both
+using LaTeX via Overleaf.
+
+* [Learn LaTeX in 30 minutes](https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes)
+  (Overleaf) --- everything you need to get started
+
+*Bonus: Markdown*
+
+This README is written in Markdown, and you may find it useful for keeping
+notes in GitHub or Jupyter notebooks.
+
+* [Markdown syntax guide](https://daringfireball.net/projects/markdown/syntax)
+
+*Astronomical data platforms*
+
+* [DESI Getting Started Tutorials](https://github.com/desihub/tutorials/tree/main/01_getting_started)
+* [NOIRLab Astro Data Lab](https://datalab.noirlab.edu/) --- a science
+  platform with browser-based Jupyter notebooks and SQL access to large
+  survey catalogs, including the Legacy Surveys
+
+Using AI for just-in-time learning
+------------------------------------
+
+One goal of this summer is to develop good habits around using AI tools like
+[Claude](https://claude.ai) and [ChatGPT](https://chatgpt.com) to accelerate
+your work. One of the most effective uses is generating a tutorial or exercise
+set calibrated exactly to your current level --- what we call *just-in-time
+learning*. Rather than working through a generic textbook, you describe your
+background and specific goal, and the AI meets you where you are.
+
+This is also good practice for using AI critically: the output will not always
+be correct, and learning to spot errors and ask follow-up questions is itself a
+valuable skill.
+
+Here are some seed prompts to get you started. Paste one into Claude or
+ChatGPT, run through the tutorial it generates, and then ask follow-up
+questions or request additional exercises on the parts that feel unclear.
+
+**Linux/Unix**:
+
+> I'm an undergraduate student who has used Windows or macOS but has never
+> used a Linux terminal. I need to get productive on the Ubuntu command line
+> for scientific computing --- things like navigating directories, editing
+> files, running Python scripts, and managing processes. Please give me a
+> focused 20-minute hands-on tutorial with exercises I can run right now.
+
+**Python and scientific computing**:
+
+> I'm an undergraduate student who has completed one semester of introductory
+> Python (variables, loops, functions, lists) but I have little experience
+> with scientific libraries. I need to get up to speed with NumPy, Matplotlib,
+> and Pandas for data analysis in Jupyter notebooks. Please give me a
+> structured 45-minute tutorial using realistic examples --- for instance,
+> loading a table of galaxy properties and making publication-quality plots.
+
+**Astropy and astronomical data**:
+
+> I'm an undergraduate astrophysics student comfortable with Python basics.
+> I need to learn how to work with astronomical data formats and tools:
+> reading and writing FITS files, working with sky coordinates, and using
+> Astropy tables. Please walk me through a practical tutorial using a
+> realistic astronomy dataset.
+
+**LaTeX**:
+
+> I'm an undergraduate student who has never used LaTeX. I need to write a
+> short research paper (4--6 pages) and a conference poster this summer.
+> Please give me a minimal but complete introduction to LaTeX using Overleaf:
+> document structure, equations, figures, tables, and a bibliography. Show me
+> working examples I can copy and modify.
 
 Digging Deeper: Data Science and Machine Learning
 --------------------------------------------------
