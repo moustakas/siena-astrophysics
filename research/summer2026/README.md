@@ -227,28 +227,6 @@ talk](https://indico.physics.lbl.gov/event/2382/contributions/7561/attachments/3
 aims to push the cosmological constraints obtainable from
 ground-based, highly multiplexed optical spectroscopy even further.
 
-As time permits, I recommend you read the following overview papers
-and data release documentation for DESI:
-
-* [Data Release 1 of the Dark Energy Spectroscopic Instrument](https://ui.adsabs.harvard.edu/abs/2026AJ....171..285D/abstract)
-* [DESI/DR1](https://data.desi.lbl.gov/doc/releases/dr1/)
-
-The [DESI Trac/Wiki](https://desi.lbl.gov/trac/wiki) is the collaboration's
-primary internal documentation hub, covering survey operations, data access,
-software, and more. A great place to start is the [DESI tutorials
-repository](https://github.com/desihub/tutorials/tree/main/01_getting_started).
-
-DESI Legacy Imaging Surveys
------------------------------
-
-The [DESI Legacy Imaging Surveys](https://legacysurvey.org) are a set of
-complementary ground-based imaging surveys that provided the photometric
-targeting catalog for DESI. The surveys cover roughly 14,000 square degrees of
-the extragalactic sky in three optical bands (*g*, *r*, *z*) and are combined
-with mid-infrared photometry from the *WISE* satellite. The Legacy Surveys
-website provides access to imaging data, photometric catalogs, and a variety of
-tools for exploring the data.
-
 Building your toolkit
 ----------------------
 
