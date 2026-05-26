@@ -50,6 +50,9 @@ Key Resources
   documentation, including data access instructions.
 * [NOIRLab Astro Data Lab](https://datalab.noirlab.edu/) --- science
   platform with direct access to Legacy Survey and other catalogs via SQL.
+* [photutils documentation](https://photutils.readthedocs.io/en/stable/) ---
+  the Astropy-affiliated package used for the existing SGA ellipse-fit
+  photometry, against which ISOSTER will be benchmarked.
 
 Tasks
 -----
@@ -85,7 +88,7 @@ quality-assurance effort.
 
 Compare ellipse-fit photometry from
 [ISOSTER](https://massiveseaotters.github.io/isoster/) against the existing
-photutils-based measurements in SGA-2025 for a representative subset of
+[photutils](https://photutils.readthedocs.io/en/stable/)-based measurements in SGA-2025 for a representative subset of
 galaxies spanning a range of sizes, morphologies, and surface brightness
 profiles.
 
