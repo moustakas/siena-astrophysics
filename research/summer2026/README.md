@@ -76,7 +76,8 @@ rough week-by-week structure is:
   Instructions](https://desi.lbl.gov/trac/wiki/DESIOperations/SupportObserverPages).
 
 * **Week 4 (June 15--19)**: Mid-summer checkpoint and continued
-  project work.
+  project work. **TBD: Possible one-day visit to MIT/Haystack
+  Observatory**.
 
 * **Week 5 (June 22--26)**: Results consolidation and
   figure generation.
@@ -88,9 +89,10 @@ Learning Outcomes
 -----------------
 
 Through this summer research experience you will gain exposure to the
-cutting-edge science being done with DESI and related surveys. In addition,
-and in no particular order of importance, you can expect to develop the
-following skills:
+cutting-edge science being done with
+[DESI](dark-energy-spectroscopic-instrument-desi) and related
+surveys. In addition, and in no particular order of importance, you
+can expect to develop the following skills:
 
 * *Cosmology and dark energy*: You will learn about the large-scale structure
   of the Universe, the nature of dark energy, and how DESI is designed to
@@ -125,11 +127,12 @@ following skills:
 What do I need to get started?
 -------------------------------
 
-We will be using many of the same collaboration tools used by astronomers, as
-well as some more specialized and proprietary access to data and computing
-resources specific to astro research at Siena University. Therefore, before the
-start of summer research, please be sure you have (or have completed) the
-following:
+We will be using many of the same collaboration tools used by
+astronomers, as well as some more specialized and proprietary access
+to data and computing resources specific to astro research at Siena
+University. Therefore, at the beginning (or, ideally, before) the
+start of summer research, please be sure you have (or have completed)
+the following:
 
 * A [Github](https://github.com) account. Once you have your handle,
   please share it with Moustakas on Slack so you can be given access
@@ -147,7 +150,8 @@ following:
   instructions). NERSC, the National Energy Research Scientific
   Computing Center, is one of the world's most powerful supercomputing
   centers, and you will be using it frequently for your research,
-  especially the [NERSC Jupyter server](https://jupyter.nersc.gov).
+  especially the [NERSC JupyterLab](https://jupyter.nersc.gov)
+  notebook server.
 
 * A [Slack](https://slack.com) account so you can be added to the
   [DESI Slack workspace](https://desisurvey.slack.com).
@@ -162,12 +166,17 @@ electronic journal or set of notes, ideally on Github) and enthusiasm!
 Responsible Conduct of Research
 --------------------------------
 
-Whether you are being supported this summer by CURCA or on a grant
-(from either the National Science Foundation or the Department of
-Energy), you must complete an online [Responsible Conduct of
-Research](https://about.citiprogram.org/en/homepage) training program,
-in which you will learn about collaborative research, responsible
-authorship, data management, etc.
+Every student doing research at Siena (whether you are being supported
+by CURCA or a external grant from the National Science Foundation or
+the Department of Energy) must complete an online [Responsible Conduct
+of Research](https://about.citiprogram.org/en/homepage) training
+program, in which you will learn about collaborative research,
+responsible authorship, data management, etc.
+
+Once you've created an account **using your Siena email address**
+(following the link above) you should see the required training. The
+training will take several hours to complete, but you are welcome to
+complete it over the course of several days.
 
 *Note: If you haven't completed the training in the previous three
 years, it must be completed during the first week of your summer
@@ -182,11 +191,12 @@ to the room and the login to the computers). Each machine is a Dell
 Precision 3450 with 8 Intel i7 processors, 16 GB of RAM, and 500 GB of
 SSD disk space, running [Ubuntu 24.04](https://ubuntu.com/). In
 general, you will be using the Ubuntu/Linux operating system. Linux,
-comparable to Windows and OSX, is the standard scientific computing
-environment in astronomy.
+analogous to the Windows and OSX operating systems you're more
+familiar with, is the standard scientific computing environment in
+astronomy and many other scientific fields.
 
 In addition to these computers, during your summer research experience
-you may utilize NERSC (particularly the [NERSC Jupyter
+you may utilize NERSC (particularly the [NERSC JupyterLab
 server](https://jupyter.nersc.gov)), [Google
 Colaboratory](https://colab.research.google.com), the server
 *nyx.siena.edu*, the [Siena University high-performance computing
