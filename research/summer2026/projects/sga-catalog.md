@@ -5,39 +5,35 @@ Overview
 --------
 
 The [Siena Galaxy Atlas (SGA)](https://github.com/moustakas/SGA) is a
-catalog of large, nearby galaxies built from the DESI Legacy Imaging Surveys.
-The first version, SGA-2020, contains ~383,000 galaxies with multicolor images,
-ellipse-fit photometry, and derived physical parameters. The 2025 edition
+catalog of large, nearby galaxies built from the [DESI Legacy Imaging
+Surveys](https://legacysurvey.org). The first version, SGA-2020,
+contains ~383,000 galaxies with multicolor images, ellipse-fit
+photometry, and derived physical parameters. The 2025 edition
 (SGA-2025) expands the sample to ~0.5 million objects and incorporates
 improved photometry and new ancillary data.
 
-This project focuses on validating and enriching the SGA-2025 catalog through
-three complementary activities: assembling a comprehensive set of redshifts and
-metadata, benchmarking a new ellipse-fitting code, and preparing an
-MMA-ready version of the catalog.
+This project focuses on validating and enriching the SGA-2025 catalog
+through three complementary activities: assembling a comprehensive set
+of redshifts and metadata, benchmarking a new ellipse-fitting code,
+and preparing a Multi-Messenger Astrophysics (MMA) ready version of
+the catalog.
 
 Background Reading
 ------------------
 
-*Required:*
-
 * Moustakas et al. (2023) --- [The Siena Galaxy Atlas
   2020](https://ui.adsabs.harvard.edu/abs/2023ApJS..269....3M/abstract)
   (*ApJS*, 269, 3). Read this carefully; it describes the science case,
-  methodology, and data products of SGA-2020 in detail.
+  methodology, and data products of the SGA-2020 in detail.
+* Tranin et al. (2026) --- [A catalog to unite them all: REGALADE, a
+  revised galaxy compilation for the advanced detector
+  era](https://ui.adsabs.harvard.edu/abs/2026A%26A...706A.284T/abstract)
+  (*A&A*, 706, A284). Describes how a nearby galaxy atlas can be used
+  to prioritize targets for gravitational wave follow-up.
 * [DESI Data Release 1](https://data.desi.lbl.gov/doc/releases/dr1/) ---
   the primary new redshift source for SGA-2025.
-
-*Recommended:*
-
-* Toivonen et al. (2026) --- [SGA-2025 and Multi-Messenger
-  Astrophysics](https://ui.adsabs.harvard.edu/abs/2026A%26A...706A.284T/abstract)
-  (*A&A*, 706, A284). Describes how a nearby galaxy atlas can be used to
-  prioritize targets for gravitational wave follow-up.
 * [ISOSTER documentation](https://massiveseaotters.github.io/isoster/) ---
   the new isophotal fitting tool being benchmarked in Task 3.
-* [NED (NASA/IPAC Extragalactic Database)](http://ned.ipac.caltech.edu) ---
-  the primary resource for galaxy names, redshifts, and distances.
 
 Key Resources
 -------------
@@ -48,6 +44,8 @@ Key Resources
   for catalog production and analysis.
 * [DESI Legacy Imaging Surveys](https://legacysurvey.org) --- the underlying
   imaging data for the SGA.
+* [NED (NASA/IPAC Extragalactic Database)](http://ned.ipac.caltech.edu) ---
+  the primary resource for galaxy names, redshifts, and distances.
 * [DESI Trac/Wiki](https://desi.lbl.gov/trac/wiki) --- collaboration
   documentation, including data access instructions.
 * [NOIRLab Astro Data Lab](https://datalab.noirlab.edu/) --- science
@@ -59,8 +57,9 @@ Tasks
 ### Task 1 — Metadata Assembly (Weeks 1--3)
 
 Gather a standard set of ancillary data for all ~0.5M objects in the
-SGA-2025. Moustakas will lead the pipeline infrastructure in Week 1.
-Students will run, validate, and extend the pipeline in subsequent weeks.
+SGA-2025. Moustakas will assist with generating the pipeline
+infrastructure in Week 1. Students will run, validate, and extend the
+pipeline in subsequent weeks.
 
 * **Redshifts**: Cross-match the SGA-2025 against DESI/DR1 and other public
   redshift compilations. For each galaxy, identify the best available
@@ -86,11 +85,11 @@ quality-assurance effort.
 
 Compare ellipse-fit photometry from
 [ISOSTER](https://massiveseaotters.github.io/isoster/) against the existing
-photutils-based measurements in SGA-2020 for a representative subset of
+photutils-based measurements in SGA-2025 for a representative subset of
 galaxies spanning a range of sizes, morphologies, and surface brightness
 profiles.
 
-* Select a benchmark sample of ~100--500 galaxies from the SGA-2020 with
+* Select a benchmark sample of ~100--500 galaxies from the SGA-2025 with
   existing high-quality photutils measurements.
 * Run ISOSTER on the same galaxies and images using comparable fitting
   parameters.
@@ -104,8 +103,7 @@ profiles.
 ### Task 3 --- MMA-Ready Catalog (Weeks 4--6)
 
 Generate a version of the SGA-2025 optimized for Multi-Messenger Astrophysics
-(MMA) searches, in collaboration with Moustakas's colleague at the University
-of Arizona.
+(MMA) searches.
 
 * Starting from the assembled metadata (Task 1), compute or compile the
   quantities needed for MMA prioritization: direct distances where available,
@@ -118,9 +116,9 @@ of Arizona.
 Rough Timeline
 --------------
 
-**Week 1 (May 26)**: Read the SGA-2020 paper and explore the web app and code
-repo. Set up NERSC environment and data access. Moustakas leads metadata
-pipeline kickoff.
+**Week 1 (May 26)**: Read the SGA-2020 paper and explore the web app
+and code repo. Read and take notes on additional background reading
+papers and documentation. Set up NERSC environment and data access.
 
 **Week 2 (June 1)**: Begin NED name cross-matching and redshift assembly
 pipeline. Prepare for DESI observing run (read Support Observer instructions).

@@ -5,19 +5,21 @@ Overview
 --------
 
 The [Siena Galaxy Atlas (SGA-2025)](https://github.com/moustakas/SGA)
-contains multiband images and photometry for ~0.5 million nearby galaxies
-drawn from the DESI Legacy Imaging Surveys. This project uses state-of-the-art
-public machine-learning tools to organize and classify SGA-2025 objects by
-morphology and other visual properties.
+contains multiband images and photometry for ~0.5 million nearby
+galaxies drawn from the [DESI Legacy Imaging
+Surveys](https://legacysurvey.org). This project uses state-of-the-art
+public machine-learning tools to organize and classify SGA-2025
+objects by morphology and other visual properties.
 
 Two complementary approaches will be explored. The first applies a
-self-supervised representation learned directly from Legacy Survey galaxy
-images, which can be used for similarity searches and unsupervised clustering
-without any labeled data. The second uses Zoobot, a deep-learning framework
-designed for supervised galaxy morphology classification that can be fine-tuned
-to specific science questions with relatively small training sets. Together
-these tools can reveal structure in the SGA-2025 that is difficult to find
-through catalog-based methods alone.
+self-supervised representation learned directly from Legacy Survey
+galaxy images, which can be used for similarity searches and
+unsupervised clustering without any labeled data. The second uses
+Zoobot, a deep-learning framework designed for supervised galaxy
+morphology classification that can be fine-tuned to specific science
+questions with relatively small training sets. Together these tools
+can reveal structure in the SGA-2025 that is difficult to find through
+catalog-based methods alone.
 
 Background Reading
 ------------------
@@ -31,14 +33,14 @@ Background Reading
 
 *Recommended:*
 
-* Stein et al. --- [Self-Supervised Representation Learning for Astronomical
-  Images](https://github.com/georgestein/ssl-legacysurvey). Read the
-  repository README and any linked papers for background on the
-  self-supervised approach applied to Legacy Survey data.
 * Walmsley et al. --- Zoobot papers (see the [Zoobot
   documentation](https://zoobot.readthedocs.io/en/latest/index.html) for
   references). These describe the Galaxy Zoo morphology classification
   framework and the pretrained models available for fine-tuning.
+* Stein et al. --- [Self-Supervised Representation Learning for Astronomical
+  Images](https://github.com/georgestein/ssl-legacysurvey). Read the
+  repository README and any linked papers for background on the
+  self-supervised approach applied to Legacy Survey data.
 
 Key Resources
 -------------
