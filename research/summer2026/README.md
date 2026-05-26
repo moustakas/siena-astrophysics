@@ -359,12 +359,3 @@ questions or request additional exercises on the parts that feel unclear.
 > Please give me a minimal but complete introduction to LaTeX using Overleaf:
 > document structure, equations, figures, tables, and a bibliography. Show me
 > working examples I can copy and modify.
-
-Digging Deeper: Data Science and Machine Learning
---------------------------------------------------
-
-Artificial intelligence (AI), machine learning (ML), and deep learning (DL) have
-taken science---and our society---by storm the past couple of decades. You will
-be gaining familiarity with the techniques underlying these enormously powerful
-methods and how they are used to solve a variety of problems in astrophysics and
-for DESI in particular. Additional resources and tutorials will be added here.
