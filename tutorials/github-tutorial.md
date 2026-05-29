@@ -139,14 +139,16 @@ git config --global user.email "you@example.com"
 ```
 Use the same email address as your GitHub account.
 
-Set VS Code as your default editor (used for commit messages and merge conflicts):
+To set `VS Code` as your default editor (used for commit messages and
+merge conflicts), do:
+
 ```bash
 git config --global core.editor "code --wait"
 ```
 
-If you prefer `nano` instead:
+If you prefer `emacs`, `vim`, `nano`, or any other text editor instead, do:
 ```bash
-git config --global core.editor "nano"
+git config --global core.editor "emacs"
 ```
 
 Set the default branch name to `main` to match GitHub:
@@ -163,7 +165,7 @@ git config --list
 
 ## 3. Core Concepts
 
-Three terms before anything makes sense:
+We need to introduce three key terms before anything makes sense:
 
 **Repository (repo):** A directory that Git is tracking. Every file change
 inside it can be recorded.
@@ -194,12 +196,12 @@ Working directory         Staging area           Repository
 Create a new directory and initialize a Git repository inside it:
 
 ```bash
-mkdir astro-notes
-cd astro-notes
+mkdir my-first-repo
+cd my-first-repo
 git init
 ```
 
-Git creates a hidden `.git/` folder inside `astro-notes/`. This is where all
+Git creates a hidden `.git/` folder inside `my-first-repo/`. This is where all
 history is stored — don't modify it.
 
 ### Create a file
@@ -297,20 +299,20 @@ it up and makes it shareable.
 
 1. Go to [github.com](https://github.com) and sign in.
 2. Click **+** (top right) → **New repository**.
-3. Name it `astro-notes`.
+3. Name it `my-first-repo`.
 4. Leave all options at their defaults — **do not** add a README, `.gitignore`,
    or license. If you add any of these, the initial histories will conflict.
 5. Click **Create repository**.
 
 GitHub shows a setup page with your repository URL:
 ```
-https://github.com/YOUR_USERNAME/astro-notes.git
+https://github.com/YOUR_USERNAME/my-first-repo.git
 ```
 
 ### Connect your local repo and push
 
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/astro-notes.git
+git remote add origin https://github.com/YOUR_USERNAME/my-first-repo.git
 git branch -M main
 git push -u origin main
 ```
