@@ -1,19 +1,21 @@
 # Git and GitHub: A Hands-On Tutorial
 
-A ~50-minute introduction to version control for physics and astrophysics students.
-No prior experience assumed.
+A ~1-hour introduction to version control for undergraduate science
+students.  No prior experience assumed.
 
 ---
 
 ## Before You Begin
 
-Complete the following **before** the tutorial session. Everything is free.
+Please complete the following **before** the tutorial
+session.
 
 ### 1. Create a GitHub account
 
-Go to [github.com](https://github.com) and sign up for a free account. Use your
-`.edu` email address — GitHub offers free private repositories to students via
-[GitHub Education](https://education.github.com).
+Go to [github.com](https://github.com) and sign up for a free
+account. If you use your `.edu` email address you can create free
+private repositories via the [GitHub
+Education](https://education.github.com) program.
 
 ### 2. Install Git
 
