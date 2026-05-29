@@ -392,7 +392,11 @@ interfering with each other.
 
 ### Create a branch
 
+In your terminal, make sure you are inside the `github-tutorial/` directory
+you cloned in the previous section:
+
 ```bash
+cd ~/github-tutorial
 git checkout -b add-savefig
 ```
 
