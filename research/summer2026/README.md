@@ -14,7 +14,6 @@ Contents
 8. [Dark Energy Spectroscopic Instrument (DESI)](#dark-energy-spectroscopic-instrument-desi)
 9. [Building your toolkit](#building-your-toolkit)
    * [Using AI for just-in-time learning](#using-ai-for-just-in-time-learning)
-10. [Digging Deeper: Data Science and Machine Learning](#digging-deeper-data-science-and-machine-learning)
 
 Overview
 --------
