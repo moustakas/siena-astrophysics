@@ -3,6 +3,22 @@
 A ~1-hour introduction to version control for undergraduate science
 students.  No prior experience assumed.
 
+## Contents
+
+- [Before You Begin](#before-you-begin)
+- [1. Why Version Control?](#1-why-version-control)
+- [2. Configuration](#2-configuration)
+- [3. Core Concepts](#3-core-concepts)
+- [4. Your First Repository](#4-your-first-repository)
+- [5. History and Differences](#5-history-and-differences)
+- [6. Pushing to GitHub](#6-pushing-to-github)
+- [7. Cloning and Forking](#7-cloning-and-forking)
+- [8. Branches](#8-branches)
+- [9. Pull Requests and Merging](#9-pull-requests-and-merging)
+- [10. Daily Workflow](#10-daily-workflow)
+- [Going Further](#going-further)
+- [Additional Resources](#additional-resources)
+
 ---
 
 ## Before You Begin
@@ -84,7 +100,7 @@ Choose *GitHub.com* → *HTTPS* → *Login with a web browser* and follow the pr
 
 ---
 
-## 1. Why Version Control? [3 min]
+## 1. Why Version Control?
 
 You've probably ended up with something like this:
 
@@ -109,7 +125,7 @@ share it, and collaborate.
 
 ---
 
-## 2. Configuration [4 min]
+## 2. Configuration
 
 Open a terminal. On macOS/Linux: Terminal or the VS Code integrated terminal.
 On Windows: **Git Bash**.
@@ -143,7 +159,7 @@ git config --list
 
 ---
 
-## 3. Core Concepts [3 min]
+## 3. Core Concepts
 
 Three terms before anything makes sense:
 
@@ -171,7 +187,7 @@ Working directory         Staging area           Repository
 
 ---
 
-## 4. Your First Repository [7 min]
+## 4. Your First Repository
 
 Create a new directory and initialize a Git repository inside it:
 
@@ -229,7 +245,7 @@ and describe *what changed and why*, not just what the code does.
 
 ---
 
-## 5. History and Differences [5 min]
+## 5. History and Differences
 
 ### Viewing history
 
@@ -270,7 +286,7 @@ Run `git log --oneline` again — you now have two commits in the history.
 
 ---
 
-## 6. Pushing to GitHub [6 min]
+## 6. Pushing to GitHub
 
 Your repository exists only on your local machine. Pushing it to GitHub backs
 it up and makes it shareable.
@@ -307,7 +323,7 @@ Reload your GitHub page — your file and both commits are there.
 
 ---
 
-## 7. Cloning and Forking [4 min]
+## 7. Cloning and Forking
 
 ### Cloning
 
@@ -353,7 +369,7 @@ git remote -v
 
 ---
 
-## 8. Branches [7 min]
+## 8. Branches
 
 A **branch** is an independent line of development. The default branch is
 `main`. When you want to add a feature or fix something, you create a new
@@ -415,7 +431,7 @@ git push origin add-savefig
 
 ---
 
-## 9. Pull Requests and Merging [8 min]
+## 9. Pull Requests and Merging
 
 Your change lives on your fork, on the `add-savefig` branch. A **pull request
 (PR)** is how you formally propose that those changes be merged into another
@@ -448,7 +464,7 @@ git pull origin main
 
 ---
 
-## 10. Daily Workflow [2 min]
+## 10. Daily Workflow
 
 The commands you will use in nearly every session:
 
@@ -493,3 +509,12 @@ Topics not covered today, in rough order of usefulness:
   building documentation)
 - **Protected branches and code review workflows** — how larger teams use PRs
   to enforce quality
+
+---
+
+## Additional Resources
+
+- [git - the simple guide](https://rogerdudler.github.io/git-guide/) — a concise, no-frills one-page reference
+- [Version Control with Git](https://swcarpentry.github.io/git-novice/) — a thorough lesson from Software Carpentry
+- [Pro Git](https://git-scm.com/book/en/v2) — the complete reference book, freely available online
+- [GitHub Docs](https://docs.github.com) — official documentation for all GitHub features
