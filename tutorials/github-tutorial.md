@@ -317,6 +317,9 @@ https://github.com/YOUR_USERNAME/my-first-repo.git
 
 ### Connect your local repo and push
 
+Back in your terminal (make sure you are still inside the `my-first-repo/`
+directory), run:
+
 ```bash
 git remote add origin https://github.com/YOUR_USERNAME/my-first-repo.git
 git branch -M main
