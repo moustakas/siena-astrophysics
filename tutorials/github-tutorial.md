@@ -102,19 +102,21 @@ Choose *GitHub.com* → *HTTPS* → *Login with a web browser* and follow the pr
 
 ## 1. Why Version Control?
 
-You've probably ended up with something like this:
+If you've ever worked on a project, lab, or done research, you've
+probably ended up with something like this:
 
 ```
-spectrum_fit.py
-spectrum_fit_v2.py
-spectrum_fit_final.py
-spectrum_fit_final_FIXED.py
-spectrum_fit_final_FIXED_v2.py
+my_amazing_code.py
+my_amazing_code_v2.py
+my_amazing_code_final.py
+my_amazing_code_final_FIXED.py
+my_amazing_code_final_FIXED_v2.py
 ```
 
-This is version control by hand — and it fails. You can't see *what* changed
-between versions, *why* it changed, or recover the exact state from three weeks
-ago.
+Naming files with increasingly long filenames is ``version control''
+by hand — and it fails. You can't see *what* changed between versions,
+*why* it changed, or recover the exact state from three weeks (or
+years!) ago.
 
 **Git** tracks every change you make to a set of files. It stores a complete
 history, lets you label and revisit any past state, and lets multiple people
@@ -127,8 +129,8 @@ share it, and collaborate.
 
 ## 2. Configuration
 
-Open a terminal. On macOS/Linux: Terminal or the VS Code integrated terminal.
-On Windows: **Git Bash**.
+Open a terminal. On macOS/Linux, launch `Terminal` or the `VS Code`
+integrated terminal.  On Windows, us `Git Bash`.
 
 Tell Git who you are:
 ```bash
