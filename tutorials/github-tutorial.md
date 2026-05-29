@@ -68,10 +68,16 @@ Download and install Visual Studio Code from
 [code.visualstudio.com](https://code.visualstudio.com). It runs on macOS,
 Windows, and Linux.
 
-VS Code is a free text editor with an integrated terminal. Any text editor
-works — `nano` is a simpler terminal-based alternative — but this tutorial
-assumes VS Code. To open a terminal inside VS Code, use **View → Terminal**
-(or `` Ctrl+` ``).
+`VS Code` is a free text editor with an integrated terminal. Any text
+editor works — `nano` is a simpler terminal-based alternative — but
+this tutorial assumes `VS Code`. To open a terminal inside `VS Code`,
+use **View → Terminal** (or `` Ctrl+` ``).
+
+**macOS only:** the `code` command is not added to your PATH automatically.
+After launching VS Code, open the Command Palette with **Cmd+Shift+P**, type
+`shell command`, and select **"Shell Command: Install 'code' command in PATH"**.
+Then open a new terminal window and `code` will work. On Windows and Linux the
+installer handles this automatically.
 
 ### 4. Authenticate with GitHub
 
@@ -206,7 +212,7 @@ history is stored — don't modify it.
 
 ### Create a file
 
-Open VS Code in the current directory:
+Open `VS Code` in the current directory:
 ```bash
 code .
 ```
@@ -396,7 +402,7 @@ The asterisk marks the active branch.
 
 ### Make a change
 
-Open `blackbody.py` in VS Code:
+Open `blackbody.py` in `VS Code`:
 ```bash
 code blackbody.py
 ```
